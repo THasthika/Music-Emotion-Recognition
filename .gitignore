@@ -1,0 +1,6 @@
+datasets/
+models/
+.ipynb_checkpoints
+.vscode
+.DS_Store
+*/wandb/*
