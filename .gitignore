@@ -4,3 +4,5 @@ model_saves/
 .vscode
 .DS_Store
 */wandb/*
+.env
+/lightning_logs/
