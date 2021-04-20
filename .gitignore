@@ -6,3 +6,4 @@ model_saves/
 */wandb/*
 .env
 /lightning_logs/
+*.pyc
