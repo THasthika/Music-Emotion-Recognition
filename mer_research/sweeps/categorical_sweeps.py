@@ -30,127 +30,17 @@ PROJECT_NAME = "mer"
 DATA_ARTIFACT = "deam:latest"
 SPLIT_ARTIFACT = "deam-train-70-val-20-test-10-seed-42:latest"
 
-class BaseAudioDataset(Dataset):
-
-    def __init__(self, meta_file, sample_rate=22050, duration=30):
-
-        self.sample_rate = sample_rate
-        self.duration = duration
-        self.frame_count = self.sample_rate * self.duration
-
-        meta_ext = path.splitext(meta_file)[1]
-        if meta_ext == ".json":
-            self.meta = pd.read_json(meta_file)
-        elif meta_ext == ".csv":
-            self.meta = pd.read_csv(meta_file)
-        else:
-            raise Exception("Unknown File Extension {}".format(meta_ext))
-
-        self.count = len(self.meta)
-        self.meta = self.meta
-
-    def __len__(self):
-        return self.count
-
-    def get_labels(self):
-        raise NotImplementedError
-
-    def get_label(self, index):
-        raise NotImplementedError
-
-    def get_audio(self, index):
-        raise NotImplementedError
-
-    def __getitem__(self, index):
-
-        x, sr = self.get_audio(index)
-        x = torch.mean(x, 0, True)
-        out = torch.zeros(1, self.frame_count)
-        
-        effects = [
-          ["rate", f"{self.sample_rate}"]
-        ]
-        
-        x, sr2 = torchaudio.sox_effects.apply_effects_tensor(x, sr, effects)
-        
-        if self.frame_count >= x.shape[1]:
-            out[:, :x.shape[1]] = x
-        else:
-            out[:, :] = x[:, :self.frame_count]
-
-        # out = torch.squeeze(out)
-        # out = torch.unsqueeze(out, dim=1)
-
-        y = self.get_label(index)
-        
-        return (out, y)
-
-class MERTaffcDataset(BaseAudioDataset):
-
-    """
-    audio_dir="./drive/MyDrive/Research/Datasets/Raw/mer-taffc/audio",
-    meta_file="./drive/MyDrive/Research/Datasets/Splits/mer-taffc-train-70-test-30-seed-42/train.json",
-    """
-
-    def __init__(self,
-                 audio_dir,
-                 meta_file,
-                 sample_rate=22050,
-                 duration=30):
-        super().__init__(meta_file, sample_rate, duration)
-        self.audio_dir = audio_dir
-
-    def get_labels(self):
-        return self.meta[:, -1:]
-
-    def get_label(self, index):
-        item = self.meta.iloc[index]
-        label = item['quadrant']
-        return label
-
-    def get_audio(self, index):
-        item = self.meta.iloc[index]
-        audio_file = path.join(self.audio_dir, "{}.mp3".format(item['song_id']))
-        x, sr = torchaudio.load(audio_file)
-        return (x, sr)
-
-class DeamDataset(BaseAudioDataset):
-
-    """
-    label_type = (categorical|static|dynamic)
-    """
-
-    def __init__(self,
-                 audio_dir,
-                 meta_file,
-                 label_type="categorical",
-                 sample_rate=22050,
-                 duration=30):
-        super().__init__(meta_file, sample_rate, duration)
-        self.audio_dir = audio_dir
-        self.label_type = label_type
-
-    def get_labels(self):
-        if self.label_type == "categorical":
-            return self.meta['quadrants']
-        raise NotImplementedError
-
-    def get_label(self, index):
-        item = self.meta.iloc[index]
-        if self.label_type == "categorical":
-            label = item['quadrant']
-            return label
-        raise NotImplementedError
-
-    def get_audio(self, index):
-        item = self.meta.iloc[index]
-        audio_file = path.join(self.audio_dir, "{}.mp3".format(item['song_id']))
-        x, sr = torchaudio.load(audio_file)
-        return (x, sr)
-
 class BaseModel(pl.LightningModule):
 
     def __init__(self, batch_size=32, num_workers=4, data_at_name=None, split_at_name=None, **config):
+        """[summary]
+
+        Args:
+            batch_size (int, optional): [description]. Defaults to 32.
+            num_workers (int, optional): [description]. Defaults to 4.
+            data_at_name ([type], optional): [description]. Defaults to None.
+            split_at_name ([type], optional): [description]. Defaults to None.
+        """
         super().__init__()
         self.config = config
         self.lr = config['lr']

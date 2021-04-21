@@ -7,3 +7,4 @@ model_saves/
 .env
 /lightning_logs/
 *.pyc
+__pycache__
