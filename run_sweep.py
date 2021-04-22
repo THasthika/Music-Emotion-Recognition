@@ -48,9 +48,9 @@ def run_sweep(name):
         else:
             general_config[x] = options[x]
 
-    train = sweep.makeTrainer(*general_config)
-    
-    train(config=model_config)
+    train = sweep.makeTrainer(**general_config)
+
+    # train(config=model_config)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
