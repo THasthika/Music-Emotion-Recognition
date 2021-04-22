@@ -23,14 +23,24 @@ class DeamDataset(BaseAudioDataset):
     def get_labels(self):
         if self.label_type == "categorical":
             return self.meta['quadrants']
-        raise NotImplementedError
+        if self.label_type == "static":
+            return self.meta[['static_valence_mean', 'static_valence_std', 'static_arousal_mean', 'static_arousal_std']]
+        if self.label_type == "dynamic":
+            return self.meta[['dynamic_valence_mean', 'dynamic_valence_std', 'dynamic_arousal_mean', 'dynamic_arousal_std']]
+        raise NameError
 
     def get_label(self, index):
         item = self.meta.iloc[index]
         if self.label_type == "categorical":
             label = item['quadrant']
             return label
-        raise NotImplementedError
+        if self.label_type == "static":
+            ret_cols = ['static_valence_mean', 'static_valence_std', 'static_arousal_mean', 'static_arousal_std']
+            return item[ret_cols].to_numpy()
+        if self.label_type == "dynamic":
+            ret_cols = ['dynamic_valence_mean', 'dynamic_valence_std', 'dynamic_arousal_mean', 'dynamic_arousal_std']
+            return item[ret_cols].to_numpy()
+        raise NameError
 
     def get_audio(self, index):
         item = self.meta.iloc[index]
