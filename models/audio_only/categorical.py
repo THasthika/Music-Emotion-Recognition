@@ -33,7 +33,12 @@ class ModelCatA(BaseModel):
             conv1_kernel_stride
             adaptive_layer
         """
-        super().__init__(batch_size=batch_size, num_workers=num_workers, data_artifact=data_artifact, split_artifact=split_artifact)
+        super().__init__(
+            batch_size=batch_size,
+            num_workers=num_workers,
+            data_artifact=data_artifact,
+            split_artifact=split_artifact,
+            label_type="categorical")
         self.config = config
         self.lr = config['lr']
 

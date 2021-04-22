@@ -33,7 +33,12 @@ class ModelStatA(BaseModel):
             conv1_kernel_stride
             adaptive_layer
         """
-        super().__init__(batch_size=batch_size, num_workers=num_workers, data_artifact=data_artifact, split_artifact=split_artifact)
+        super().__init__(
+            batch_size=batch_size,
+            num_workers=num_workers,
+            data_artifact=data_artifact,
+            split_artifact=split_artifact,
+            label_type="static")
         self.config = config
         self.lr = config['lr']
 
@@ -94,7 +99,7 @@ class ModelStatA(BaseModel):
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
+        pred = y_logit
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
         self.log('train/acc', self.train_acc(pred, y), prog_bar=True, on_step=False, on_epoch=True)
