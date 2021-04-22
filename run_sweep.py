@@ -50,7 +50,7 @@ def run_sweep(name):
 
     train = sweep.makeTrainer(**general_config)
 
-    # train(config=model_config)
+    train(config=model_config)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
