@@ -45,10 +45,10 @@ class ModelStatA(BaseModel):
         ## build layers
         self.__build()
 
-        ## metrics
-        self.train_acc = tm.Accuracy(top_k=3)
-        self.val_acc = tm.Accuracy(top_k=3)
-        self.test_acc = tm.Accuracy(top_k=3)
+        # ## metrics
+        # self.train_acc = tm.MeanSquaredError
+        # self.val_acc = tm.
+        # self.test_acc = tm.Accuracy(top_k=3)
 
         ## loss
         self.loss = F.mse_loss
@@ -102,7 +102,7 @@ class ModelStatA(BaseModel):
         pred = y_logit
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-        self.log('train/acc', self.train_acc(pred, y), prog_bar=True, on_step=False, on_epoch=True)
+        # self.log('train/acc', self.train_acc(pred, y), prog_bar=True, on_step=False, on_epoch=True)
 
         return loss
 
@@ -111,17 +111,17 @@ class ModelStatA(BaseModel):
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
+        pred = y_logit
         
         self.log("val/loss", loss, prog_bar=True)
-        self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
+        # self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
+        pred = y_logit
 
         self.log("test/loss", loss)
-        self.log("test/acc", self.test_acc(pred, y))
+        # self.log("test/acc", self.test_acc(pred, y))
