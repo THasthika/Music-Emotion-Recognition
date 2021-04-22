@@ -40,7 +40,7 @@ def makeTrainer(project_name, data_artifact, split_artifact, batch_size, find_ba
             auto_scale_batch_size=find_batch_size,
             )
 
-        if tune:
+        if find_batch_size or find_lr:
             trainer.tune(model)
 
         trainer.fit(model)
