@@ -1,3 +1,5 @@
+import wandb
+
 import pytorch_lightning as pl
 
 from models import ModelCatA
