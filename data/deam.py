@@ -36,10 +36,10 @@ class DeamDataset(BaseAudioDataset):
             return label
         if self.label_type == "static":
             ret_cols = ['static_valence_mean', 'static_valence_std', 'static_arousal_mean', 'static_arousal_std']
-            return item[ret_cols].to_numpy()
+            return torch.tensor(item[ret_cols])
         if self.label_type == "dynamic":
             ret_cols = ['dynamic_valence_mean', 'dynamic_valence_std', 'dynamic_arousal_mean', 'dynamic_arousal_std']
-            return item[ret_cols].to_numpy()
+            return torch.tensor(item[ret_cols])
         raise NameError
 
     def get_audio(self, index):
