@@ -1,0 +1,26 @@
+{
+    "os": "Windows-10-10.0.19041-SP0",
+    "python": "3.8.8",
+    "heartbeatAt": "2021-04-22T20:02:19.598318",
+    "startedAt": "2021-04-22T20:02:16.522356",
+    "docker": null,
+    "cpu_count": 4,
+    "cuda": null,
+    "args": [
+        "catA_mer_taffc",
+        "--find_lr",
+        "True"
+    ],
+    "state": "running",
+    "program": ".\\run_sweep.py",
+    "codePath": "run_sweep.py",
+    "git": {
+        "remote": "git@github.com:THasthika/mer_research.git",
+        "commit": "bcb5edd45b19ff1b3ce8feab63ba60f4cfce8b95"
+    },
+    "email": "tharindubathigama@gmail.com",
+    "root": "D:/Projects/mer_research",
+    "host": "DESKTOP-RNVNJ6U",
+    "username": "thari",
+    "executable": "D:\\Software\\Miniconda3\\envs\\research\\python.exe"
+}
