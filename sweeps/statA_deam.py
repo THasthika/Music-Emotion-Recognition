@@ -27,7 +27,7 @@ def makeTrainer(project_name, data_artifact, split_artifact, batch_size, find_ba
 
         logger = WandbLogger(project=project_name, experiment=run, log_model=True)
 
-        model = ModelCatA(data_artifact=data_artifact, split_artifact=split_artifact, batch_size=batch_size, **config)
+        model = ModelStatA(data_artifact=data_artifact, split_artifact=split_artifact, batch_size=batch_size, **config)
 
         checkpoint_callback = ModelCheckpoint(monitor='val/acc')
 
