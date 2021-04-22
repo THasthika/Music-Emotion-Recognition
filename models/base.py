@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 class BaseModel(pl.LightningModule):
 
-    def __init__(self, batch_size=32, num_workers=4, data_artifact=None, split_artifact=None):
+    def __init__(self, batch_size=32, num_workers=4, data_artifact=None, split_artifact=None, label_type="categorical"):
         """[summary]
 
         Args:
@@ -18,6 +18,7 @@ class BaseModel(pl.LightningModule):
             num_workers (int, optional): [description]. Defaults to 4.
             data_artifact (str, optional): [description]. Defaults to None.
             split_artifact (str, optional): [description]. Defaults to None.
+            label_type (str, optional): "categorical", "static", "dynamic". Defauts to "categorical"
         """
         super().__init__()
 
@@ -26,6 +27,7 @@ class BaseModel(pl.LightningModule):
 
         self.data_artifact = data_artifact
         self.split_artifact = split_artifact
+        self.label_type = label_type
 
     def prepare_data(self):
         split_at = wandb.use_artifact(self.split_artifact, type="data-split")
@@ -58,17 +60,20 @@ class BaseModel(pl.LightningModule):
 
         self.train_ds = DSClass(
             audio_dir=audio_dir,
-            meta_file=train_meta_file)
+            meta_file=train_meta_file,
+            label_type=self.label_type)
 
         if has_val:
             self.val_ds = DSClass(
                 audio_dir=audio_dir,
-                meta_file=val_meta_file)
+                meta_file=val_meta_file,
+                label_type=self.label_type)
 
         if has_test:
             self.test_ds = DSClass(
                 audio_dir=audio_dir,
-                meta_file=test_meta_file)
+                meta_file=test_meta_file,
+                label_type=self.label_type)
 
     def train_dataloader(self):
         return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers)

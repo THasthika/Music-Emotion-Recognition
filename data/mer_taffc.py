@@ -14,6 +14,7 @@ class MERTaffcDataset(BaseAudioDataset):
     def __init__(self,
                  audio_dir,
                  meta_file,
+                 label_type="categorical",
                  sample_rate=22050,
                  duration=30):
         super().__init__(meta_file, sample_rate, duration)
