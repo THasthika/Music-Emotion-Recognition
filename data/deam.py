@@ -1,5 +1,6 @@
 from os import path
 
+import torch
 import torchaudio
 
 from .base import BaseAudioDataset
