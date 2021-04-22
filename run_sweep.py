@@ -53,5 +53,7 @@ def run_sweep(name):
     train(config=model_config)
 
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        raise Exception("Should pass a sweep name")
     sweep_name = sys.argv[1]
     run_sweep(sweep_name)
