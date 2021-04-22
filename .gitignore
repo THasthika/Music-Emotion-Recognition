@@ -8,3 +8,4 @@ model_saves/
 /lightning_logs/
 *.pyc
 __pycache__
+/wandb/
