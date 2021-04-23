@@ -51,7 +51,7 @@ class ModelStatA(BaseModel):
         # self.test_acc = tm.Accuracy(top_k=3)
 
         ## loss
-        self.loss = F.mse_loss
+        self.loss = F.l1_loss
 
     def __build(self):
 
