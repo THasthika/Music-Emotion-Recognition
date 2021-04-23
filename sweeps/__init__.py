@@ -19,7 +19,7 @@ def makeSweepTrainer(modelClass, monitor='val/loss'):
 
             print("config:", config)
 
-            logger = WandbLogger(project=project_name, experiment=run, log_model=True, offline=True)
+            logger = WandbLogger(project=project_name, experiment=run, log_model=True, offline=False)
 
             model = modelClass(data_artifact=data_artifact, split_artifact=split_artifact, batch_size=batch_size, **config)
 
