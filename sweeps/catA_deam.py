@@ -3,8 +3,8 @@ from models import ModelCatA
 
 CMDS = ModelCatA.CMDS
 
-DEFAULT_DATA_ARTIFACT = "mer-taffc:latest"
-DEFAULT_SPLIT_ARTIFACT = "mer-taffc-train-70-val-20-test-10-seed-42:latest"
+DEFAULT_DATA_ARTIFACT = "deam:latest"
+DEFAULT_SPLIT_ARTIFACT = "deam-train-70-val-20-test-10-seed-42:latest"
 DEFAULT_CONFIG = dict(map(lambda x: (x[0], x[2]), CMDS))
 
 makeTrainer = makeSweepTrainer(ModelCatA, monitor='val/acc')
