@@ -10,4 +10,4 @@ pip3 install -qqq wandb
 pip3 install -qqq pytorch-lightning
 
 # torchmetrics
-pip3 install -qqq git+https://github.com/PytorchLightning/metrics.git@master
+pip3 install -qqq torchmetrics
