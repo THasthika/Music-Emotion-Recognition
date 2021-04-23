@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # wandb
-!pip install -qqq wandb
+pip install -qqq wandb
 
 # pytorch_lightning
-!pip install -qqq pytorch-lightning
+pip install -qqq pytorch-lightning
 
 # torchmetrics
-!pip install -qqq torchmetrics
+pip install -qqq torchmetrics
 
-!pip install -qqq torchaudio
+pip install -qqq torchaudio
