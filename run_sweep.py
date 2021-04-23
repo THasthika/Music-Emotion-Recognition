@@ -1,6 +1,7 @@
 import sys
 import argparse
 
+from sweeps import catA_deam
 from sweeps import catA_mer_taffc
 from sweeps import statA_deam
 
@@ -14,6 +15,7 @@ _COMMON_ARGS = [
 ]
 
 _MAPPING = {
+    'catA_deam': catA_deam,
     'catA_mer_taffc': catA_mer_taffc,
     'statA_deam': statA_deam
 }
