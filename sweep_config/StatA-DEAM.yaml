@@ -33,7 +33,7 @@ parameters:
     - 50
   lr:
     distribution: log_uniform
-    max: -6.907755278982137
+    max: -4.605170185988091
     min: -9.210340371976182
   max_epochs:
     value: 40
