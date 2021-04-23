@@ -32,9 +32,9 @@ parameters:
     - 100
     - 50
   lr:
-    distribution: log_uniform
-    max: -4.605170185988091
-    min: -9.210340371976182
+    distribution: uniform
+    max: 0.1
+    min: 0.0001
   max_epochs:
     value: 40
 program: run_sweep.py
