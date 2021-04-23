@@ -4,14 +4,14 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 
-def makeSweepTrainer(modelClass, monitor='val/loss'):
+def makeSweepTrainer(modelClass, default_config=None, monitor='val/loss'):
 
     def makeTrainer(project_name, data_artifact, split_artifact, batch_size, find_batch_size, find_lr):
 
         def train(config=None):
 
             if config is None:
-                config = DEFAULT_CONFIG
+                config = default_config
 
             run = wandb.init(config=config, project=project_name, job_type="train")
 
