@@ -4,7 +4,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 
-def makeSweepTrainer(modelClass, default_config=None, monitor='val/loss'):
+def makeSweepTrainer(modelClass, default_config=None, gpus=-1, monitor='val/loss'):
 
     def makeTrainer(project_name, data_artifact, split_artifact, batch_size, find_batch_size, find_lr):
 
@@ -27,8 +27,8 @@ def makeSweepTrainer(modelClass, default_config=None, monitor='val/loss'):
 
             trainer = pl.Trainer(
                 logger=logger,
-                gpus=-1,
-                checkpoint_callback=True,
+                gpus=gpus,
+                checkpoint_callback=checkpoint_callback,
                 progress_bar_refresh_rate=1,
                 max_epochs=config['max_epochs'],
                 auto_scale_batch_size=find_batch_size,
