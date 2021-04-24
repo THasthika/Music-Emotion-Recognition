@@ -18,7 +18,14 @@ class ModelStatA(BaseModel):
         ('conv1_kernel_stride', int, 400)
     ]
 
-    def __init__(self, batch_size=32, num_workers=4, data_artifact=None, split_artifact=None, **config):
+    def __init__(self,
+                batch_size=32,
+                num_workers=4,
+                sample_rate=22050,
+                duration=30,
+                data_artifact=None,
+                split_artifact=None,
+                **config):
         """[summary]
 
         Args:
@@ -36,6 +43,8 @@ class ModelStatA(BaseModel):
         super().__init__(
             batch_size=batch_size,
             num_workers=num_workers,
+            sample_rate=sample_rate,
+            duration=duration,
             data_artifact=data_artifact,
             split_artifact=split_artifact,
             label_type="static")
