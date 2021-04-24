@@ -11,3 +11,6 @@ pip3 install -qqq pytorch-lightning
 
 # torchmetrics
 pip3 install -qqq torchmetrics
+
+# torchlibrosa
+pip3 install -qqq torchlibrosa

@@ -10,3 +10,6 @@ pip install -qqq pytorch-lightning
 pip install -qqq torchmetrics
 
 pip install -qqq torchaudio
+
+# torchlibrosa
+pip3 install -qqq torchlibrosa
