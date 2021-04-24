@@ -12,11 +12,11 @@ class BaseModel(pl.LightningModule):
 
     def __init__(self,
                 batch_size=32,
-                num_workers=4, 
-                sample_rate=22050, 
-                duration=30, 
-                data_artifact=None, 
-                split_artifact=None, 
+                num_workers=4,
+                sample_rate=22050,
+                duration=30,
+                data_artifact=None,
+                split_artifact=None,
                 label_type="categorical"):
         """[summary]
 
