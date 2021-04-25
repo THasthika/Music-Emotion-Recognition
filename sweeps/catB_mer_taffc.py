@@ -1,5 +1,5 @@
 from sweeps import makeSweepTrainer
-from models import ModelCatA as Model
+from models import ModelCatB as Model
 
 CMDS = Model.CMDS
 

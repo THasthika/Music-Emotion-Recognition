@@ -1,9 +1,7 @@
 import sys
 import argparse
 
-from sweeps import catA_deam
-from sweeps import catA_mer_taffc
-from sweeps import statA_deam
+import sweeps
 
 _COMMON_ARGS = [
     ("project_name", str, "mer"),
@@ -15,9 +13,13 @@ _COMMON_ARGS = [
 ]
 
 _MAPPING = {
-    'catA_deam': catA_deam,
-    'catA_mer_taffc': catA_mer_taffc,
-    'statA_deam': statA_deam
+    'catA_deam': sweeps.catA_deam,
+    'catB_deam': sweeps.catB_deam,
+    
+    'catA_mer_taffc': sweeps.catA_mer_taffc,
+    'catB_mer_taffc': sweeps.catB_deam,
+
+    'statA_deam': sweeps.statA_deam
 }
 
 def run_sweep(name):
