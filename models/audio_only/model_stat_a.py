@@ -8,6 +8,18 @@ from torch.nn import functional as F
 
 import torchmetrics as tm
 
+"""
+ModelStatA - A 1D convolutional Model
+
+Conv1
+Conv2
+Conv3
+GlobalAvgPool
+FullyConnected1
+FullyConnected2
+
+"""
+
 class ModelStatA(BaseModel):
 
     CMDS = [
@@ -96,8 +108,7 @@ class ModelStatA(BaseModel):
         return x
 
     def predict(self, x):
-        x = self.forward(x)
-        return F.softmax(x, dim=1)
+        return self.forward(x)
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
@@ -108,10 +119,8 @@ class ModelStatA(BaseModel):
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
-        pred = y_logit
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-        # self.log('train/acc', self.train_acc(pred, y), prog_bar=True, on_step=False, on_epoch=True)
 
         return loss
 
@@ -120,17 +129,13 @@ class ModelStatA(BaseModel):
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
-        pred = y_logit
         
         self.log("val/loss", loss, prog_bar=True)
-        # self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
-        pred = y_logit
 
         self.log("test/loss", loss)
-        # self.log("test/acc", self.test_acc(pred, y))

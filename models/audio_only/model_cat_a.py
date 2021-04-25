@@ -8,6 +8,19 @@ from torch.nn import functional as F
 
 import torchmetrics as tm
 
+"""
+ModelCatA - A 1D convolutional Model
+
+Conv1
+Conv2
+Conv3
+GlobalAvgPool
+FullyConnected1
+FullyConnected2
+Softmax
+
+"""
+
 class ModelCatA(BaseModel):
 
     CMDS = [

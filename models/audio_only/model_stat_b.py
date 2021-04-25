@@ -9,17 +9,16 @@ from pretrain_models import Wavegram_Logmel_Cnn14
 from models.base import BaseModel
 
 """
-ModelCatB - A 1D convolutional Model with a Pretrained Model
+ModelStatB - A 1D convolutional Model with a Pretrained Model
 
 BaseModel (Wavegram_Logmel_Cnn14)
 FullyConnected1
 FullyConnected2
 FullyConnected3
-Softmax
 
 """
 
-class ModelCatB(BaseModel):
+class ModelStatB(BaseModel):
 
     CMDS = [
         ('lr', float, 0.001)
@@ -74,13 +73,13 @@ class ModelCatB(BaseModel):
         ## build layers
         self.__build()
 
-        ## metrics
-        self.train_acc = tm.Accuracy(top_k=3)
-        self.val_acc = tm.Accuracy(top_k=3)
-        self.test_acc = tm.Accuracy(top_k=3)
+        # ## metrics
+        # self.train_acc = tm.Accuracy(top_k=3)
+        # self.val_acc = tm.Accuracy(top_k=3)
+        # self.test_acc = tm.Accuracy(top_k=3)
 
         ## loss
-        self.loss = F.cross_entropy
+        self.loss = F.l1_loss
 
     def __build(self):
 
@@ -97,8 +96,7 @@ class ModelCatB(BaseModel):
         return x
 
     def predict(self, x):
-        x = self.forward(x)
-        return F.softmax(x, dim=1)
+        return self.forward(x)
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
@@ -109,10 +107,8 @@ class ModelCatB(BaseModel):
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-        self.log('train/acc', self.train_acc(pred, y), prog_bar=True, on_step=False, on_epoch=True)
 
         return loss
 
@@ -121,17 +117,13 @@ class ModelCatB(BaseModel):
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
         
         self.log("val/loss", loss, prog_bar=True)
-        self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
 
         self.log("test/loss", loss)
-        self.log("test/acc", self.test_acc(pred, y))
