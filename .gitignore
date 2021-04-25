@@ -9,3 +9,4 @@ model_saves/
 *.pyc
 __pycache__
 /wandb/
+pretrain_weights/
