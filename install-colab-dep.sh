@@ -12,4 +12,7 @@ pip install -qqq torchmetrics
 pip install -qqq torchaudio
 
 # torchlibrosa
-pip3 install -qqq torchlibrosa
+pip install -qqq torchlibrosa
+
+# dotenv
+pip install python-dotenv
