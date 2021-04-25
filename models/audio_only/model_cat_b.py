@@ -22,7 +22,8 @@ Softmax
 class ModelCatB(BaseModel):
 
     CMDS = [
-        ('lr', float, 0.001)
+        ('lr', float, 0.001),
+        ('max_epochs', int, 100)
     ]
 
     def __init__(self, batch_size=32, num_workers=4, data_artifact=None, split_artifact=None, **config):
