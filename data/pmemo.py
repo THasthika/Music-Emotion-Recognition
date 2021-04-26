@@ -7,7 +7,7 @@ import torchaudio
 
 from .base import BaseAudioDataset
 
-class DeamDataset(BaseAudioDataset):
+class PMEmoDataset(BaseAudioDataset):
 
     """
     label_type = (categorical|static|dynamic)
