@@ -37,12 +37,16 @@ _COMMON_ARGS = [
 _MAPPING = {
     'catA_deam': catA_deam,
     'catB_deam': catB_deam,
+
     'catA_pmemo': catA_pmemo,
     
     'catA_mer_taffc': catA_mer_taffc,
     'catB_mer_taffc': catB_mer_taffc,
 
     'statA_deam': statA_deam,
+    'statB_pmemo': statB_deam,
+    'statC_deam': statC_deam,
+
     'statA_pmemo': statA_pmemo
 }
 
