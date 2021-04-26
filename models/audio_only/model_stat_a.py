@@ -67,9 +67,9 @@ class ModelStatA(BaseModel):
         self.__build()
 
         ## metrics
-        self.train_r2 = tm.R2Score()
-        self.val_r2 = tm.R2Score()
-        self.test_r2 = tm.R2Score()
+        self.train_r2 = tm.R2Score(num_outputs=4)
+        self.val_r2 = tm.R2Score(num_outputs=4)
+        self.test_r2 = tm.R2Score(num_outputs=4)
 
         ## loss
         self.loss = F.l1_loss
