@@ -16,3 +16,6 @@ pip install -qqq torchlibrosa
 
 # dotenv
 pip install python-dotenv
+
+# torchsummary
+pip install torchsummary
