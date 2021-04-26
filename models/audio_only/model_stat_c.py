@@ -54,19 +54,29 @@ class ModelStatC(BaseModel):
         
         self.feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=(n_fft//2)+1, out_channels=250, kernel_size=7, stride=1),
+            nn.BatchNorm1d(num_features=250)
             nn.ReLU(),
+            nn.Dropout(),
             nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.BatchNorm1d(num_features=250)
             nn.ReLU(),
+            nn.Dropout(),
             nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.BatchNorm1d(num_features=250)
             nn.ReLU(),
+            nn.Dropout(),
             nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.BatchNorm1d(num_features=250)
             nn.ReLU(),
+            nn.Dropout(),
             nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=64, kernel_size=7, stride=1),
+            nn.BatchNorm1d(num_features=64)
             nn.ReLU(),
+            nn.Dropout(),
             nn.AvgPool1d(kernel_size=6, stride=2),
             nn.AdaptiveAvgPool1d(128)
         )
@@ -76,8 +86,10 @@ class ModelStatC(BaseModel):
         self.predictor = nn.Sequential(
             nn.Linear(in_features=self.config['hidden_states']*64, out_features=512),
             nn.ReLU(),
+            nn.Dropout(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),
+            nn.Dropout(),
             nn.Linear(in_features=128, out_features=4)
         )
 
