@@ -54,27 +54,27 @@ class ModelStatC(BaseModel):
         
         self.feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=(n_fft//2)+1, out_channels=250, kernel_size=7, stride=1),
-            nn.BatchNorm1d(num_features=250)
+            nn.BatchNorm1d(num_features=250),
             nn.ReLU(),
             nn.Dropout(),
             nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
-            nn.BatchNorm1d(num_features=250)
+            nn.BatchNorm1d(num_features=250),
             nn.ReLU(),
             nn.Dropout(),
             nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
-            nn.BatchNorm1d(num_features=250)
+            nn.BatchNorm1d(num_features=250),
             nn.ReLU(),
             nn.Dropout(),
             nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
-            nn.BatchNorm1d(num_features=250)
+            nn.BatchNorm1d(num_features=250),
             nn.ReLU(),
             nn.Dropout(),
             nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=64, kernel_size=7, stride=1),
-            nn.BatchNorm1d(num_features=64)
+            nn.BatchNorm1d(num_features=64),
             nn.ReLU(),
             nn.Dropout(),
             nn.AvgPool1d(kernel_size=6, stride=2),
