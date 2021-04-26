@@ -53,17 +53,25 @@ class ModelStatC(BaseModel):
         
         self.feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=(n_fft//2)+1, out_channels=250, kernel_size=7, stride=1),
+            nn.ReLU(),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.ReLU(),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.ReLU(),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1)
+            nn.ReLU(),
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.ReLU(),
+            nn.AdaptiveAvgPool1d(3278)
         )
 
-        self.rnn_layer = nn.LSTM(input_size=1294, hidden_size=300, num_layers=250)
+        self.rnn_layer = nn.LSTM(input_size=3278, hidden_size=300, num_layers=250)
 
         self.predictor = nn.Sequential(
             nn.Linear(in_features=300*250, out_features=512),
+            nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
             nn.Linear(in_features=128, out_features=4)
         )
 
