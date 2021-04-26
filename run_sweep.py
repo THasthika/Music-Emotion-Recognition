@@ -4,13 +4,15 @@ import argparse
 
 from dotenv import load_dotenv
 
+from sweeps import catA_mer_taffc
 from sweeps import catA_deam
+from sweeps import catA_pmemo
+
+from sweeps import catB_mer_taffc
 from sweeps import catB_deam
 
-from sweeps import catA_mer_taffc
-from sweeps import catB_mer_taffc
-
 from sweeps import statA_deam
+from sweeps import statA_pmemo
 
 load_dotenv()
 
@@ -33,11 +35,13 @@ _COMMON_ARGS = [
 _MAPPING = {
     'catA_deam': catA_deam,
     'catB_deam': catB_deam,
+    'catA_pmemo': catA_pmemo,
     
     'catA_mer_taffc': catA_mer_taffc,
     'catB_mer_taffc': catB_mer_taffc,
 
-    'statA_deam': statA_deam
+    'statA_deam': statA_deam,
+    'statA_pmemo': statA_pmemo
 }
 
 def run_sweep(name):
