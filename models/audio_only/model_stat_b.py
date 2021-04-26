@@ -33,7 +33,7 @@ class ModelStatB(BaseModel):
             duration=30,
             data_artifact=data_artifact,
             split_artifact=split_artifact,
-            label_type="categorical")
+            label_type="static")
         
         base_config = dict(
             sample_rate=32000,

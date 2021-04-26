@@ -30,7 +30,7 @@ class ModelStatC(BaseModel):
             duration=30,
             data_artifact=data_artifact,
             split_artifact=split_artifact,
-            label_type="categorical")
+            label_type="static")
 
         self.config = config
         self.lr = config['lr']
