@@ -25,7 +25,7 @@ class ModelStatB(BaseModel):
         ('max_epochs', int, 100)
     ]
 
-    def __init__(self, batch_size=32, num_workers=4, data_artifact=None, split_artifact=None, **config):
+    def __init__(self, batch_size=32, num_workers=4, data_artifact=None, split_artifact=None, init_base=True, **config):
         super().__init__(
             batch_size=batch_size,
             num_workers=num_workers,
@@ -47,9 +47,10 @@ class ModelStatB(BaseModel):
 
         self.base = Wavegram_Logmel_Cnn14(**base_config)
 
-        ld = torch.load("./pretrain_weights/Wavegram_Logmel_Cnn14_mAP=0.439.pth")
-        self.base.load_state_dict(ld["model"])
-        self.base.train()
+        if init_base:
+            ld = torch.load("./pretrain_weights/Wavegram_Logmel_Cnn14_mAP=0.439.pth")
+            self.base.load_state_dict(ld["model"])
+            self.base.train()
 
         self.config = config
         self.lr = config['lr']
