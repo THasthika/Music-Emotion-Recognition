@@ -13,6 +13,8 @@ from sweeps import catB_deam
 
 from sweeps import statA_deam
 from sweeps import statA_pmemo
+from sweeps import statB_deam
+from sweeps import statC_deam
 
 load_dotenv()
 
