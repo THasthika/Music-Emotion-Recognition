@@ -66,10 +66,10 @@ class ModelStatA(BaseModel):
         ## build layers
         self.__build()
 
-        # ## metrics
-        # self.train_acc = tm.MeanSquaredError
-        # self.val_acc = tm.
-        # self.test_acc = tm.Accuracy(top_k=3)
+        ## metrics
+        self.train_r2 = tm.R2Score()
+        self.val_r2 = tm.R2Score()
+        self.test_r2 = tm.R2Score()
 
         ## loss
         self.loss = F.l1_loss
@@ -121,6 +121,7 @@ class ModelStatA(BaseModel):
         loss = self.loss(y_logit, y)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('train/r2', self.train_r2(y_logit, y), on_step=False, on_epoch=True)
 
         return loss
 
@@ -131,6 +132,7 @@ class ModelStatA(BaseModel):
         loss = self.loss(y_logit, y)
         
         self.log("val/loss", loss, prog_bar=True)
+        self.log('val/r2', self.val_r2(y_logit, y))
 
     def test_step(self, batch, batch_idx):
         x, y = batch
@@ -139,3 +141,4 @@ class ModelStatA(BaseModel):
         loss = self.loss(y_logit, y)
 
         self.log("test/loss", loss)
+        self.log("test/r2", self.val_r2(y_logit, y))

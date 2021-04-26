@@ -79,7 +79,10 @@ class ModelCatB(BaseModel):
         ## metrics
         self.train_acc = tm.Accuracy(top_k=3)
         self.val_acc = tm.Accuracy(top_k=3)
+        
         self.test_acc = tm.Accuracy(top_k=3)
+        self.test_f1_class = tm.F1(num_classes=4, average='none')
+        self.test_f1_global = tm.F1(num_classes=4)
 
         ## loss
         self.loss = F.cross_entropy
@@ -137,3 +140,5 @@ class ModelCatB(BaseModel):
 
         self.log("test/loss", loss)
         self.log("test/acc", self.test_acc(pred, y))
+        self.log("test/f1_class", self.test_f1_class(pred, y))
+        self.log("test/f1_global", self.test_f1_global(pred, y))
