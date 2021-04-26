@@ -1,0 +1,40 @@
+command:
+- ${env}
+- ${interpreter}
+- ${program}
+- catA_pmemo
+- ${args}
+method: bayes
+metric:
+  goal: minimize
+  name: val/loss
+name: CatA-PMEmo
+parameters:
+  adaptive_layer:
+    values:
+    - 64
+    - 128
+    - 256
+    - 512
+  conv1_kernel_size:
+    values:
+    - 11025
+    - 5513
+    - 2757
+    - 1379
+    - 690
+    - 345
+    - 173
+  conv1_kernel_stride:
+    values:
+    - 400
+    - 200
+    - 100
+    - 50
+  lr:
+    distribution: uniform
+    max: 0.1
+    min: 0.0001
+  max_epochs:
+    value: 40
+program: run_sweep.py
