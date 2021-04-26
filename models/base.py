@@ -4,7 +4,7 @@ import wandb
 
 import pytorch_lightning as pl
 
-from data import DeamDataset, MERTaffcDataset
+from data import DeamDataset, MERTaffcDataset, PMEmoDataset
 
 from torch.utils.data import DataLoader
 
@@ -69,6 +69,8 @@ class BaseModel(pl.LightningModule):
             DSClass = MERTaffcDataset
         elif self.data_artifact.startswith("deam"):
             DSClass = DeamDataset
+        elif self.data_artifact.startswith("pmemo"):
+            DSClass = PMEmoDataset
 
         self.train_ds = DSClass(
             audio_dir=audio_dir,
