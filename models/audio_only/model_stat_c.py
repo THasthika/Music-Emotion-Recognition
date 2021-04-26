@@ -19,7 +19,8 @@ class ModelStatC(BaseModel):
     CMDS = [
         ('lr', float, 0.001),
         ('max_epochs', int, 100),
-        ('n_fft', int, 400)
+        ('n_fft', int, 400),
+        ('hidden_states', int, 64)
     ]
 
     def __init__(self, batch_size=32, num_workers=4, data_artifact=None, split_artifact=None, init_base=True, **config):
@@ -54,21 +55,26 @@ class ModelStatC(BaseModel):
         self.feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=(n_fft//2)+1, out_channels=250, kernel_size=7, stride=1),
             nn.ReLU(),
+            nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
             nn.ReLU(),
+            nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
             nn.ReLU(),
+            nn.AvgPool1d(kernel_size=6, stride=2),
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
             nn.ReLU(),
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.AvgPool1d(kernel_size=6, stride=2),
+            nn.Conv1d(in_channels=250, out_channels=64, kernel_size=7, stride=1),
             nn.ReLU(),
-            nn.AdaptiveAvgPool1d(3278)
+            nn.AvgPool1d(kernel_size=6, stride=2),
+            nn.AdaptiveAvgPool1d(128)
         )
 
-        self.rnn_layer = nn.LSTM(input_size=3278, hidden_size=300, num_layers=250)
+        self.rnn_layer = nn.LSTM(input_size=128, hidden_size=self.config['hidden_states'], num_layers=64)
 
         self.predictor = nn.Sequential(
-            nn.Linear(in_features=300*250, out_features=512),
+            nn.Linear(in_features=self.config['hidden_states']*64, out_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),

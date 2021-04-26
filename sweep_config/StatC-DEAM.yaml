@@ -21,6 +21,12 @@ parameters:
     - 600
     - 700
     - 800
+  hidden_states:
+    values:
+    - 32
+    - 64
+    - 128
+    - 256
   max_epochs:
     value: 40
 program: run_sweep.py
