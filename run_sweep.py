@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 from sweeps.mer_taffc import catA_mer_taffc
 from sweeps.mer_taffc import catB_mer_taffc
+from sweeps.mer_taffc import catC_mer_taffc
 
 from sweeps.deam import catA_deam
 from sweeps.deam import catB_deam
@@ -40,6 +41,7 @@ _MAPPING = {
 
     'catA_mer_taffc': catA_mer_taffc,
     'catB_mer_taffc': catB_mer_taffc,
+    'catC_mer_taffc': catC_mer_taffc,
 
     'catA_deam': catA_deam,
     'catB_deam': catB_deam,
