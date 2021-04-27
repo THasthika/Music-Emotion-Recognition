@@ -140,5 +140,8 @@ class ModelCatB(BaseModel):
 
         self.log("test/loss", loss)
         self.log("test/acc", self.test_acc(pred, y))
-        self.log("test/f1_class", self.test_f1_class(pred, y))
         self.log("test/f1_global", self.test_f1_global(pred, y))
+
+        f1_scores = self.test_f1_class(pred, y)
+        for (i, x) in enumerate(torch.flatten(f1_scores)):
+            self.log("test/f1_class_{}".format(i), x)
