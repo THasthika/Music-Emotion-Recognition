@@ -96,6 +96,7 @@ class ModelCatC(BaseModel):
         )
 
     def forward(self, x):
+        self.rnn_layer()
         x = self.wav2spec(x)
         x = torch.squeeze(x, dim=1)
         x = self.feature_extractor(x)
@@ -148,3 +149,6 @@ class ModelCatC(BaseModel):
         f1_scores = self.test_f1_class(pred, y)
         for (i, x) in enumerate(torch.flatten(f1_scores)):
             self.log("test/f1_class_{}".format(i), x)
+
+# class ConvBlock(nn.Module):
+

@@ -21,7 +21,7 @@ class MERTaffcDataset(BaseAudioDataset):
         self.audio_dir = audio_dir
 
     def get_labels(self):
-        return self.meta['quadrants']
+        return self.meta['quadrant']
 
     def get_label(self, index):
         item = self.meta.iloc[index]
