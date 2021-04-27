@@ -32,7 +32,7 @@ class ModelStatC(BaseModel):
             duration=30,
             data_artifact=data_artifact,
             split_artifact=split_artifact,
-            label_type="static")
+            label_type="categorical")
 
         self.config = config
         self.lr = config['lr']
@@ -41,12 +41,15 @@ class ModelStatC(BaseModel):
         self.__build()
 
         ## metrics
-        self.train_r2 = tm.R2Score(num_outputs=4)
-        self.val_r2 = tm.R2Score(num_outputs=4)
-        self.test_r2 = tm.R2Score(num_outputs=4)
+        self.train_acc = tm.Accuracy(top_k=3)
+        self.val_acc = tm.Accuracy(top_k=3)
+
+        self.test_acc = tm.Accuracy(top_k=3)
+        self.test_f1_class = tm.F1(num_classes=4, average='none')
+        self.test_f1_global = tm.F1(num_classes=4)
 
         ## loss
-        self.loss = F.l1_loss
+        self.loss = F.cross_entropy
 
     def __build(self):
         n_fft = self.config['n_fft']
@@ -102,7 +105,8 @@ class ModelStatC(BaseModel):
         return x
 
     def predict(self, x):
-        return self.forward(x)
+        x = self.forward(x)
+        return F.softmax(x, dim=1)
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
@@ -113,9 +117,10 @@ class ModelStatC(BaseModel):
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
+        pred = F.softmax(y_logit, dim=1)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-        self.log('train/r2', self.train_r2(y_logit, y), on_step=False, on_epoch=True)
+        self.log('train/acc', self.train_acc(pred, y), prog_bar=True, on_step=False, on_epoch=True)
 
         return loss
 
@@ -124,15 +129,22 @@ class ModelStatC(BaseModel):
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
+        pred = F.softmax(y_logit, dim=1)
         
         self.log("val/loss", loss, prog_bar=True)
-        self.log('val/r2', self.val_r2(y_logit, y))
+        self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
 
         y_logit = self(x)
         loss = self.loss(y_logit, y)
+        pred = F.softmax(y_logit, dim=1)
 
         self.log("test/loss", loss)
-        self.log("test/r2", self.val_r2(y_logit, y))
+        self.log("test/acc", self.test_acc(pred, y))
+        self.log("test/f1_global", self.test_f1_global(pred, y))
+
+        f1_scores = self.test_f1_class(pred, y)
+        for (i, x) in enumerate(torch.flatten(f1_scores)):
+            self.log("test/f1_class_{}".format(i), x)

@@ -2,13 +2,13 @@ command:
 - ${env}
 - ${interpreter}
 - ${program}
-- statC_deam
+- catC_mer_taffc
 - ${args}
 method: bayes
 metric:
   goal: minimize
   name: val/loss
-name: StatC-DEAM
+name: CatC-MER-Taffc
 parameters:
   lr:
     distribution: uniform
@@ -19,9 +19,13 @@ parameters:
     - 400
     - 500
     - 600
-    - 700
-    - 800
   hidden_states:
+    values:
+    - 32
+    - 64
+    - 128
+    - 256
+  adaptive_layer:
     values:
     - 32
     - 64

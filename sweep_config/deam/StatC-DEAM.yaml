@@ -1,0 +1,36 @@
+command:
+- ${env}
+- ${interpreter}
+- ${program}
+- statC_deam
+- ${args}
+method: bayes
+metric:
+  goal: minimize
+  name: val/loss
+name: StatC-DEAM
+parameters:
+  lr:
+    distribution: uniform
+    max: 0.1
+    min: 0.0001
+  n_fft:
+    values:
+    - 400
+    - 500
+    - 600
+  hidden_states:
+    values:
+    - 32
+    - 64
+    - 128
+    - 256
+  adaptive_layer:
+    values:
+    - 32
+    - 64
+    - 128
+    - 256
+  max_epochs:
+    value: 40
+program: run_sweep.py
