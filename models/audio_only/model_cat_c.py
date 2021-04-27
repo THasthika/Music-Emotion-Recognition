@@ -11,10 +11,10 @@ import torchaudio.functional as audioF
 from models.base import BaseModel
 
 """
-ModelStatC - Spectrogram converted 2D Convolutional model
+ModelCatC - Spectrogram converted 2D Convolutional model
 """
 
-class ModelStatC(BaseModel):
+class ModelCatC(BaseModel):
 
     CMDS = [
         ('lr', float, 0.001),
