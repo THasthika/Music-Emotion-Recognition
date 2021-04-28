@@ -18,7 +18,7 @@ class MERTaffcDataset(BaseAudioDataset):
                  sample_rate=22050,
                  chunk_duration=5,
                  overlap=2.5):
-        super().__init__(meta_file, sample_rate, duration, chunk_duration, overlap)
+        super().__init__(meta_file, sample_rate, chunk_duration, overlap)
         self.audio_dir = audio_dir
 
     def get_labels(self):
