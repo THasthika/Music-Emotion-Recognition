@@ -14,7 +14,8 @@ class BaseModel(pl.LightningModule):
                 batch_size=32,
                 num_workers=4,
                 sample_rate=22050,
-                duration=30,
+                chunk_duration=5,
+                overlap=2.5,
                 data_artifact=None,
                 split_artifact=None,
                 label_type="categorical"):
@@ -24,7 +25,8 @@ class BaseModel(pl.LightningModule):
             batch_size (int, optional): [description]. Defaults to 32.
             num_workers (int, optional): [description]. Defaults to 4.
             sample_rate (int, optional): The sample rate of audio.
-            duration (float, optional): The duration to take from the audio.
+            chunk_duration (float, optional): The duration to take from the audio.
+            overlap (float, optiona): The overlap on frames.
             data_artifact (str, optional): [description]. Defaults to None.
             split_artifact (str, optional): [description]. Defaults to None.
             label_type (str, optional): "categorical", "static", "dynamic". Defauts to "categorical"
@@ -39,7 +41,8 @@ class BaseModel(pl.LightningModule):
         self.label_type = label_type
 
         self.sample_rate = sample_rate
-        self.duration = duration
+        self.chunk_duration = chunk_duration
+        self.overlap = overlap
 
     def prepare_data(self):
         split_at = wandb.use_artifact(self.split_artifact, type="data-split")
@@ -77,7 +80,8 @@ class BaseModel(pl.LightningModule):
             meta_file=train_meta_file,
             label_type=self.label_type,
             sample_rate=self.sample_rate,
-            duration=self.duration)
+            chunk_duration=self.chunk_duration,
+            overlap=self.overlap)
 
         if has_val:
             self.val_ds = DSClass(
@@ -85,7 +89,8 @@ class BaseModel(pl.LightningModule):
                 meta_file=val_meta_file,
                 label_type=self.label_type,
                 sample_rate=self.sample_rate,
-                duration=self.duration)
+                chunk_duration=self.chunk_duration,
+                overlap=self.overlap)
 
         if has_test:
             self.test_ds = DSClass(
@@ -93,7 +98,8 @@ class BaseModel(pl.LightningModule):
                 meta_file=test_meta_file,
                 label_type=self.label_type,
                 sample_rate=self.sample_rate,
-                duration=self.duration)
+                chunk_duration=self.chunk_duration,
+                overlap=self.overlap)
 
     def train_dataloader(self):
         return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers)

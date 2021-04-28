@@ -80,35 +80,40 @@ class ModelCatA(BaseModel):
 
     def __build(self):
 
-        self.conv1 = nn.Conv1d(in_channels=1, out_channels=16, kernel_size=self.config['conv1_kernel_size'], stride=self.config['conv1_kernel_stride'])
-        self.bn1 = nn.BatchNorm1d(16)
+        channel_count = 250
+        kernel_size = 7
+        stride = 1
 
-        self.conv2 = nn.Conv1d(in_channels=16, out_channels=32, kernel_size=64, stride=8)
-        self.bn2 = nn.BatchNorm1d(32)
+        self.feature_extractor = nn.Sequential(
+            nn.Conv1d(in_channels=1, out_channels=channel_count, kernel_size=self.config['conv1_kernel_size'], stride=self.config['conv1_kernel_stride']),
+            nn.BatchNorm1d(channel_count),
+            nn.ReLU(),
 
-        self.conv3 = nn.Conv1d(in_channels=32, out_channels=64, kernel_size=16, stride=4)
-        self.bn3 = nn.BatchNorm1d(64)
+            nn.Conv1d(in_channels=channel_count, out_channels=channel_count, kernel_size=kernel_size, stride=stride),
+            nn.BatchNorm1d(channel_count),
+            nn.ReLU(),
 
-        self.avg_pool = nn.AdaptiveAvgPool1d(output_size=self.config['adaptive_layer'])
-        self.bn4 = nn.BatchNorm1d(64)
+            nn.Conv1d(in_channels=channel_count, out_channels=channel_count, kernel_size=kernel_size, stride=stride),
+            nn.BatchNorm1d(channel_count),
+            nn.ReLU(),
 
-        self.fc1 = nn.Linear(in_features=self.config['adaptive_layer']*64, out_features=256)
-        self.fc2 = nn.Linear(in_features=256, out_features=64)
-        self.fc3 = nn.Linear(in_features=64, out_features=4)
+            nn.AdaptiveAvgPool1d(output_size=self.config['adaptive_layer']),
+            nn.BatchNorm1d(channel_count),
+            nn.Dropout()
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Linear(in_features=self.config['adaptive_layer']*channel_count, out_features=512),
+            nn.ReLU(),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Linear(in_features=64, out_features=4)
+        )
 
     def forward(self, x):
-
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv3(x)))
-        x = F.relu(self.bn4(self.avg_pool(x)))
-
+        x = self.feature_extractor(x)
         x = torch.flatten(x, start_dim=1)
-        
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-
+        x = self.classifier(x)
         return x
 
     def predict(self, x):
