@@ -29,7 +29,7 @@ class MERTaffcDataset(BaseAudioDataset):
         return label
 
     def get_audio(self, info, frame):
-        audio_file = path.join(audio_dir, "{}.mp3".format(info['song_id']))
+        audio_file = path.join(self.audio_dir, "{}.mp3".format(info['song_id']))
         meta_data = torchaudio.info(audio_file)
         sr = meta_data.sample_rate
 
