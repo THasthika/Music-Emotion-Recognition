@@ -9,11 +9,12 @@ import pandas as pd
 
 class BaseAudioDataset(Dataset):
 
-    def __init__(self, meta_file, sample_rate=22050, duration=30):
+    def __init__(self, meta_file, sample_rate=22050, chunk_duration=5, overlap=2.5):
 
         self.sample_rate = sample_rate
-        self.duration = duration
-        self.frame_count = self.sample_rate * self.duration
+        self.chunk_duration = chunk_duration
+        self.overlap = overlap
+        self.frame_count = self.sample_rate * self.chunk_duration
 
         meta_ext = path.splitext(meta_file)[1]
         if meta_ext == ".json":
@@ -23,8 +24,24 @@ class BaseAudioDataset(Dataset):
         else:
             raise Exception("Unknown File Extension {}".format(meta_ext))
 
-        self.count = len(self.meta)
         self.meta = self.meta
+
+        self.count = self.__calculate_count(self.meta, self.chunk_duration, self.overlap)
+
+    def __calculate_count(self, meta, chunk_duration, overlap):
+        self.frames = []
+        row_i = 0
+        for (i, row) in meta.iterrows():
+            duration = row['duration']
+            n_frames = int(np.floor((duration - 1) / (chunk_duration - overlap)))
+            if n_frames == 0 and chunk_duration <= duration:
+                self.frames.append((row_i, 0))
+                continue
+            for j in range(n_frames):
+                self.frames.append((row_i, j))
+            row_i += 1
+        return len(self.frames)
+
 
     def __len__(self):
         return self.count
@@ -32,15 +49,18 @@ class BaseAudioDataset(Dataset):
     def get_labels(self):
         raise NotImplementedError
 
-    def get_label(self, index):
+    def get_label(self, info, frame):
         raise NotImplementedError
 
-    def get_audio(self, index):
+    def get_audio(self, info, frame):
         raise NotImplementedError
 
     def __getitem__(self, index):
 
-        x, sr = self.get_audio(index)
+        (meta_index, frame) = self.frames[index]
+        info = self.meta.iloc[meta_index]
+
+        x, sr = self.get_audio(info, frame)
         x = torch.mean(x, 0, True)
         out = torch.zeros(1, self.frame_count)
         
@@ -58,6 +78,6 @@ class BaseAudioDataset(Dataset):
         # out = torch.squeeze(out)
         # out = torch.unsqueeze(out, dim=1)
 
-        y = self.get_label(index)
+        y = self.get_label(info, frame)
         
         return (out, y)

@@ -16,20 +16,25 @@ class MERTaffcDataset(BaseAudioDataset):
                  meta_file,
                  label_type="categorical",
                  sample_rate=22050,
-                 duration=30):
-        super().__init__(meta_file, sample_rate, duration)
+                 chunk_duration=5,
+                 overlap=2.5):
+        super().__init__(meta_file, sample_rate, duration, chunk_duration, overlap)
         self.audio_dir = audio_dir
 
     def get_labels(self):
         return self.meta['quadrant']
 
-    def get_label(self, index):
-        item = self.meta.iloc[index]
-        label = item['quadrant']
+    def get_label(self, info, frame):
+        label = info['quadrant']
         return label
 
-    def get_audio(self, index):
-        item = self.meta.iloc[index]
-        audio_file = path.join(self.audio_dir, "{}.mp3".format(item['song_id']))
-        x, sr = torchaudio.load(audio_file)
+    def get_audio(self, info, frame):
+        audio_file = path.join(audio_dir, "{}.mp3".format(info['song_id']))
+        meta_data = torchaudio.info(audio_file)
+        sr = meta_data.sample_rate
+
+        offset = int(sr * self.overlap * frame)
+        frames = int(sr * self.chunk_duration)
+
+        x, sr = torchaudio.load(audio_file, frame_offset=offset, num_frames=frames)
         return (x, sr)
