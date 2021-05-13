@@ -35,7 +35,8 @@ class ModelCatA(BaseModel):
                 batch_size=32,
                 num_workers=4,
                 sample_rate=22050,
-                duration=30,
+                chunk_duration=5,
+                overlap=2.5,
                 data_artifact=None,
                 split_artifact=None,
                 **config):
@@ -57,7 +58,8 @@ class ModelCatA(BaseModel):
             batch_size=batch_size,
             num_workers=num_workers,
             sample_rate=sample_rate,
-            duration=duration,
+            chunk_duration=chunk_duration,
+            overlap=overlap,
             data_artifact=data_artifact,
             split_artifact=split_artifact,
             label_type="categorical")

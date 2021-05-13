@@ -31,7 +31,8 @@ class ModelCatB(BaseModel):
             batch_size=batch_size,
             num_workers=num_workers,
             sample_rate=32000,
-            duration=30,
+            chunk_duration=5,
+            overlap=2.5,
             data_artifact=data_artifact,
             split_artifact=split_artifact,
             label_type="categorical")

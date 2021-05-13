@@ -15,7 +15,7 @@ class BaseAudioDataset(Dataset):
         self.sample_rate = sample_rate
         self.chunk_duration = chunk_duration
         self.overlap = overlap
-        self.frame_count = self.sample_rate * self.chunk_duration
+        self.frame_count = int(self.sample_rate * self.chunk_duration)
 
         meta_ext = path.splitext(meta_file)[1]
         if meta_ext == ".json":
