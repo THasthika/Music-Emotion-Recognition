@@ -16,8 +16,6 @@ class BaseModel(pl.LightningModule):
                 sample_rate=22050,
                 chunk_duration=5,
                 overlap=2.5,
-                data_artifact=None,
-                split_artifact=None,
                 label_type="categorical"):
         """[summary]
 
@@ -27,8 +25,6 @@ class BaseModel(pl.LightningModule):
             sample_rate (int, optional): The sample rate of audio.
             chunk_duration (float, optional): The duration to take from the audio.
             overlap (float, optiona): The overlap on frames.
-            data_artifact (str, optional): [description]. Defaults to None.
-            split_artifact (str, optional): [description]. Defaults to None.
             label_type (str, optional): "categorical", "static", "dynamic". Defauts to "categorical"
         """
         super().__init__()
@@ -36,20 +32,22 @@ class BaseModel(pl.LightningModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
 
-        self.data_artifact = data_artifact
-        self.split_artifact = split_artifact
         self.label_type = label_type
 
         self.sample_rate = sample_rate
         self.chunk_duration = chunk_duration
         self.overlap = overlap
 
-    def prepare_data(self):
-        split_at = wandb.use_artifact(self.split_artifact, type="data-split")
-        split_dir = split_at.download()
+    def _get_data_dir(self):
+        raise NotImplementedError()
 
-        data_at = wandb.use_artifact(self.data_artifact, type="data-raw")
-        data_dir = data_at.download()
+    def _get_split_dir(self):
+        raise NotImplementedError()
+
+    def prepare_data(self):
+
+        split_dir = self._get_split_dir()
+        data_dir = self._get_data_dir()
 
         audio_dir = path.join(data_dir, "audio")
         train_meta_file = path.join(split_dir, "train.json")
@@ -111,3 +109,86 @@ class BaseModel(pl.LightningModule):
     def test_dataloader(self):
         if self.test_ds is None: return None
         return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers)
+
+class WandbBaseModel(BaseModel):
+
+    def __init__(self,
+                batch_size=32,
+                num_workers=4,
+                sample_rate=22050,
+                chunk_duration=5,
+                overlap=2.5,
+                data_artifact=None,
+                split_artifact=None,
+                label_type="categorical"):
+        """[summary]
+
+        Args:
+            batch_size (int, optional): [description]. Defaults to 32.
+            num_workers (int, optional): [description]. Defaults to 4.
+            sample_rate (int, optional): The sample rate of audio.
+            chunk_duration (float, optional): The duration to take from the audio.
+            overlap (float, optiona): The overlap on frames.
+            data_artifact (str, optional): [description]. Defaults to None.
+            split_artifact (str, optional): [description]. Defaults to None.
+            label_type (str, optional): "categorical", "static", "dynamic". Defauts to "categorical"
+        """
+        super().__init__(
+            batch_size=batch_size,
+            num_workers=num_workers,
+            sample_rate=sample_rate,
+            chunk_duration=chunk_duration,
+            overlap=overlap,
+            label_type=label_type)
+
+        self.data_artifact = data_artifact
+        self.split_artifact = split_artifact
+
+    def _get_data_dir(self):
+        data_at = wandb.use_artifact(self.data_artifact, type="data-raw")
+        data_dir = data_at.download()
+        return data_dir
+
+    def _get_split_dir(self):
+        split_at = wandb.use_artifact(self.split_artifact, type="data-split")
+        split_dir = split_at.download()
+        return split_dir
+
+class FolderBaseModel(BaseModel):
+    def __init__(self,
+                batch_size=32,
+                num_workers=4,
+                sample_rate=22050,
+                chunk_duration=5,
+                overlap=2.5,
+                data_dir=None,
+                split_dir=None,
+                label_type="categorical"):
+        """[summary]
+
+        Args:
+            batch_size (int, optional): [description]. Defaults to 32.
+            num_workers (int, optional): [description]. Defaults to 4.
+            sample_rate (int, optional): The sample rate of audio.
+            chunk_duration (float, optional): The duration to take from the audio.
+            overlap (float, optiona): The overlap on frames.
+            data_dir (str, optional): [description]. Defaults to None.
+            split_dir (str, optional): [description]. Defaults to None.
+            label_type (str, optional): "categorical", "static", "dynamic". Defauts to "categorical"
+        """
+        super().__init__(
+            batch_size=batch_size,
+            num_workers=num_workers,
+            sample_rate=sample_rate,
+            chunk_duration=chunk_duration,
+            overlap=overlap,
+            label_type=label_type)
+
+        self.data_dir = data_dir
+        self.split_dir = split_dir
+
+    def _get_data_dir(self):
+        return self.data_dir
+
+    def _get_split_dir(self):
+        return self.split_dir

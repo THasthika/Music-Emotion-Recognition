@@ -8,13 +8,13 @@ import torchaudio
 import torchaudio.transforms as audioT
 import torchaudio.functional as audioF
 
-from models.base import BaseModel
+from models.base import WandbBaseModel
 
 """
 ModelStatC - Spectrogram converted 2D Convolutional model
 """
 
-class ModelStatC(BaseModel):
+class ModelStatC(WandbBaseModel):
 
     CMDS = [
         ('lr', float, 0.001),
