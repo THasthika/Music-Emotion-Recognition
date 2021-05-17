@@ -44,10 +44,14 @@ class BaseModel(pl.LightningModule):
     def _get_split_dir(self):
         raise NotImplementedError()
 
+    def _get_ds_class(self):
+        raise NotImplementedError()
+
     def prepare_data(self):
 
         split_dir = self._get_split_dir()
         data_dir = self._get_data_dir()
+        DSClass = self._get_ds_class()
 
         audio_dir = path.join(data_dir, "audio")
         train_meta_file = path.join(split_dir, "train.json")
@@ -64,14 +68,6 @@ class BaseModel(pl.LightningModule):
         self.train_ds = None
         self.val_ds = None
         self.test_ds = None
-
-        DSClass = None
-        if self.data_artifact.startswith("mer-taffc"):
-            DSClass = MERTaffcDataset
-        elif self.data_artifact.startswith("deam"):
-            DSClass = DeamDataset
-        elif self.data_artifact.startswith("pmemo"):
-            DSClass = PMEmoDataset
 
         self.train_ds = DSClass(
             audio_dir=audio_dir,
@@ -154,6 +150,16 @@ class WandbBaseModel(BaseModel):
         split_dir = split_at.download()
         return split_dir
 
+    def _get_ds_class(self):
+        DSClass = None
+        if self.data_artifact.startswith("mer-taffc"):
+            DSClass = MERTaffcDataset
+        elif self.data_artifact.startswith("deam"):
+            DSClass = DeamDataset
+        elif self.data_artifact.startswith("pmemo"):
+            DSClass = PMEmoDataset
+        return DSClass
+
 class FolderBaseModel(BaseModel):
     def __init__(self,
                 batch_size=32,
@@ -192,3 +198,13 @@ class FolderBaseModel(BaseModel):
 
     def _get_split_dir(self):
         return self.split_dir
+
+    def _get_ds_class(self):
+        DSClass = None
+        if "mer-taffc" in self.data_dir:
+            DSClass = MERTaffcDataset
+        elif "deam" in self.data_dir:
+            DSClass = DeamDataset
+        elif "pmemo" in self.data_dir:
+            DSClass = PMEmoDataset
+        return DSClass
