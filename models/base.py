@@ -4,7 +4,7 @@ import wandb
 
 import pytorch_lightning as pl
 
-from data import DeamDataset, MERTaffcDataset, PMEmoDataset
+from data import DeamDataset, MERTaffcDataset, PMEmoDataset, FMADataset, FSD50KDataset
 
 from torch.utils.data import DataLoader
 
@@ -207,4 +207,8 @@ class FolderBaseModel(BaseModel):
             DSClass = DeamDataset
         elif "pmemo" in self.data_dir:
             DSClass = PMEmoDataset
+        elif "fsd50k" in self.data_dir:
+            DSClass = FSD50KDataset
+        elif "fma" in self.data_dir:
+            DSClass = FMADataset
         return DSClass
