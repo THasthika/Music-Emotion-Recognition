@@ -7,7 +7,7 @@ import torchaudio
 
 from data.base import BaseAudioDataset
 
-class FSD50KDataset(BaseAudioDataset):
+class FSD50K(BaseAudioDataset):
 
     def __init__(self,
                  audio_dir,
@@ -29,7 +29,6 @@ class FSD50KDataset(BaseAudioDataset):
         return info['label']
 
     def get_audio(self, info, frame):
-        print(info)
         audio_file = path.join(self.audio_dir, "{}".format(info['name']))
         meta_data = torchaudio.info(audio_file)
         sr = meta_data.sample_rate

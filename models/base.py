@@ -207,7 +207,7 @@ class FolderBaseModel(BaseModel):
             DSClass = DeamDataset
         elif "pmemo" in self.data_dir:
             DSClass = PMEmoDataset
-        elif "fsd50k" in self.data_dir:
+        elif "fsd50k" in self.data_dir.lower():
             DSClass = FSD50KDataset
         elif "fma" in self.data_dir:
             DSClass = FMADataset
