@@ -7,7 +7,7 @@ import torchaudio
 
 from data.base import BaseAudioDataset
 
-class FSD50K(BaseAudioDataset):
+class FSD50KDataset(BaseAudioDataset):
 
     def __init__(self,
                  audio_dir,
