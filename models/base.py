@@ -4,8 +4,6 @@ import wandb
 
 import pytorch_lightning as pl
 
-from data import DeamDataset, MERTaffcDataset, PMEmoDataset, FMADataset, FSD50KDataset
-
 from torch.utils.data import DataLoader
 
 class BaseModel(pl.LightningModule):
@@ -17,16 +15,6 @@ class BaseModel(pl.LightningModule):
                 chunk_duration=5,
                 overlap=2.5,
                 label_type="categorical"):
-        """[summary]
-
-        Args:
-            batch_size (int, optional): [description]. Defaults to 32.
-            num_workers (int, optional): [description]. Defaults to 4.
-            sample_rate (int, optional): The sample rate of audio.
-            chunk_duration (float, optional): The duration to take from the audio.
-            overlap (float, optiona): The overlap on frames.
-            label_type (str, optional): "categorical", "static", "dynamic". Defauts to "categorical"
-        """
         super().__init__()
 
         self.batch_size = batch_size

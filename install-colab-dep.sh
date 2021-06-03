@@ -19,3 +19,6 @@ pip install python-dotenv
 
 # torchinfo
 pip3 install torchinfo
+
+# nnaudio
+pip3 install nnAudio
