@@ -121,10 +121,10 @@ class BaseChunkedAudioOnlyDataset(BaseAudioDataset):
 
 class GenericStaticAudioOnlyDataset(BaseAudioDataset):
 
-    def __init__(self, meta_file, audio_dir, audio_index='song_id', audio_extension='mp3', label_index='quadrant', sample_rate=22050, max_duration=30):
+    def __init__(self, meta_file, data_dir, audio_index='song_id', audio_extension='mp3', label_index='quadrant', sample_rate=22050, max_duration=30):
         super().__init__(meta_file, sample_rate, max_duration)
 
-        self.audio_dir = audio_dir
+        self.data_dir = data_dir
         self.audio_index = audio_index
         self.audio_extension = audio_extension
         self.label_index = label_index
@@ -135,7 +135,7 @@ class GenericStaticAudioOnlyDataset(BaseAudioDataset):
         return info[self.label_index]
 
     def get_audio(self, info, args):
-        audio_file = path.join(self.audio_dir, "{}.{}".format(info[self.audio_index], self.audio_extension))
+        audio_file = path.join(self.data_dir, "{}.{}".format(info[self.audio_index], self.audio_extension))
         meta_data = torchaudio.info(audio_file)
         sr = meta_data.sample_rate
         frames = int(sr * self.max_duration)
@@ -144,10 +144,10 @@ class GenericStaticAudioOnlyDataset(BaseAudioDataset):
 
 class GenericStaticChunkedAudioOnlyDataset(BaseChunkedAudioOnlyDataset):
 
-    def __init__(self, meta_file, audio_dir, audio_index='song_id', audio_extension='mp3', label_index='quadrant', sample_rate=22050, chunk_duration=5, overlap=2.5):
+    def __init__(self, meta_file, data_dir, audio_index='song_id', audio_extension='mp3', label_index='quadrant', sample_rate=22050, chunk_duration=5, overlap=2.5):
         super().__init__(meta_file, sample_rate, chunk_duration, overlap)
 
-        self.audio_dir = audio_dir
+        self.data_dir = data_dir
         self.audio_index = audio_index
         self.audio_extension = audio_extension
         self.label_index = label_index
@@ -158,7 +158,7 @@ class GenericStaticChunkedAudioOnlyDataset(BaseChunkedAudioOnlyDataset):
         return info[self.label_index]
 
     def get_audio(self, info, args):
-        audio_file = path.join(self.audio_dir, "{}.mp3".format(info['song_id']))
+        audio_file = path.join(self.data_dir, "{}.mp3".format(info['song_id']))
         meta_data = torchaudio.info(audio_file)
         sr = meta_data.sample_rate
 
@@ -171,9 +171,9 @@ class GenericStaticChunkedAudioOnlyDataset(BaseChunkedAudioOnlyDataset):
 
 class GenericStaticAudioFeatureOnlyDataset(BaseAudioDataset):
     
-    def __init__(self, meta_file, feature_dir, audio_index='song_id', label_index='quadrant'):
+    def __init__(self, meta_file, data_dir, audio_index='song_id', label_index='quadrant'):
         super().__init__(meta_file)
-        self.feature_dir = feature_dir
+        self.data_dir = data_dir
         self.audio_index = audio_index
         self.label_index = label_index
         self.count = len(self.meta)
@@ -204,7 +204,7 @@ class GenericStaticAudioFeatureOnlyDataset(BaseAudioDataset):
     def get_features(self, info, args):
         name = info[self.audio_index]
         fname = "{}.npy".format(name)
-        fpath = path.join(self.feature_dir, fname)
+        fpath = path.join(self.data_dir, fname)
         d = np.load(fpath, allow_pickle=True)
         d = d[()]
 
@@ -241,10 +241,10 @@ class GenericStaticAudioFeatureOnlyDataset(BaseAudioDataset):
 
 class GenericStaticHybridAudioOnlyDataset(GenericStaticAudioOnlyDataset):
 
-    def __init__(self, meta_file, feature_dir, audio_dir, audio_index='song_id', audio_extension='mp3', label_index='quadrant', sample_rate=22050, max_duration=30):
-        super().__init__(meta_file, audio_dir, audio_index, audio_extension, label_index, sample_rate, max_duration)
+    def __init__(self, meta_file, data_dir, audio_index='song_id', audio_extension='mp3', label_index='quadrant', sample_rate=22050, max_duration=30):
+        super().__init__(meta_file, path.join(data_dir, "audio"), audio_index, audio_extension, label_index, sample_rate, max_duration)
 
-        self.feature_dir = feature_dir
+        self.feature_dir = path.join(data_dir, "features")
 
     def __stack_matching_keys(self, kset, d):
         kset_out = np.array(d[kset[0]], dtype='float32')
