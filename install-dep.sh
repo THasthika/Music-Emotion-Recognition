@@ -16,7 +16,7 @@ pip3 install -qqq torchmetrics
 pip3 install -qqq torchlibrosa
 
 # dotenv
-pip3 install python-dotenv
+pip3 install -qqq python-dotenv
 
 # torchinfo
-pip3 install torchinfo
+pip3 install -qqq torchinfo
