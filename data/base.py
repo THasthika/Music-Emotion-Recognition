@@ -354,7 +354,7 @@ class GenericStaticAudioOnlyFeatureExtractionDataset(GenericStaticAudioOnlyDatas
         max_duration = self.max_duration
 
         ret0_frames = (max_duration * sample_rate + frame_size) // (frame_size - hop_size)
-        ret0_arr = np.zeros((ret0_frames, 95))
+        ret0_arr = np.zeros((ret0_frames, 95), dtype='float32')
         for (i, frame) in enumerate(ess.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
             stft = spectrum(w(frame))
             mfcc_bands, mfcc_coeffs = mfcc(stft)
@@ -371,7 +371,7 @@ class GenericStaticAudioOnlyFeatureExtractionDataset(GenericStaticAudioOnlyDatas
         frameSize = self.nearest_power_of_2 * 2 - 2
         hopSize = frameSize // 2
         ret1_frames = (max_duration * sample_rate + frameSize) // (frameSize - hopSize)
-        ret1_arr = np.zeros((ret1_frames, 12))
+        ret1_arr = np.zeros((ret1_frames, 12), dtype='float32')
         for (i, frame) in enumerate(ess.FrameGenerator(audio, frameSize=frameSize, hopSize=hopSize, startFromZero=True)):
             stft = spectrum(w(frame))
 
@@ -386,6 +386,7 @@ class GenericStaticAudioOnlyFeatureExtractionDataset(GenericStaticAudioOnlyDatas
             [
                 dancability(audio)[0]
             ]
+            , dtype='float32'
         )
 
         return (ret0_arr, ret1_arr, ret2_arr)
