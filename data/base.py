@@ -353,16 +353,8 @@ class GenericStaticAudioOnlyFeatureExtractionDataset(GenericStaticAudioOnlyDatas
 
         max_duration = self.max_duration
 
-        dancability = ess.Danceability()
-
-        ret0_arr = np.array(
-            [
-                dancability(audio)[0]
-            ]
-        )
-
-        ret1_frames = (max_duration * sample_rate + frame_size) // (frame_size - hop_size)
-        ret1_arr = np.zeros((ret1_frames, 95))
+        ret0_frames = (max_duration * sample_rate + frame_size) // (frame_size - hop_size)
+        ret0_arr = np.zeros((ret0_frames, 95))
         for (i, frame) in enumerate(ess.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
             stft = spectrum(w(frame))
             mfcc_bands, mfcc_coeffs = mfcc(stft)
@@ -374,19 +366,27 @@ class GenericStaticAudioOnlyFeatureExtractionDataset(GenericStaticAudioOnlyDatas
                  zcrate(frame),
                  sctime(frame))
             )
-            ret1_arr[i] = farr
+            ret0_arr[i] = farr
 
         frameSize = self.nearest_power_of_2 * 2 - 2
         hopSize = frameSize // 2
-        ret2_frames = (max_duration * sample_rate + frameSize) // (frameSize - hopSize)
-        ret2_arr = np.zeros((ret2_frames, 12))
+        ret1_frames = (max_duration * sample_rate + frameSize) // (frameSize - hopSize)
+        ret1_arr = np.zeros((ret1_frames, 12))
         for (i, frame) in enumerate(ess.FrameGenerator(audio, frameSize=frameSize, hopSize=hopSize, startFromZero=True)):
             stft = spectrum(w(frame))
 
             farr = np.hstack(
                 (chromagram(stft))
             )
-            ret2_arr[i] = farr
+            ret1_arr[i] = farr
+
+        dancability = ess.Danceability()
+
+        ret2_arr = np.array(
+            [
+                dancability(audio)[0]
+            ]
+        )
 
         return (ret0_arr, ret1_arr, ret2_arr)
 
