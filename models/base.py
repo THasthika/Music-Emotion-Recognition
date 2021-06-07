@@ -50,17 +50,17 @@ class BaseModel(pl.LightningModule):
 
         self.train_ds = DSClass(
             meta_file=train_meta_file,
-            **self.dataset_class_args)
+            **additional_args)
 
         if has_val:
             self.val_ds = DSClass(
                 meta_file=val_meta_file,
-                **self.dataset_class_args)
+                **additional_args)
 
         if has_test:
             self.test_ds = DSClass(
                 meta_file=test_meta_file,
-                **self.dataset_class_args)
+                **additional_args)
 
     def train_dataloader(self):
         return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers)

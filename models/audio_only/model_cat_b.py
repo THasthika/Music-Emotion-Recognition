@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 from pretrain_models import Wavegram_Logmel_Cnn14
 
-from models.base import WandbBaseModel
+from models.base import BaseModel
 
 """
 ModelCatB - A 1D convolutional Model with a Pretrained Model
@@ -19,7 +19,7 @@ Softmax
 
 """
 
-class ModelCatB(WandbBaseModel):
+class ModelCatB(BaseModel):
 
     CMDS = [
         ('lr', float, 0.001),

@@ -6,19 +6,19 @@ import torch.nn.functional as F
 
 from pretrain_models import Wavegram_Logmel_Cnn14
 
-from models.base import WandbBaseModel
+from models.base import BaseModel
 
 """
 ModelStatB - A 1D convolutional Model with a Pretrained Model
 
-WandbBaseModel (Wavegram_Logmel_Cnn14)
+BaseModel (Wavegram_Logmel_Cnn14)
 FullyConnected1
 FullyConnected2
 FullyConnected3
 
 """
 
-class ModelStatB(WandbBaseModel):
+class ModelStatB(BaseModel):
 
     CMDS = [
         ('lr', float, 0.001),

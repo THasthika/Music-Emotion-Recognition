@@ -1,6 +1,6 @@
 import pytorch_lightning as pl
 
-from models.base import WandbBaseModel
+from models.base import BaseModel
 
 import torch
 from torch import nn
@@ -20,7 +20,7 @@ FullyConnected2
 
 """
 
-class ModelStatA(WandbBaseModel):
+class ModelStatA(BaseModel):
 
     CMDS = [
         ('lr', float, 0.001),
