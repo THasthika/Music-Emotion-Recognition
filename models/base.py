@@ -27,6 +27,23 @@ class BaseModel(pl.LightningModule):
         self.dataset_class_args = dataset_class_args
         self.split_dir = split_dir
 
+    def set_model_parameter(self, config, config_keys, default):
+        if not (type(config_keys) is list or type(config_keys) is tuple):
+            config_keys = [config_keys]
+        exists = True
+        temp = []
+        for k in config_keys:
+            if not k in config:
+                exists = False
+                break
+            temp.append(config[k])
+        if not exists:
+            return default
+        if len(temp) == 1:
+            return temp[0]
+        else:
+            return temp
+
     def prepare_data(self):
 
         split_dir = self.split_dir
