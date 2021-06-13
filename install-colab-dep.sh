@@ -33,4 +33,4 @@ pip install -qqq git+https://github.com/THasthika/pylrc.git@timestamp-search
 pip install -qqq transformers
 
 # coolname
-!pip install -qqq coolname;
+!pip install -qqq coolname
