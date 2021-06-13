@@ -25,3 +25,12 @@ pip3 install -qqq nnAudio
 
 # essentia
 pip3 install -qqq essentia
+
+#pylrc
+pip install -qqq git+https://github.com/THasthika/pylrc.git@timestamp-search
+
+# trainsformers
+pip install -qqq transformers
+
+# coolname
+!pip install -qqq coolname;

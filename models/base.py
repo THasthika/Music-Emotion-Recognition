@@ -1,4 +1,5 @@
 from os import path
+from posixpath import split
 
 
 import pytorch_lightning as pl
@@ -46,6 +47,9 @@ class BaseModel(pl.LightningModule):
 
     def prepare_data(self):
 
+        if self.dataset_class is None or self.split_dir is None:
+            return
+
         split_dir = self.split_dir
         DSClass = self.dataset_class
         additional_args = self.dataset_class_args
@@ -80,6 +84,7 @@ class BaseModel(pl.LightningModule):
                 **additional_args)
 
     def train_dataloader(self):
+        if self.test_ds is None: return None
         return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers)
 
     def val_dataloader(self):
