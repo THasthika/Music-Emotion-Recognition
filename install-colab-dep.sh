@@ -34,3 +34,6 @@ pip install -qqq transformers
 
 # coolname
 pip install -qqq coolname
+
+# librosa
+pip install -qqq librosa
