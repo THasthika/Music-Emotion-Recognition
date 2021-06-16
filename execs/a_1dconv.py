@@ -29,7 +29,7 @@ SPLIT_DIR = {
     'pmemo': '/splits/pmemo-kfold/'
 }
 
-PICKLE_FOLDER = '/precomputed/{}/chunked/{}-{}-{}/'
+TEMP_FOLDER = '/precomputed/{}/chunked/{}-{}-{}/'
 
 ADDITIONAL_TAGS = [
     'conv-1d',
@@ -69,9 +69,7 @@ def audio_1dconv_kfold_run(n_splits=5, num_workers=4, up_model_config={}):
     dataset_args = {
         'chunk_duration': CHUNK_DURATION,
         'overlap': OVERLAP,
-        'audio_index': 'song_id',
-        'label_index': 'quadrant',
-        'pickle_folder': PICKLE_FOLDER.format(DATASET_NAME, SAMPLE_RATE, CHUNK_DURATION, OVERLAP)
+        'temp_folder': TEMP_FOLDER.format(DATASET_NAME, SAMPLE_RATE, CHUNK_DURATION, OVERLAP)
     }
 
     model = MODEL_CLASS(
