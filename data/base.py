@@ -177,12 +177,12 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
         self.frame_count = int(self.sr * self.chunk_duration)
 
     def get_audio(self, info, args):
-        audio_file = path.join(self.data_dir, "{}.mp3".format(info['song_id']))
+        audio_file = path.join(self.data_dir, "{}.{}".format(info[SONG_ID], self.audio_extension))
         meta_data = torchaudio.info(audio_file)
         sr = meta_data.sample_rate
 
         frame = args
-        offset = int(sr * ((self.overlap * frame) + self.meta[START_TIME]))
+        offset = int(sr * ((self.overlap * frame) + info[START_TIME]))
         frames = int(sr * self.chunk_duration)
 
         x, sr = torchaudio.load(audio_file, frame_offset=offset, num_frames=frames)
@@ -190,7 +190,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 
     def get_features(self, info, args):
         x, sr = self.get_audio(info, args)
-        x = self.preprocess_audio(x, sr)
+        x = preprocess_audio(self.frame_count, x, sr, self.sr)
         return x
 
 # class AudioDataset(BaseDataset):
