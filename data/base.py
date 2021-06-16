@@ -130,7 +130,7 @@ class BaseChunkedDataset(BaseDataset):
         self.overlap = overlap
 
         self.frames = self.__calculate_frames(
-            self.meta, self.chunk_duration, self.overlap, self.duration_index)
+            self.meta, self.chunk_duration, self.overlap)
         self.count = len(self.frames)
 
     def get_info(self, index):
