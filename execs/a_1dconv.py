@@ -96,6 +96,10 @@ def audio_1dconv_kfold_run(n_splits=5, num_workers=4, up_model_config={}):
         **dataset_args
     )
 
+    for x in train_dataset:
+        print(x)
+        break
+
     # kfold_runner = kfold.WandBCV(
     #         n_splits=n_splits,
     #         stratify=False,
