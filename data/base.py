@@ -455,3 +455,64 @@ class GenericStaticChunkedAudioOnlyFeatureExtractionDataset(GenericStaticChunked
         )
         
         return out
+
+class GenericPickleDataset(Dataset):
+
+    def __calculate_count(self, meta, chunk_duration, overlap):
+        self.frames = []
+        row_i = 0
+        for (i, row) in meta.iterrows():
+            duration = row['duration']
+            n_frames = int(np.floor((duration - 1) / (chunk_duration - overlap)))
+            if n_frames == 0 and chunk_duration <= duration:
+                self.frames.append((row_i, 0))
+                continue
+            for j in range(n_frames):
+                self.frames.append((row_i, j))
+            row_i += 1
+        return len(self.frames)
+
+    def __init__(self, meta_file, audio_index, label_index, chunk_duration, overlap, pickle_folder):
+        
+        self.audio_index = audio_index
+        self.label_index = label_index
+        self.meta = pd.read_json(meta_file)
+        self.chunk_duration = chunk_duration
+        self.overlap = overlap
+        self.count = self.__calculate_count(self.meta, self.chunk_duration, self.overlap)
+        self.labels = np.array(
+            list(map(lambda x: self.meta.iloc[x[0]][self.label_index], self.frames))
+        )
+
+        self.pickle_folder = pickle_folder
+
+    def get_labels(self):
+        return self.labels
+
+    def get_label(self, info, args):
+        if type(self.label_index) is list:
+            return info[self.label_index].to_numpy()
+        return info[self.label_index]
+    
+    def __len__(self):
+        return self.count
+
+    def __getitem__(self, index):
+        (info, args) = self.get_info(index)
+        X = self.get_features(info, args)
+        y = self.get_label(info, args)
+        return (X, y)
+
+    def get_info(self, index):
+        (meta_index, frame) = self.frames[index]
+        info = self.meta.iloc[meta_index]
+        return (info, frame)
+
+    def get_features(self, info, args):
+        
+        key = path.join(self.pickle_folder, "{}-{}.pkl".format(info[self.audio_index], args))
+        if path.exists(key):
+            out = pickle.load(open(key, mode="rb"))
+            return out
+
+        raise FileNotFoundError("pickle file not found!")
