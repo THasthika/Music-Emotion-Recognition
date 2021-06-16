@@ -10,3 +10,4 @@ model_saves/
 __pycache__
 /wandb/
 pretrain_weights/
+config.json

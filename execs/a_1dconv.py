@@ -48,7 +48,7 @@ DATA_CLASS = AudioOnlyStaticQuadrantAndAVValues
 MODEL_CLASS = Audio1DConv
 
 
-def audio_1dconv_kfold_run(n_splits=5, num_workers=4, up_model_config={}):
+def kfold_run(n_splits=5, num_workers=4, up_model_config={}, up_dataset_args={}):
     
     temp_folder = TEMP_FOLDER.format(DATASET_NAME, SAMPLE_RATE, CHUNK_DURATION, OVERLAP)
 
@@ -83,6 +83,7 @@ def audio_1dconv_kfold_run(n_splits=5, num_workers=4, up_model_config={}):
         'sr': SAMPLE_RATE,
         'temp_folder': temp_folder
     }
+    dataset_args.update(up_dataset_args)
 
     model = MODEL_CLASS(
         batch_size=model_config['batch_size'],
