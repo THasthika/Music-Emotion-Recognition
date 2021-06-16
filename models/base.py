@@ -1,10 +1,12 @@
 from os import path
-from posixpath import split
+from collections import OrderedDict
 
+import torch.nn as nn
 
 import pytorch_lightning as pl
 
 from torch.utils.data import DataLoader
+from utils.common import Conv2DBlock, Conv1DBlock, LinearBlock
 
 class BaseModel(pl.LightningModule):
 
@@ -27,6 +29,76 @@ class BaseModel(pl.LightningModule):
         self.dataset_class = dataset_class
         self.dataset_class_args = dataset_class_args
         self.split_dir = split_dir
+
+    def create_conv_network(self, config, adaptive_units, adaptive_pooling_type='avg', conv_type='1d'):
+        ## config structure
+        ## -> either simple a list of numbers (for channels)
+        ## -> either list of dicts with (channels, kernel_size, strid, batch_normalize, dropout, dropout_p, activation)
+        ARG_CHANNELS = 'channels'
+
+        ARG_IN_CHANNELS = 'in_channels'
+        ARG_OUT_CHANNELS = 'out_channels'
+        ARG_KERNEL_SIZE = 'kernel_size'
+        ARG_STRIDE = 'stride'
+        ARG_BATCH_NORMALIZE = 'batch_normalize'
+        ARG_DROPOUT = 'dropout'
+        ARG_DROPOUT_P = 'dropout_p'
+        ARG_ACTIVATION = 'activation'
+
+        ConvBlock = Conv1DBlock
+        if conv_type == '1d':
+            ConvBlock = Conv1DBlock
+        elif conv_type == '2d':
+            ConvBlock = Conv2DBlock
+
+
+        config = list(map(lambda x: { ARG_CHANNELS: x } if type(x) is int or (type(x) is tuple and type(x[0]) is int) else x, config))
+        layer_list = list()
+        for i in range(len(config) - 1):
+            args = {
+                ARG_IN_CHANNELS: config[i][ARG_CHANNELS],
+                ARG_OUT_CHANNELS: config[i+1][ARG_CHANNELS],
+            }
+            for x in [ARG_KERNEL_SIZE, ARG_STRIDE, ARG_BATCH_NORMALIZE, ARG_DROPOUT, ARG_DROPOUT_P, ARG_ACTIVATION]:
+                if x in config:
+                    args[x] = config[x]
+            layer_list.append(('conv{}'.format(i+1), ConvBlock(**args)))
+
+        if adaptive_pooling_type == 'avg':
+            layer_list.append(
+                ('adaptive_layer', nn.AdaptiveAvgPool1d(adaptive_units))
+            )
+        elif adaptive_pooling_type == 'max':
+            layer_list.append(
+                ('adaptive_layer', nn.AdaptiveMaxPool1d(adaptive_units))
+            )
+        
+        return nn.Sequential(OrderedDict(layer_list))
+
+    def create_linear_network(self, config):
+
+        ARG_FEATURES = 'features'
+
+        ARG_IN_FEATURES = 'in_features'
+        ARG_OUT_FEATURES = 'out_features'
+        ARG_BATCH_NORMALIZE = 'batch_normalize'
+        ARG_DROPOUT = 'dropout'
+        ARG_DROPOUT_P = 'dropout_p'
+        ARG_ACTIVATION = 'activation'
+
+        config = list(map(lambda x: { ARG_FEATURES: x } if type(x) is int or (type(x) is tuple and type(x[0]) is int) else x, config))
+        layer_list = list()
+        for i in range(len(config) - 1):
+            args = {
+                ARG_IN_FEATURES: config[i][ARG_FEATURES],
+                ARG_OUT_FEATURES: config[i+1][ARG_FEATURES],
+            }
+            for x in [ARG_BATCH_NORMALIZE, ARG_DROPOUT, ARG_DROPOUT_P, ARG_ACTIVATION]:
+                if x in config:
+                    args[x] = config[x]
+            layer_list.append(('linear{}'.format(i+1), LinearBlock(**args)))
+        
+        return nn.Sequential(OrderedDict(layer_list))
 
     def set_model_parameter(self, config, config_keys, default):
         if not (type(config_keys) is list or type(config_keys) is tuple):
