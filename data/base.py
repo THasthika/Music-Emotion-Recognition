@@ -12,6 +12,36 @@ import pickle
 import random
 import string
 
+SONG_ID = 'song_id'
+START_TIME = 'start_time'
+END_TIME = 'end_time'
+DURATION = 'duration'
+
+QUADRANT = 'quadrant'
+STATIC_VALENCE_MEAN = 'static_valence_mean'
+STATIC_VALENCE_STD = 'static_valence_std'
+STATIC_AROUSAL_MEAN = 'static_arousal_mean'
+STATIC_AROUSAL_STD = 'static_arousal_std'
+DYNAMIC_VALENCE_MEAN = 'dynamic_valence_mean'
+DYNAMIC_VALENCE_STD = 'dynamic_valence_std'
+DYNAMIC_AROUSAL_MEAN = 'dynamic_arousal_mean'
+DYNAMIC_AROUSAL_STD = 'dynamic_arousal_std'
+
+def preprocess_audio(frame_count, audio, sr, ret_sr):
+    x = torch.mean(audio, 0, True)
+    out = torch.zeros(1, frame_count)
+    effects = [
+        ["rate", f"{ret_sr}"]
+    ]
+    x, sr2 = torchaudio.sox_effects.apply_effects_tensor(x, sr, effects)
+    if frame_count >= x.shape[1]:
+        out[:, :x.shape[1]] = x
+    else:
+        out[:, :] = x[:, :frame_count]
+    # out = torch.squeeze(out)
+    # out = torch.unsqueeze(out, dim=1)
+    return out
+
 class BaseDataset(Dataset):
 
     def __get_temp_folder(self, length=8):
@@ -49,16 +79,20 @@ class BaseDataset(Dataset):
         self.count = len(self.meta)
 
     def get_key(sekf, info, args):
-        raise NotImplemented()
+        k = "{}".format(info[SONG_ID])
+        if not args is None:
+            k += "-{}".format(args)
+        return k
+
 
     def get_features(self, info, args):
         raise NotImplementedError()
 
     def get_label(self, info, args):
-        raise NotImplementedError()
+        return info[QUADRANT]
 
     def get_info(self, index):
-        raise NotImplementedError()
+        return (self.meta.iloc[index], None)
 
     def __len__(self):
         return self.count
@@ -69,13 +103,16 @@ class BaseDataset(Dataset):
         y = self.get_label(info, args)
         return (X, y)
 
+
 class BaseChunkedDataset(BaseDataset):
 
-    def __calculate_frames(self, meta, chunk_duration, overlap, duration_index):
+    def __calculate_frames(self, meta, chunk_duration, overlap):
         frames = []
         row_i = 0
         for (i, row) in meta.iterrows():
-            duration = row[duration_index]
+            start_time = row[START_TIME]
+            end_time = row[END_TIME]
+            duration = end_time - start_time
             n_frames = int(np.floor((duration - 1) / (chunk_duration - overlap)))
             if n_frames == 0 and chunk_duration <= duration:
                 frames.append((row_i, 0))
@@ -85,14 +122,14 @@ class BaseChunkedDataset(BaseDataset):
             row_i += 1
         return frames
 
-    def __init__(self, meta_file, chunk_duration=10, overlap=5, duration_index='duration', temp_folder=None, force_compute=False):
+    def __init__(self, meta_file, chunk_duration=10, overlap=5, temp_folder=None, force_compute=False):
         super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
 
-        self.duration_index = duration_index
         self.chunk_duration = chunk_duration
         self.overlap = overlap
 
-        self.frames = self.__calculate_frames(self.meta, self.chunk_duration, self.overlap, self.duration_index)
+        self.frames = self.__calculate_frames(
+            self.meta, self.chunk_duration, self.overlap, self.duration_index)
         self.count = len(self.frames)
 
     def get_info(self, index):
@@ -100,67 +137,55 @@ class BaseChunkedDataset(BaseDataset):
         info = self.meta.iloc[meta_index]
         return (info, frame)
 
+
 class BaseAudioOnlyDataset(BaseDataset):
 
-    def __init__(self, meta_file, sr=22050, duration=5, temp_folder=None, force_compute=False):
+    def __init__(self, meta_file, data, sr=22050, duration=5, temp_folder=None, force_compute=False, audio_extension="mp3"):
         super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
 
         self.sr = sr
         self.duration = duration
+        self.data = data
+        self.audio_extension = audio_extension
         self.frame_count = int(self.sr * self.duration)
 
-    def preprocess_audio(self, audio, sr):
-        x = torch.mean(audio, 0, True)
-        out = torch.zeros(1, self.frame_count)
-        effects = [
-          ["rate", f"{self.sample_rate}"]
-        ]
-        x, sr2 = torchaudio.sox_effects.apply_effects_tensor(x, sr, effects)
-        if self.frame_count >= x.shape[1]:
-            out[:, :x.shape[1]] = x
-        else:
-            out[:, :] = x[:, :self.frame_count]
-        # out = torch.squeeze(out)
-        # out = torch.unsqueeze(out, dim=1)
-        return out
-
     def get_audio(self, info, args):
-        raise NotImplementedError()
+        audio_file = path.join(self.data_dir, "{}.{}".format(info[SONG_ID], self.audio_extension))
+        meta_data = torchaudio.info(audio_file)
+        sr = meta_data.sample_rate
+        frames = int(sr * self.duration)
+        x, sr = torchaudio.load(audio_file, num_frames=frames)
+        return (x, sr)
 
     def get_features(self, info, args):
         x, sr = self.get_audio(info, args)
-        x = self.preprocess_audio(x, sr)
+        x = preprocess_audio(self.frame_count, x, sr, self.sr)
         return x
 
-    def get_info(self, index):
-        return (self.meta.iloc[index], None)
 
 class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 
-    def __init__(self, meta_file, sr=22050, duration=5, temp_folder=None, force_compute=False):
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=10, overlap=5, temp_folder=None, force_compute=False, audio_extension="mp3"):
         super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
 
         self.sr = sr
-        self.duration = duration
-        self.frame_count = int(self.sr * self.duration)
-
-    def preprocess_audio(self, audio, sr):
-        x = torch.mean(audio, 0, True)
-        out = torch.zeros(1, self.frame_count)
-        effects = [
-          ["rate", f"{self.sample_rate}"]
-        ]
-        x, sr2 = torchaudio.sox_effects.apply_effects_tensor(x, sr, effects)
-        if self.frame_count >= x.shape[1]:
-            out[:, :x.shape[1]] = x
-        else:
-            out[:, :] = x[:, :self.frame_count]
-        # out = torch.squeeze(out)
-        # out = torch.unsqueeze(out, dim=1)
-        return out
+        self.data_dir = data_dir
+        self.chunk_duration = chunk_duration
+        self.overlap = overlap
+        self.audio_extension = audio_extension
+        self.frame_count = int(self.sr * self.chunk_duration)
 
     def get_audio(self, info, args):
-        raise NotImplementedError()
+        audio_file = path.join(self.data_dir, "{}.mp3".format(info['song_id']))
+        meta_data = torchaudio.info(audio_file)
+        sr = meta_data.sample_rate
+
+        frame = args
+        offset = int(sr * ((self.overlap * frame) + self.meta[START_TIME]))
+        frames = int(sr * self.chunk_duration)
+
+        x, sr = torchaudio.load(audio_file, frame_offset=offset, num_frames=frames)
+        return (x, sr)
 
     def get_features(self, info, args):
         x, sr = self.get_audio(info, args)
@@ -192,13 +217,13 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #     def preprocess_audio(self, audio, sr):
         # x = torch.mean(audio, 0, True)
         # out = torch.zeros(1, self.frame_count)
-        
+
         # effects = [
         #   ["rate", f"{self.sample_rate}"]
         # ]
-        
+
         # x, sr2 = torchaudio.sox_effects.apply_effects_tensor(x, sr, effects)
-        
+
         # if self.frame_count >= x.shape[1]:
         #     out[:, :x.shape[1]] = x
         # else:
@@ -206,7 +231,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 
         # # out = torch.squeeze(out)
         # # out = torch.unsqueeze(out, dim=1)
-        
+
         # return out
 
 #     def get_features(self, info, args):
@@ -218,7 +243,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #         return (self.meta.iloc[index], None)
 
 # class BaseChunkedAudioOnlyDataset(BaseAudioDataset):
-    
+
 #     def __init__(self, meta_file, sample_rate=22050, chunk_duration=5, overlap=2.5):
 #         super().__init__(meta_file, sample_rate, 1)
 
@@ -301,7 +326,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #         return (x, sr)
 
 # class GenericStaticAudioFeatureOnlyDataset(BaseAudioDataset):
-    
+
 #     def __init__(self, meta_file, data_dir, audio_index='song_id', label_index='quadrant'):
 #         super().__init__(meta_file)
 #         self.data_dir = data_dir
@@ -331,7 +356,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #         else:
 #             out[:, :] = arr[:size, :]
 #         return out
-    
+
 #     def get_features(self, info, args):
 #         name = info[self.audio_index]
 #         fname = "{}.npy".format(name)
@@ -364,7 +389,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #         kset3_out = np.reshape(kset3_out, (1, 1))
 
 #         return (kset1_out, kset2_out, kset3_out)
-    
+
 #     def get_label(self, info, args):
 #         if type(self.label_index) is list:
 #             return info[self.label_index].to_numpy()
@@ -540,7 +565,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #         }
 
 #     def get_features(self, info, args):
-        
+
 #         key = path.join(self.temp_folder, "{}-{}.pkl".format(info[self.audio_index], args))
 #         if path.exists(key):
 #             out = pickle.load(open(key, mode="rb"))
@@ -555,7 +580,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #             sample_rate=self.sample_rate,
 #             **self.extractor_config
 #         )
-        
+
 
 #         out = {
 #             'raw': audio_out,
@@ -563,7 +588,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #         }
 
 #         pickle.dump(out, open(key, mode="wb"))
-        
+
 #         return out
 
 #     def get_features(self, info, args):
@@ -573,13 +598,13 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 
 #         features_out = self.__compute_features(
 #             np.array(torch.squeeze(audio_out)), frame_size=self.frame_size, hop_size=self.hop_size, sample_rate=self.sample_rate)
-        
+
 
 #         out = (
 #             audio_out,
 #             *features_out
 #         )
-        
+
 #         return out
 
 # class GenericPickleDataset(Dataset):
@@ -599,7 +624,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #         return len(self.frames)
 
 #     def __init__(self, meta_file, audio_index, label_index, chunk_duration, overlap, pickle_folder):
-        
+
 #         self.audio_index = audio_index
 #         self.label_index = label_index
 #         self.meta = pd.read_json(meta_file)
@@ -619,7 +644,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #         if type(self.label_index) is list:
 #             return info[self.label_index].to_numpy()
 #         return info[self.label_index]
-    
+
 #     def __len__(self):
 #         return self.count
 
@@ -635,7 +660,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 #         return (info, frame)
 
 #     def get_features(self, info, args):
-        
+
 #         key = path.join(self.pickle_folder, "{}-{}.pkl".format(info[self.audio_index], args))
 #         if path.exists(key):
 #             out = pickle.load(open(key, mode="rb"))
