@@ -21,6 +21,8 @@ DATA_DIR = {
     'emomusic': '/raw/emomusic/audio/',
     'pmemo': '/raw/pmemo/audio/'
 }
+for x in DATA_DIR:
+    DATA_DIR[x] = path.join(ROOT_STORAGE_FOLDER, DATA_DIR[x])
 
 SPLIT_DIR = {
     'mer-taffc': '/splits/mer-taffc-kfold/',
@@ -28,8 +30,10 @@ SPLIT_DIR = {
     'emomusic': '/splits/emomusic-kfold/',
     'pmemo': '/splits/pmemo-kfold/'
 }
+for x in SPLIT_DIR:
+    SPLIT_DIR[x] = path.join(ROOT_STORAGE_FOLDER, SPLIT_DIR[x])
 
-TEMP_FOLDER = '/precomputed/{}/chunked/{}-{}-{}/'
+TEMP_FOLDER = path.join(ROOT_STORAGE_FOLDER, '/precomputed/{}/chunked/{}-{}-{}/')
 
 ADDITIONAL_TAGS = [
     'conv-1d',
@@ -96,17 +100,13 @@ def audio_1dconv_kfold_run(n_splits=5, num_workers=4, up_model_config={}):
         **dataset_args
     )
 
-    for x in train_dataset:
-        print(x)
-        break
+    kfold_runner = kfold.WandBCV(
+            n_splits=n_splits,
+            stratify=False,
+            batch_size=model_config['batch_size'],
+            num_workers=num_workers,
+            wandb_project_name="mer", 
+            wandb_tags=wandb_tags,
+            **trainer_args)
 
-    # kfold_runner = kfold.WandBCV(
-    #         n_splits=n_splits,
-    #         stratify=False,
-    #         batch_size=model_config['batch_size'],
-    #         num_workers=num_workers,
-    #         wandb_project_name="mer", 
-    #         wandb_tags=wandb_tags,
-    #         **trainer_args)
-
-    # kfold_runner.fit(model, train_dataset, test_dataset)
+    kfold_runner.fit(model, train_dataset, test_dataset)
