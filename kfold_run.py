@@ -6,7 +6,7 @@ MAPPING_EXECS = {
     "a_1dconv": a1krun
 }
 
-config = json.loads(open("config.json", mode="r"))
+config = json.load(open("config.json", mode="r"))
 execs_name = config['execs']
 model_config = config['model']
 dataset_config = config['dataset']
