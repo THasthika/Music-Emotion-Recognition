@@ -103,7 +103,7 @@ class Audio1DConv(BaseModel):
         x, (cat_y, reg_y) = batch
 
         (y_logit, y_regress) = self(x)
-        cat_loss = self.cat_loss(y_logit, y)
+        cat_loss = self.cat_loss(y_logit, cat_y)
         pred = F.softmax(y_logit, dim=1)
 
         reg_loss = self.reg_loss(y_regress, reg_y)
@@ -111,32 +111,39 @@ class Audio1DConv(BaseModel):
         self.log('train/cat_loss', cat_loss, prog_bar=True, on_step=False, on_epoch=True)
         self.log('train/reg_loss', reg_loss, prog_bar=True, on_step=False, on_epoch=True)
 
-        self.log('train/acc', self.train_acc(pred, y), prog_bar=True, on_step=False, on_epoch=True)
+        self.log('train/acc', self.train_acc(pred, cat_y), prog_bar=True, on_step=False, on_epoch=True)
 
-        return loss
+        return cat_loss
 
     def validation_step(self, batch, batch_idx):
         x, (cat_y, reg_y) = batch
 
         (y_logit, y_regress) = self(x)
-        cat_loss = self.cat_loss(y_logit, y)
+        cat_loss = self.cat_loss(y_logit, cat_y)
         pred = F.softmax(y_logit, dim=1)
 
         reg_loss = self.reg_loss(y_regress, reg_y)
         
-        self.log("val/loss", loss, prog_bar=True)
-        self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
+        self.log('val/cat_loss', cat_loss, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('val/reg_loss', reg_loss, prog_bar=True, on_step=False, on_epoch=True)
+
+        self.log("val/acc", self.val_acc(pred, cat_y), prog_bar=True)
 
     def test_step(self, batch, batch_idx):
-        x, y = batch
+        x, (cat_y, reg_y) = batch
 
-        y_logit = self(x)
-        loss = self.loss(y_logit, y)
+        (y_logit, y_regress) = self(x)
+        
+        cat_loss = self.cat_loss(y_logit, cat_y)
         pred = F.softmax(y_logit, dim=1)
 
-        self.log("test/loss", loss)
-        self.log("test/acc", self.test_acc(pred, y))
-        self.log("test/f1_global", self.test_f1_global(pred, y))
+        reg_loss = self.reg_loss(y_regress, reg_y)
+
+        self.log('test/cat_loss', cat_loss, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('test/reg_loss', reg_loss, prog_bar=True, on_step=False, on_epoch=True)
+
+        self.log("test/acc", self.val_acc(pred, cat_y), prog_bar=True)
+        self.log("test/f1_global", self.test_f1_global(pred, cat_y))
 
         f1_scores = self.test_f1_class(pred, y)
         for (i, x) in enumerate(torch.flatten(f1_scores)):
