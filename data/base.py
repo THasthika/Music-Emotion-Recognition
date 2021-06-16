@@ -48,15 +48,15 @@ class BaseDataset(Dataset):
         fname = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
         return path.join("/tmp/", fname)
 
-    def __check_cache_and_get_features(self, info, args):
-        key = self.get_key(info, args)
-        fkey = path.join(self.temp_folder, "{}.pkl".format(key))
-        if (not self.force_compute) and path.exists(fkey):
-            X = pickle.load(open(fkey, mode="rb"))
-            return X
-        X = self.get_features(info, args)
-        pickle.dump(X, open(fkey, mode="wb"))
-        return X
+    # def __check_cache_and_get_features(self, info, args):
+    #     key = self.get_key(info, args)
+    #     fkey = path.join(self.temp_folder, "{}.pkl".format(key))
+    #     if (not self.force_compute) and path.exists(fkey):
+    #         X = pickle.load(open(fkey, mode="rb"))
+    #         return X
+    #     X = self.get_features(info, args)
+    #     pickle.dump(X, open(fkey, mode="wb"))
+    #     return X
 
     def __get_meta(self, meta_file):
         meta_ext = path.splitext(meta_file)[1]
@@ -101,7 +101,8 @@ class BaseDataset(Dataset):
 
     def __getitem__(self, index):
         (info, args) = self.get_info(index)
-        X = self.__check_cache_and_get_features(info, args)
+        # X = self.__check_cache_and_get_features(info, args)
+        X = self.get_features(info, args)
         y = self.get_label(info, args)
         return (X, y)
 
