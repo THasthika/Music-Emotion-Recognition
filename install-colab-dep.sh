@@ -3,6 +3,9 @@
 # wandb
 pip install -qqq wandb
 
+# pytorch
+pip3 install -qqq torch==1.9 torchvision torchaudio torchtext
+
 # pytorch_lightning
 pip install -qqq pytorch-lightning
 
