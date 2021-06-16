@@ -16,24 +16,24 @@ OVERLAP = 5
 ROOT_STORAGE_FOLDER = '/storage/s3bkt/'
 
 DATA_DIR = {
-    'mer-taffc': '/raw/mer-taffc/audio/',
-    'deam': '/raw/deam/audio/',
-    'emomusic': '/raw/emomusic/audio/',
-    'pmemo': '/raw/pmemo/audio/'
+    'mer-taffc': 'raw/mer-taffc/audio/',
+    'deam': 'raw/deam/audio/',
+    'emomusic': 'raw/emomusic/audio/',
+    'pmemo': 'raw/pmemo/audio/'
 }
 for x in DATA_DIR:
     DATA_DIR[x] = path.join(ROOT_STORAGE_FOLDER, DATA_DIR[x])
 
 SPLIT_DIR = {
-    'mer-taffc': '/splits/mer-taffc-kfold/',
-    'deam': '/splits/deam-kfold/',
-    'emomusic': '/splits/emomusic-kfold/',
-    'pmemo': '/splits/pmemo-kfold/'
+    'mer-taffc': 'splits/mer-taffc-kfold/',
+    'deam': 'splits/deam-kfold/',
+    'emomusic': 'splits/emomusic-kfold/',
+    'pmemo': 'splits/pmemo-kfold/'
 }
 for x in SPLIT_DIR:
     SPLIT_DIR[x] = path.join(ROOT_STORAGE_FOLDER, SPLIT_DIR[x])
 
-TEMP_FOLDER = path.join(ROOT_STORAGE_FOLDER, '/precomputed/{}/chunked/{}-{}-{}/')
+TEMP_FOLDER = path.join(ROOT_STORAGE_FOLDER, 'precomputed/{}/chunked/{}-{}-{}/')
 
 ADDITIONAL_TAGS = [
     'conv-1d',
