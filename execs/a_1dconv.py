@@ -44,7 +44,7 @@ DATA_CLASS = AudioOnlyStaticQuadrantAndAVValues
 MODEL_CLASS = Audio1DConv
 
 
-def run_kfold(n_splits=5, num_workers=4, up_model_config={}):
+def audio_1dconv_kfold_run(n_splits=5, num_workers=4, up_model_config={}):
 
     model_config={
         'lr': LEARNING_RATE,
