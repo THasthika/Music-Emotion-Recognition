@@ -70,6 +70,7 @@ def audio_1dconv_kfold_run(n_splits=5, num_workers=4, up_model_config={}):
         'chunk_duration': CHUNK_DURATION,
         'overlap': OVERLAP,
         'data_dir': DATA_DIR[DATASET_NAME],
+        'sr': SAMPLE_RATE,
         'temp_folder': TEMP_FOLDER.format(DATASET_NAME, SAMPLE_RATE, CHUNK_DURATION, OVERLAP)
     }
 
