@@ -197,7 +197,7 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 
 class AudioOnlyStaticQuadrantAndAVValues(BaseAudioOnlyChunkedDataset):
 
-    def __init__(self, meta_file, data_dir, sr, chunk_duration, overlap, temp_folder, force_compute=False, audio_extension="mp3"):
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=10, overlap=5, temp_folder=None, force_compute=False, audio_extension="mp3"):
         super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap, temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension)
 
     def get_label(self, info, args):
