@@ -75,6 +75,7 @@ class BaseDataset(Dataset):
             temp_folder = self.__get_temp_folder()
         if not path.exists(temp_folder):
             os.mkdir(temp_folder)
+        self.temp_folder = temp_folder
 
         self.count = len(self.meta)
 
