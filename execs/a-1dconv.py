@@ -1,125 +1,108 @@
-import pytorch_lightning as pl
-from pytorch_lightning.loggers import WandbLogger
+from models.audio_1dconv import Audio1DConv
 
-import torchmetrics as tm
+from data import AudioOnlyStaticQuadrantAndAVValues
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from os import path
 
-from collections import OrderedDict
+import kfold
 
-from utils.common import Conv2DBlock, Conv1DBlock, LinearBlock
+BATCH_SIZE = 32
+MAX_EPOCHS = 100
+LEARNING_RATE = 0.01
+SAMPLE_RATE = 22050
+CHUNK_DURATION = 10
+OVERLAP = 5
 
-from models.base import BaseModel
+ROOT_STORAGE_FOLDER = '/storage/s3bkt/'
 
-class Model1(BaseModel):
+DATA_DIR = {
+    'mer-taffc': '/raw/mer-taffc/audio/',
+    'deam': '/raw/deam/audio/',
+    'emomusic': '/raw/emomusic/audio/',
+    'pmemo': '/raw/pmemo/audio/'
+}
 
-    def __init__(self, batch_size, num_workers, config):
-        super().__init__(batch_size, num_workers, dataset_class=None, dataset_class_args=None, split_dir=None)
-        self.config = config
-        self.lr = self.__set_model_parameter(config, 'lr', 0.01)
-        self.raw_audio_extractor_units = self.__set_model_parameter(
-            config,
-            ['raw_audio_extractor_units'],
-            [1, 64, 128]
-        )
-        self.raw_audio_latent_time_units = self.__set_model_parameter(
-            config,
-            ['raw_audio_latent_time_units'],
-            128
-        )
-        self.classifier_units = self.__set_model_parameter(
-            config,
-            ['classifier_units'],
-            [1024, 512, 128]
-        )
+SPLIT_DIR = {
+    'mer-taffc': '/splits/mer-taffc-kfold/',
+    'deam': '/splits/deam-kfold/',
+    'emomusic': '/splits/emomusic-kfold/',
+    'pmemo': '/splits/pmemo-kfold/'
+}
 
-        ## build layers
-        self.__build()
+PICKLE_FOLDER = '/precomputed/{}/chunked/{}-{}-{}/'
 
-        ## metrics
-        self.train_acc = tm.Accuracy(top_k=3)
-        self.val_acc = tm.Accuracy(top_k=3)
-
-        self.test_acc = tm.Accuracy(top_k=3)
-        self.test_f1_class = tm.F1(num_classes=4, average='none')
-        self.test_f1_global = tm.F1(num_classes=4)
-
-        ## loss
-        self.cat_loss = F.cross_entropy
-
-    def __build(self):
-
-        # 0 -> 1, 661500
-
-        self.raw_audio_feature_extractor = self.__create_conv_network(
-            self.raw_audio_extractor_units,
-            self.raw_audio_latent_time_units
-        )
-
-        input_size = self.raw_audio_extractor_units[-1] * self.raw_audio_latent_time_units
-
-        self.classifier_units = [
-            input_size,
-            *self.classifier_units
-        ]
-
-        self.classifier = self.__create_linear_network(self.classifier_units)
+ADDITIONAL_TAGS = [
+    'conv-1d',
+    '{}-second-chunks'.format(CHUNK_DURATION)
+]
+MODEL_NAME = '104'
+DATASET_NAME = 'mer-taffc'
+INPUT_TYPE = 'audio' # audio | audio-lyrics | lyrics
+OUTPUT_TYPE = 'emotion-class,static-av' # emotion-class | static-av | dynamic-av
+FEATURES = 'raw'
+DATA_CLASS = AudioOnlyStaticQuadrantAndAVValues
+MODEL_CLASS = Audio1DConv
 
 
-    def forward(self, x):
+def run_kfold(n_splits=5, num_workers=4, up_model_config={}):
 
-        raw_audio = x['raw']
+    model_config={
+        'lr': LEARNING_RATE,
+        'batch_size': BATCH_SIZE,
+        'max_epochs': MAX_EPOCHS,
+        'raw_audio_extractor_units': [1, 8, 32, 64, 128],
+        'raw_audio_latent_time_units': 16,
+        'classifier_units': [1024, 512, 128]
+    }
 
-        x = self.raw_audio_feature_extractor(raw_audio)
-        x = torch.flatten(x, start_dim=1)
+    model_config.update(up_model_config)
 
-        x = self.classifier(x)
+    wandb_tags = [
+        'input:{}'.format(INPUT_TYPE),
+        'output:{}'.format(OUTPUT_TYPE),
+        'dataset:{}'.format(DATASET_NAME),
+        'model:{}'.format(MODEL_NAME)
+    ]
 
-        return x
+    wandb_tags.extend(ADDITIONAL_TAGS)
 
-    def predict(self, x):
-        x = self.forward(x)
-        return F.softmax(x, dim=1)
+    dataset_args = {
+        'chunk_duration': CHUNK_DURATION,
+        'overlap': OVERLAP,
+        'audio_index': 'song_id',
+        'label_index': 'quadrant',
+        'pickle_folder': PICKLE_FOLDER.format(DATASET_NAME, SAMPLE_RATE, CHUNK_DURATION, OVERLAP)
+    }
 
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
-        return optimizer
+    model = MODEL_CLASS(
+        batch_size=model_config['batch_size'],
+        num_workers=4,
+        config=model_config
+    )
 
-    def training_step(self, batch, batch_idx):
-        x, y = batch
+    trainer_args = {
+        'max_epochs': model_config['max_epochs'],
+        'checkpoint_callback': True,
+        'gpus': -1
+    }
 
-        y_logit = self(x)
-        loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
+    train_dataset = DATA_CLASS(
+        path.join(SPLIT_DIR[DATASET_NAME], "train.json"),
+        **dataset_args
+    )
 
-        self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-        self.log('train/acc', self.train_acc(pred, y), prog_bar=True, on_step=False, on_epoch=True)
+    test_dataset = DATA_CLASS(
+        path.join(SPLIT_DIR[DATASET_NAME], "test.json"),
+        **dataset_args
+    )
 
-        return loss
+    kfold_runner = kfold.WandBCV(
+            n_splits=n_splits,
+            stratify=False,
+            batch_size=model_config['batch_size'],
+            num_workers=num_workers,
+            wandb_project_name="mer", 
+            wandb_tags=wandb_tags,
+            **trainer_args)
 
-    def validation_step(self, batch, batch_idx):
-        x, y = batch
-
-        y_logit = self(x)
-        loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
-        
-        self.log("val/loss", loss, prog_bar=True)
-        self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-
-        y_logit = self(x)
-        loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
-
-        self.log("test/loss", loss)
-        self.log("test/acc", self.test_acc(pred, y))
-        self.log("test/f1_global", self.test_f1_global(pred, y))
-
-        f1_scores = self.test_f1_class(pred, y)
-        for (i, x) in enumerate(torch.flatten(f1_scores)):
-            self.log("test/f1_class_{}".format(i), x)
+    kfold_runner.fit(model, train_dataset, test_dataset)
