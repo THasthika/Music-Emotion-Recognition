@@ -45,7 +45,8 @@ def preprocess_audio(frame_count, audio, sr, ret_sr):
 class BaseDataset(Dataset):
 
     def __get_temp_folder(self, length=8):
-        return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+        fname = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+        return path.join("/tmp/", fname)
 
     def __check_cache_and_get_features(self, info, args):
         key = self.get_key(info, args)
