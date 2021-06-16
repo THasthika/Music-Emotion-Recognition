@@ -4,7 +4,7 @@
 pip install -qqq wandb
 
 # pytorch
-pip3 install -qqq torch==1.9 torchvision torchaudio torchtext
+pip install -qqq torch==1.9 torchvision torchaudio torchtext
 
 # pytorch_lightning
 pip install -qqq pytorch-lightning
@@ -21,13 +21,13 @@ pip install -qqq torchlibrosa
 pip install -qqq python-dotenv
 
 # torchinfo
-pip3 install -qqq torchinfo
+pip install -qqq torchinfo
 
 # nnaudio
-pip3 install -qqq nnAudio
+pip install -qqq nnAudio
 
 # essentia
-pip3 install -qqq essentia
+pip install -qqq essentia
 
 #pylrc
 pip install -qqq git+https://github.com/THasthika/pylrc.git@timestamp-search
