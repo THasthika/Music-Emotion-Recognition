@@ -141,12 +141,12 @@ class BaseChunkedDataset(BaseDataset):
 
 class BaseAudioOnlyDataset(BaseDataset):
 
-    def __init__(self, meta_file, data, sr=22050, duration=5, temp_folder=None, force_compute=False, audio_extension="mp3"):
+    def __init__(self, meta_file, data_dir, sr=22050, duration=5, temp_folder=None, force_compute=False, audio_extension="mp3"):
         super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
 
         self.sr = sr
         self.duration = duration
-        self.data = data
+        self.data_dir = data_dir
         self.audio_extension = audio_extension
         self.frame_count = int(self.sr * self.duration)
 
