@@ -55,7 +55,7 @@ class BaseDataset(Dataset):
             X = pickle.load(open(key, mode="rb"))
             return X
         X = self.get_features(info, args)
-        pickle.dump(fkey, open(key, mode="wb"))
+        pickle.dump(X, open(fkey, mode="wb"))
         return X
 
     def __get_meta(self, meta_file):
