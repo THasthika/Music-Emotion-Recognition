@@ -4,7 +4,7 @@
 pip install -qqq wandb
 
 # pytorch
-pip install -qqq torch==1.9 torchvision torchaudio torchtext
+pip install -qqq torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 torchtext==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
 
 # pytorch_lightning
 pip install -qqq pytorch-lightning
