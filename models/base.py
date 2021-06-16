@@ -88,7 +88,7 @@ class BaseModel(pl.LightningModule):
 
         config = list(map(lambda x: { ARG_FEATURES: x } if type(x) is int or (type(x) is tuple and type(x[0]) is int) else x, config))
         layer_list = list()
-        for i in range(len(config) - 1):
+        for i in range(len(config) - 2):
             args = {
                 ARG_IN_FEATURES: config[i][ARG_FEATURES],
                 ARG_OUT_FEATURES: config[i+1][ARG_FEATURES],

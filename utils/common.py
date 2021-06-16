@@ -10,8 +10,6 @@ def get_activation_module(activation="relu"):
         _activation = nn.Sigmoid()
     elif activation == "tanh":
         _activation = nn.Tanh()
-    else:
-        raise Exception("Unknown activation function!")
     return _activation
 
 class Conv2DBlock(nn.Module):
@@ -35,7 +33,8 @@ class Conv2DBlock(nn.Module):
             mod_list.append(("dropout", _dropout))
         
         _activation = get_activation_module(activation)
-        mod_list.append(("activation", _activation))
+        if not _activation is None:
+            mod_list.append(("activation", _activation))
 
         self.net = nn.Sequential(OrderedDict(mod_list))
 
@@ -63,7 +62,8 @@ class Conv1DBlock(nn.Module):
             mod_list.append(("dropout", _dropout))
         
         _activation = get_activation_module(activation)
-        mod_list.append(("activation", _activation))
+        if not _activation is None:
+            mod_list.append(("activation", _activation))
 
         self.net = nn.Sequential(OrderedDict(mod_list))
 
@@ -88,8 +88,9 @@ class LinearBlock(nn.Module):
             mod_list.append(("dropout", _dropout))
         
         _activation = get_activation_module(activation)
-        mod_list.append(("activation", _activation))
-
+        if not _activation is None:
+            mod_list.append(("activation", _activation))
+            
         self.net = nn.Sequential(OrderedDict(mod_list))
 
     def forward(self, x):
