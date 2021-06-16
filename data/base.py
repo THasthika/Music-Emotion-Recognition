@@ -9,7 +9,9 @@ import torchaudio
 import pandas as pd
 import numpy as np
 
-import essentia.standard as ess
+import librosa
+
+import pickle
 
 class BaseDataset(Dataset):
 
@@ -312,84 +314,131 @@ class GenericStaticHybridAudioOnlyDataset(GenericStaticAudioOnlyDataset):
 
         return out
 
-class GenericStaticAudioOnlyFeatureExtractionDataset(GenericStaticAudioOnlyDataset):
+class GenericStaticChunkedAudioOnlyFeatureExtractionDataset(GenericStaticChunkedAudioOnlyDataset):
 
-    def __init__(self, meta_file, data_dir, audio_index='song_id', audio_extension='mp3', label_index='quadrant', sample_rate=22050, max_duration=30, frame_size=1024, hop_size=None):
-        super().__init__(meta_file, data_dir, audio_index, audio_extension, label_index, sample_rate, max_duration)
+    def __init__(self, meta_file, data_dir, audio_index='song_id', audio_extension='mp3', label_index='quadrant', sample_rate=22050, chunk_duration=5, overlap=2.5, extractor_config={}, temp_folder="/tmp/"):
+        super().__init__(
+            meta_file=meta_file,
+            data_dir=data_dir,
+            audio_index=audio_index,
+            audio_extension=audio_extension,
+            label_index=label_index,
+            sample_rate=sample_rate,
+            chunk_duration=chunk_duration,
+            overlap=overlap)
 
-        self.frame_size = frame_size
-        if hop_size is None:
-            hop_size = frame_size // 2
-        self.hop_size = hop_size
+        self.extractor_config = extractor_config
 
-        self.nearest_power_of_2 = self.__next_power_of_2(self.sample_rate)
-
-    def __next_power_of_2(self, n):  
-        # Invalid input
-        if (n < 1):
-            return 0
-        res = 1
-        #Try all powers starting from 2^1
-        for i in range(8*sys.getsizeof(n)):
-            curr = 1 << i
-            # If current power is more than n, break
-            if (curr > n):
-                break
-            res = curr
-        return res
-
-    def __compute_features(self, audio, frame_size=1024, hop_size=512, sample_rate=22050):
-
-        logNorm = ess.UnaryOperator(type='log')
-
-        w = ess.Windowing(type = 'hann')
-        fft = ess.FFT()
-        spectrum = ess.Spectrum()  # FFT() would return the complex FFT, here we just want the magnitude spectrum
-        mfcc = ess.MFCC(sampleRate=sample_rate)
-        zcrate = ess.ZeroCrossingRate()
-        sctime = ess.SpectralCentroidTime(sampleRate=sample_rate)
-        chromagram = ess.Chromagram(sampleRate=sample_rate)
-        # scontrast = ess.SpectralContrast(sampleRate=sample_rate, frameSize=(frame_size * 2) - 1)
-
-        max_duration = self.max_duration
-
-        ret0_frames = (max_duration * sample_rate + frame_size) // (frame_size - hop_size)
-        ret0_arr = np.zeros((ret0_frames, 95), dtype='float32')
-        for (i, frame) in enumerate(ess.FrameGenerator(audio, frameSize=frame_size, hopSize=hop_size, startFromZero=True)):
-            stft = spectrum(w(frame))
-            mfcc_bands, mfcc_coeffs = mfcc(stft)
-
-            farr = np.hstack(
-                (mfcc_coeffs,
-                 mfcc_bands,
-                 logNorm(mfcc_bands),
-                 zcrate(frame),
-                 sctime(frame))
-            )
-            ret0_arr[i] = farr
-
-        frameSize = self.nearest_power_of_2 * 2 - 2
-        hopSize = frameSize // 2
-        ret1_frames = (max_duration * sample_rate + frameSize) // (frameSize - hopSize)
-        ret1_arr = np.zeros((ret1_frames, 12), dtype='float32')
-        for (i, frame) in enumerate(ess.FrameGenerator(audio, frameSize=frameSize, hopSize=hopSize, startFromZero=True)):
-            stft = spectrum(w(frame))
-
-            farr = np.hstack(
-                (chromagram(stft))
-            )
-            ret1_arr[i] = farr
-
-        dancability = ess.Danceability()
-
-        ret2_arr = np.array(
-            [
-                dancability(audio)[0]
-            ]
-            , dtype='float32'
+        self.labels = np.array(
+            list(map(lambda x: self.meta.iloc[x[0]][self.label_index], self.frames))
         )
 
-        return (ret0_arr, ret1_arr, ret2_arr)
+        self.temp_folder = temp_folder
+
+    def get_labels(self):
+        return self.labels
+
+    def __compute_features(self, audio, duration, frame_size=2048, hop_size=512, sample_rate=22050, n_fft=2048, n_mels=128, n_mfcc=20, n_chroma=12, spectral_contrast_bands=6):
+
+        sr = sample_rate
+
+        stft_feature_count = (1 + n_fft//2)
+
+        # calculate stft (n_fft//2 + 1) - features
+        spec = np.abs(librosa.spectrum.stft(audio, win_length=frame_size, n_fft=n_fft, hop_length=hop_size, window="hann"))
+        power_spec = np.power(spec, 2)
+
+        # calculate mel spectrogram (n_mels) - features
+        mel_spec = librosa.feature.melspectrogram(S=power_spec, sr=sr, n_fft=frame_size, n_mels=n_mels)
+
+        # calculate mfccs (n_mfcc) - features
+        mfccs = librosa.feature.mfcc(S=librosa.power_to_db(mel_spec), n_mfcc=n_mfcc)
+
+        # calculate chroma (n_chroma) - features
+        chroma = librosa.feature.chroma_stft(S=spec, sr=sr, n_chroma=n_chroma)
+
+        # calculate the tonnetz (perfect 5th, minor and major 3rd all in 2 d) - 6
+        tonnetz = librosa.feature.tonnetz(y=audio, sr=sr, chroma=chroma)
+
+        # calculate spectral contrast - (spectral_contrast_bands + 1)
+        spectral_contrast = librosa.feature.spectral_contrast(S=spec, sr=sr, n_bands=spectral_contrast_bands)
+
+        # initialize array
+        offset = 0
+        feature_count = 6
+        frame_count = spec.shape[1]
+        arr = np.zeros((feature_count, frame_count))
+
+        # calculate tempo - 1
+        onset_env = librosa.onset.onset_strength(audio, sr=sr)
+        tempo = librosa.beat.tempo(onset_envelope=onset_env, sr=sr, aggregate=None)
+        arr[offset:offset+1] = tempo
+        offset += 1
+
+        # calculate spectral centroid - 1
+        spectral_centroid = librosa.feature.spectral_centroid(S=spec, sr=sr)
+        arr[offset:offset+1] = spectral_centroid
+        offset += 1
+
+        # calculate spectral bandwidth - 1
+        spectral_bandwidth = librosa.feature.spectral_bandwidth(S=spec, sr=sr)
+        arr[offset:offset+1] = spectral_bandwidth
+        offset += 1
+
+        # calculate spectral flatness - 1
+        spectral_flatness = librosa.feature.spectral_flatness(S=spec)
+        arr[offset:offset+1] = spectral_flatness
+        offset += 1
+
+        # calculate spectral rolloff - 1
+        spectral_rolloff = librosa.feature.spectral_rolloff(S=spec, sr=sr, roll_percent=0.85)
+        arr[offset:offset+1] = spectral_rolloff
+        offset += 1
+
+        # calculate zero crossing rate - 1
+        zcr = librosa.feature.zero_crossing_rate(audio, frame_length=frame_size, hop_length=hop_size)
+        arr[offset:offset+1] = zcr
+
+        ret = {
+            'spec': torch.tensor(spec, dtype=torch.float32),
+            'mel_spec': torch.tensor(mel_spec, dtype=torch.float32),
+            'mfccs': torch.tensor(mfccs, dtype=torch.float32),
+            'chroma': torch.tensor(chroma, dtype=torch.float32),
+            'tonnetz': torch.tensor(tonnetz, dtype=torch.float32),
+            'spectral_contrast': torch.tensor(spectral_contrast, dtype=torch.float32)
+        }
+
+        return {
+            **ret,
+            'spectral_aggregate': torch.tensor(arr, dtype=torch.float32)
+        }
+
+    def get_features(self, info, args):
+        
+        key = path.join(self.temp_folder, "{}-{}.pkl".format(info[self.audio_index], args))
+        if path.exists(key):
+            out = pickle.load(open(key, mode="rb"))
+            return out
+
+        x, sr = self.get_audio(info, args)
+        audio_out = self.preprocess_audio(x, sr)
+
+        features_out = self.__compute_features(
+            np.array(torch.squeeze(audio_out)),
+            duration=self.chunk_duration,
+            sample_rate=self.sample_rate,
+            **self.extractor_config
+        )
+        
+
+        out = {
+            'raw': audio_out,
+            **features_out
+        }
+
+        pickle.dump(out, open(key, mode="wb"))
+        
+        return out
 
     def get_features(self, info, args):
 
