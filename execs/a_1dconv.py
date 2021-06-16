@@ -49,6 +49,12 @@ MODEL_CLASS = Audio1DConv
 
 
 def audio_1dconv_kfold_run(n_splits=5, num_workers=4, up_model_config={}):
+    
+    temp_folder = TEMP_FOLDER.format(DATASET_NAME, SAMPLE_RATE, CHUNK_DURATION, OVERLAP)
+
+    print("Data Folder: {}".format(DATA_DIR[DATASET_NAME]))
+    print("Split Folder: {}".format(SPLIT_DIR[DATASET_NAME]))
+    print("Temp Folder: {}".format(temp_folder))
 
     model_config={
         'lr': LEARNING_RATE,
@@ -75,7 +81,7 @@ def audio_1dconv_kfold_run(n_splits=5, num_workers=4, up_model_config={}):
         'overlap': OVERLAP,
         'data_dir': DATA_DIR[DATASET_NAME],
         'sr': SAMPLE_RATE,
-        'temp_folder': TEMP_FOLDER.format(DATASET_NAME, SAMPLE_RATE, CHUNK_DURATION, OVERLAP)
+        'temp_folder': temp_folder
     }
 
     model = MODEL_CLASS(
