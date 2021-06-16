@@ -52,7 +52,7 @@ class BaseDataset(Dataset):
         key = self.get_key(info, args)
         fkey = path.join(self.temp_folder, "{}.pkl".format(key))
         if (not self.force_compute) and path.exists(fkey):
-            X = pickle.load(open(key, mode="rb"))
+            X = pickle.load(open(fkey, mode="rb"))
             return X
         X = self.get_features(info, args)
         pickle.dump(X, open(fkey, mode="wb"))
