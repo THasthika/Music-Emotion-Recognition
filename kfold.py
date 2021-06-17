@@ -98,92 +98,56 @@ class CrossValidator:
             batch_size=self.batch_size,
             num_workers=self.num_workers)
         test_dl = DataLoader(test_data, batch_size=self.batch_size, num_workers=self.num_workers)
-        train_dl = DataLoader(data, batch_size=self.batch_size, num_workers=self.num_workers)
 
-        # Clone model & instantiate a new trainer:
-        # _model = deepcopy(model)
-        logger = None
-        if self.use_wandb:
-            logger = WandbLogger(
-                offline=False,
-                log_model=True,
-                project=self.wandb_project_name,
-                group=self.wandb_group,
-                job_type="train",
-                tags=self.wandb_tags,
-                name="{}".format(self.run_name)
+        print("KFoldHelper: Splitting dataset into {} folds".format(self.n_splits))
+        cv_data = split_func(data)
+        for fold_idx, loaders in enumerate(cv_data):
+
+            if not self.max_runs is None and self.max_runs < fold_idx:
+                print("Reached Maximum Runs... {}".format(self.max_runs))
+                break
+
+            print("Starting {} Fold...".format(fold_idx))
+
+            # Clone model & instantiate a new trainer:
+            _model = deepcopy(model)
+            logger = None
+            if self.use_wandb:
+                logger = WandbLogger(
+                    offline=False,
+                    log_model=True,
+                    project=self.wandb_project_name,
+                    group=self.wandb_group,
+                    job_type="train",
+                    tags=self.wandb_tags,
+                    name="{}-fold-{}".format(self.run_name, fold_idx)
+                )
+
+            model_callback = ModelCheckpoint(monitor=self.model_monitor)
+            early_stop_callback = EarlyStopping(
+                monitor=self.early_stop_monitor,
+                min_delta=0.00,
+                patience=10,
+                verbose=True,
+                mode=self.early_stop_mode
             )
 
-        trainer = pl.Trainer(
-            logger=logger,
-            *self.trainer_args,
-            **self.trainer_kwargs)
+            trainer = pl.Trainer(
+                logger=logger,
+                callbacks=[model_callback, early_stop_callback],
+                *self.trainer_args,
+                **self.trainer_kwargs)
 
-        # # Update loggers and callbacks:
-        # self.update_logger(trainer, fold_idx)
-        # for callback in trainer.callbacks:
-        #     if isinstance(callback, pl.callbacks.ModelCheckpoint):
-        #         self.update_modelcheckpoint(callback, fold_idx)
+            # # Update loggers and callbacks:
+            # self.update_logger(trainer, fold_idx)
+            # for callback in trainer.callbacks:
+            #     if isinstance(callback, pl.callbacks.ModelCheckpoint):
+            #         self.update_modelcheckpoint(callback, fold_idx)
 
-        print(torch.cuda.memory_summary("cuda"))
+            # Fit:
+            trainer.fit(_model, *loaders)
 
-        # Fit:
-        trainer.fit(model, train_dataloader=train_dl)
+            trainer.test(_model, test_dl)
 
-        trainer.test(model, test_dl)
-
-        if self.use_wandb:
-            wandb.finish()
-
-        # print("KFoldHelper: Splitting dataset into {} folds".format(self.n_splits))
-        # cv_data = split_func(data)
-        # for fold_idx, loaders in enumerate(cv_data):
-
-        #     if not self.max_runs is None and self.max_runs < fold_idx:
-        #         print("Reached Maximum Runs... {}".format(self.max_runs))
-        #         break
-
-        #     print("Starting {} Fold...".format(fold_idx))
-
-        #     # Clone model & instantiate a new trainer:
-        #     _model = deepcopy(model)
-        #     logger = None
-        #     if self.use_wandb:
-        #         logger = WandbLogger(
-        #             offline=False,
-        #             log_model=True,
-        #             project=self.wandb_project_name,
-        #             group=self.wandb_group,
-        #             job_type="train",
-        #             tags=self.wandb_tags,
-        #             name="{}-fold-{}".format(self.run_name, fold_idx)
-        #         )
-
-        #     model_callback = ModelCheckpoint(monitor=self.model_monitor)
-        #     early_stop_callback = EarlyStopping(
-        #         monitor=self.early_stop_monitor,
-        #         min_delta=0.00,
-        #         patience=10,
-        #         verbose=True,
-        #         mode=self.early_stop_mode
-        #     )
-
-        #     trainer = pl.Trainer(
-        #         logger=logger,
-        #         callbacks=[model_callback, early_stop_callback],
-        #         *self.trainer_args,
-        #         **self.trainer_kwargs)
-
-        #     # # Update loggers and callbacks:
-        #     # self.update_logger(trainer, fold_idx)
-        #     # for callback in trainer.callbacks:
-        #     #     if isinstance(callback, pl.callbacks.ModelCheckpoint):
-        #     #         self.update_modelcheckpoint(callback, fold_idx)
-
-        #     # Fit:
-        #     trainer.fit(_model, *loaders)
-
-        #     trainer.test(_model, test_dl)
-
-        #     if self.use_wandb:
-        #         wandb.finish()
+            if self.use_wandb:
+                wandb.finish()
