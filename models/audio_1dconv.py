@@ -145,6 +145,6 @@ class Audio1DConv(BaseModel):
         self.log("test/acc", self.val_acc(pred, cat_y), prog_bar=True)
         self.log("test/f1_global", self.test_f1_global(pred, cat_y))
 
-        f1_scores = self.test_f1_class(pred, y)
+        f1_scores = self.test_f1_class(pred, cat_y)
         for (i, x) in enumerate(torch.flatten(f1_scores)):
             self.log("test/f1_class_{}".format(i), x)
