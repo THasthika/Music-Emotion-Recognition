@@ -89,6 +89,9 @@ class CrossValidator:
 
     def fit(self, model: pl.LightningModule, data: Dataset, test_data: Dataset):
         model = model.to('cpu')
+        data = data.to('cpu')
+        test_data = test_data.to('cpu')
+        
         print("Initiating KFoldHelper...")
         split_func = KFoldHelper(
             n_splits=self.n_splits,
