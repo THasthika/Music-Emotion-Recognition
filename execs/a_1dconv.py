@@ -114,6 +114,7 @@ def kfold_run(n_splits=5, num_workers=4, up_model_config={}, up_dataset_args={})
             num_workers=num_workers,
             wandb_project_name="mer", 
             wandb_tags=wandb_tags,
+            model_monitor='val/cat_loss',
             **trainer_args)
 
     kfold_runner.fit(model, train_dataset, test_dataset)
