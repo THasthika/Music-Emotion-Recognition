@@ -22,6 +22,7 @@ for (X, y) in dl:
     print(X.shape)
     print(y.shape)
     # (X, y) = (X.to("cuda"), y.to("cuda"))
-    # y_pred = model(X)
+    y_pred = model(X)
+    print(y_pred.shape)
     # print("OK!")
     break
