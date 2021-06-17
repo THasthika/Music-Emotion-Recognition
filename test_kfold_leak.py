@@ -10,6 +10,7 @@ import pytorch_lightning as pl
 model = Audio1DConvCat(
     raw_audio_extractor_units=[1, 64, 128],
     classifier_units=[
+        1024,
         512,
         256,
         128
