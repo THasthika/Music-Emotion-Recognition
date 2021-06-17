@@ -71,7 +71,7 @@ class Audio1DConvCat(BaseModel):
             nn.AdaptiveAvgPool1d(32)
         )
 
-        self.classifier_units = nn.Sequential(
+        self.classifier = nn.Sequential(
             LinearBlock(in_features=32 * 256, out_features=512),
             LinearBlock(in_features=512, out_features=256),
             LinearBlock(in_features=256, out_features=128),
