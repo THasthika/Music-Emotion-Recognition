@@ -62,7 +62,7 @@ class Audio1DConvStat(BaseModel):
             *self.regressor_units,
             { 'features': 4, 'activation': None, 'dropout': False, 'batch_normalize': False }
         ]
-
+        
         self.regressor = self.create_linear_network(self.regressor_units)
 
 
