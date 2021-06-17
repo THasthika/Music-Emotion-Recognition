@@ -97,6 +97,7 @@ class CrossValidator:
             batch_size=self.batch_size,
             num_workers=self.num_workers)
         test_dl = DataLoader(test_data, batch_size=self.batch_size, num_workers=self.num_workers)
+        train_dl = DataLoader(data, batch_size=self.batch_size, num_workers=self.num_workers)
 
         # Clone model & instantiate a new trainer:
         _model = deepcopy(model)
@@ -112,18 +113,8 @@ class CrossValidator:
                 name="{}".format(self.run_name)
             )
 
-        model_callback = ModelCheckpoint(monitor=self.model_monitor)
-        early_stop_callback = EarlyStopping(
-            monitor=self.early_stop_monitor,
-            min_delta=0.00,
-            patience=10,
-            verbose=True,
-            mode=self.early_stop_mode
-        )
-
         trainer = pl.Trainer(
             logger=logger,
-            callbacks=[model_callback, early_stop_callback],
             *self.trainer_args,
             **self.trainer_kwargs)
 
@@ -134,7 +125,7 @@ class CrossValidator:
         #         self.update_modelcheckpoint(callback, fold_idx)
 
         # Fit:
-        trainer.fit(_model, train_dataloader=data)
+        trainer.fit(_model, train_dataloader=train_dl)
 
         trainer.test(_model, test_dl)
 
