@@ -96,7 +96,6 @@ class BaseModel(pl.LightningModule):
             for x in [ARG_BATCH_NORMALIZE, ARG_DROPOUT, ARG_DROPOUT_P, ARG_ACTIVATION]:
                 if x in config[i]:
                     args[x] = config[i][x]
-            print(args)
             layer_list.append(('linear{}'.format(i+1), LinearBlock(**args)))
         
         return nn.Sequential(OrderedDict(layer_list))
