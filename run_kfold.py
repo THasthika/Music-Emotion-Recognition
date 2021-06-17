@@ -65,3 +65,4 @@ if __name__ == "__main__":
     config_file = "config.yaml"
     if len(sys.argv) > 1:
         config_file = sys.argv[1]
+    run(config_file)
