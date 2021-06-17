@@ -117,52 +117,52 @@ class BaseModel(pl.LightningModule):
         else:
             return temp
 
-    def prepare_data(self):
+    # def prepare_data(self):
 
-        if self.dataset_class is None or self.split_dir is None:
-            return
+    #     if self.dataset_class is None or self.split_dir is None:
+    #         return
 
-        split_dir = self.split_dir
-        DSClass = self.dataset_class
-        additional_args = self.dataset_class_args
+    #     split_dir = self.split_dir
+    #     DSClass = self.dataset_class
+    #     additional_args = self.dataset_class_args
 
-        train_meta_file = path.join(split_dir, "train.json")
-        val_meta_file = path.join(split_dir, "val.json")
-        test_meta_file = path.join(split_dir, "test.json")
+    #     train_meta_file = path.join(split_dir, "train.json")
+    #     val_meta_file = path.join(split_dir, "val.json")
+    #     test_meta_file = path.join(split_dir, "test.json")
 
-        has_val = False
-        has_test = False
-        if path.exists(val_meta_file):
-            has_val = True
-        if path.exists(test_meta_file):
-            has_test = True
+    #     has_val = False
+    #     has_test = False
+    #     if path.exists(val_meta_file):
+    #         has_val = True
+    #     if path.exists(test_meta_file):
+    #         has_test = True
 
-        self.train_ds = None
-        self.val_ds = None
-        self.test_ds = None
+    #     self.train_ds = None
+    #     self.val_ds = None
+    #     self.test_ds = None
 
-        self.train_ds = DSClass(
-            meta_file=train_meta_file,
-            **additional_args)
+    #     self.train_ds = DSClass(
+    #         meta_file=train_meta_file,
+    #         **additional_args)
 
-        if has_val:
-            self.val_ds = DSClass(
-                meta_file=val_meta_file,
-                **additional_args)
+    #     if has_val:
+    #         self.val_ds = DSClass(
+    #             meta_file=val_meta_file,
+    #             **additional_args)
 
-        if has_test:
-            self.test_ds = DSClass(
-                meta_file=test_meta_file,
-                **additional_args)
+    #     if has_test:
+    #         self.test_ds = DSClass(
+    #             meta_file=test_meta_file,
+    #             **additional_args)
 
-    def train_dataloader(self):
-        if self.test_ds is None: return None
-        return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers)
+    # def train_dataloader(self):
+    #     if self.test_ds is None: return None
+    #     return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers)
 
-    def val_dataloader(self):
-        if self.val_ds is None: return None
-        return DataLoader(self.val_ds, batch_size=self.batch_size, num_workers=self.num_workers)
+    # def val_dataloader(self):
+    #     if self.val_ds is None: return None
+    #     return DataLoader(self.val_ds, batch_size=self.batch_size, num_workers=self.num_workers)
 
-    def test_dataloader(self):
-        if self.test_ds is None: return None
-        return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers)
+    # def test_dataloader(self):
+    #     if self.test_ds is None: return None
+    #     return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers)
