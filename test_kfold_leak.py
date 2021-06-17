@@ -33,8 +33,8 @@ test_data = BaseAudioOnlyChunkedDataset(
     temp_folder="/storage/s3/precomputed/mer-taffc/22050-10-5/"
 )
 
-train_dl = DataLoader(train_ds, batch_size=32, num_workers=4)
-val_dl = DataLoader(val_ds, batch_size=32, num_workers=4)
+train_dl = DataLoader(train_ds, batch_size=1, num_workers=4)
+val_dl = DataLoader(val_ds, batch_size=1, num_workers=4)
 
 trainer = pl.Trainer(gpus=-1)
 
