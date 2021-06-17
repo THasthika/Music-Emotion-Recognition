@@ -1,15 +1,65 @@
-import json
+import yaml
+import sys
+from os import path
 
-from execs.a_1dconv import kfold_run as a1krun
+import kfold
 
-MAPPING_EXECS = {
-    "a_1dconv": a1krun
+config_file = "config.yaml"
+if len(sys.argv) > 1:
+    config_file = sys.argv[1]
+
+config = yaml.load(open(config_file, mode="r"), Loader=yaml.FullLoader)
+
+modelMod = __import__('models.revamped', fromlist=[config['model']['class']])
+ModelClass = getattr(modelMod, config['model']['class'])
+modelConfig = config['model']['config']
+
+dataMod = __import__('data', fromlist=[config['dataset']['class']])
+DatasetClass = getattr(dataMod, config['dataset']['class'])
+datasetConfig = config['dataset']['config']
+
+dataDir = config['dataset']['data_dir']
+splitDir = config['dataset']['split_dir']
+
+kfoldConfig = {}
+try:
+    kfoldConfig = config['kfold']
+    if not type(kfoldConfig) is dict:
+        print("not a dictionary... ignoring")
+        kfoldConfig = {}
+except:
+    pass
+
+default_kfold_args = {
+    'n_splits': 5,
+    'stratify': False,
+    'batch_size': 16,
+    'num_workers': 4,
+    'max_runs': None,
+    'wandb_group': None,
+    'wandb_project_name': None,
+    'wandb_tags': None,
+    'model_monitor': 'val/loss',
+    'early_stop_monitor': 'val/acc',
+    'early_stop_mode': 'max'
 }
 
-config = json.load(open("config.json", mode="r"))
-execs_name = config['execs']
-model_config = config['model']
-dataset_config = config['dataset']
+default_kfold_args.update(kfoldConfig)
 
-fn = MAPPING_EXECS[execs_name]
-fn(up_model_config=model_config, up_dataset_args=dataset_config)
+model = ModelClass(**modelConfig)
+
+train_ds = DatasetClass(
+    path.join(splitDir, "train.json"),
+    dataDir,
+    **datasetConfig
+)
+
+test_ds = DatasetClass(
+    path.join(splitDir, "test.json"),
+    dataDir,
+    **datasetConfig
+)
+
+crossValidator = kfold.CrossValidator(**default_kfold_args)
+
+crossValidator.fit(model, train_ds, test_ds)

@@ -54,6 +54,7 @@ class CrossValidator:
                  stratify=False,
                  batch_size=16,
                  num_workers=4,
+                 max_runs=None,
                  wandb_group=None,
                  wandb_project_name=None,
                  wandb_tags=None,
@@ -71,6 +72,7 @@ class CrossValidator:
         self.num_workers = num_workers
         self.wandb_tags = wandb_tags
         self.wandb_project_name = wandb_project_name
+        self.max_runs = max_runs
 
         self.run_name = generate_slug(2)
         if wandb_group is None:
@@ -96,6 +98,10 @@ class CrossValidator:
         print("KFoldHelper: Splitting dataset into {} folds".format(self.n_splits))
         cv_data = split_func(data)
         for fold_idx, loaders in enumerate(cv_data):
+
+            if not self.max_runs is None and self.max_runs < fold_idx:
+                print("Reached Maximum Runs... {}".format(self.max_runs))
+                break
 
             print("Starting {} Fold...".format(fold_idx))
 
