@@ -29,7 +29,8 @@ val_ds = Subset(data, val_indices)
 
 test_data = BaseAudioOnlyChunkedDataset(
     "/storage/s3/splits/mer-taffc-kfold/train.json",
-    "/storage/s3/raw/mer-taffc/audio"
+    "/storage/s3/raw/mer-taffc/audio",
+    "/storage/s3/precomputed/mer-taffc/22050-10-5/",
 )
 
 train_dl = DataLoader(train_ds, batch_size=32, num_workers=4)
