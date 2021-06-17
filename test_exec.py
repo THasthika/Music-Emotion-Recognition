@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader
 import torchinfo
 
 model = Audio1DConvStat()
-model = model.cuda()
 
 ds = AudioOnlyStaticAVValues(
     "/storage/s3/splits/mer-taffc-kfold/train.json",
@@ -20,6 +19,7 @@ dl = DataLoader(ds, batch_size=2, num_workers=4)
 torchinfo.summary(model, input_size=(1, 1, 22050*10))
 
 for (X, y) in dl:
+    (X, y) = (X.to("cpu"), y.to("cpu"))
     print(X.shape)
     print(y.shape)
     # (X, y) = (X.to("cuda"), y.to("cuda"))
