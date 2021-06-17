@@ -53,6 +53,7 @@ class BaseModel(pl.LightningModule):
 
 
         config = list(map(lambda x: { ARG_CHANNELS: x } if type(x) is int or (type(x) is tuple and type(x[0]) is int) else x, config))
+        print(config)
         layer_list = list()
         for i in range(len(config) - 1):
             args = {
