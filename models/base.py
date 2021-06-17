@@ -53,7 +53,6 @@ class BaseModel(pl.LightningModule):
 
 
         config = list(map(lambda x: { ARG_CHANNELS: x } if type(x) is int or (type(x) is tuple and type(x[0]) is int) else x, config))
-        print(config)
         layer_list = list()
         for i in range(len(config) - 1):
             args = {
@@ -63,6 +62,7 @@ class BaseModel(pl.LightningModule):
             for x in [ARG_KERNEL_SIZE, ARG_STRIDE, ARG_BATCH_NORMALIZE, ARG_DROPOUT, ARG_DROPOUT_P, ARG_ACTIVATION]:
                 if x in config:
                     args[x] = config[x]
+            print(args)
             layer_list.append(('conv{}'.format(i+1), ConvBlock(**args)))
 
         if adaptive_pooling_type == 'avg':
