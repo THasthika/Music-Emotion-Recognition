@@ -3,17 +3,21 @@ from data import BaseAudioOnlyChunkedDataset
 
 from torch.utils.data import DataLoader
 
-model = Audio1DConvCat().cuda()
+import torchinfo
 
-ds = BaseAudioOnlyChunkedDataset(
-    "/storage/s3/splits/mer-taffc-kfold/train.json",
-    "/storage/s3/raw/mer-taffc/audio/",
-    temp_folder="/tmp/xxx"
-)
+model = Audio1DConvCat()
 
-dl = DataLoader(ds, batch_size=32, num_workers=4)
+# ds = BaseAudioOnlyChunkedDataset(
+#     "/storage/s3/splits/mer-taffc-kfold/train.json",
+#     "/storage/s3/raw/mer-taffc/audio/",
+#     temp_folder="/tmp/xxx"
+# )
 
-for (X, y) in dl:
-    (X, y) = (X.to("cuda"), y.to("cuda"))
-    y_pred = model(X)
-    print("OK!")
+# dl = DataLoader(ds, batch_size=32, num_workers=4)
+
+torchinfo.summary(model, input_size=(32, 1, 22050*10))
+
+# for (X, y) in dl:
+#     (X, y) = (X.to("cuda"), y.to("cuda"))
+#     y_pred = model(X)
+#     print("OK!")
