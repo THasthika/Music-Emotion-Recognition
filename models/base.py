@@ -60,6 +60,7 @@ class BaseModel(pl.LightningModule):
                 ARG_OUT_CHANNELS: config[i+1][ARG_CHANNELS],
             }
             for x in [ARG_KERNEL_SIZE, ARG_STRIDE, ARG_BATCH_NORMALIZE, ARG_DROPOUT, ARG_DROPOUT_P, ARG_ACTIVATION]:
+                print(x)
                 if x in config:
                     args[x] = config[x]
             print(args)
