@@ -3,18 +3,17 @@ model:
     class: Audio1DConvCat
     config:
         lr: 0.01
-        batch_size: 32
-        max_epochs: 100
         raw_audio_extractor_units:
             - 1
-            - 8
-            - 32
+            -
+                channels: 64
+                kernel_size: 64
             - 64
             - 128
-        raw_audio_latent_time_units: 16
+        raw_audio_latent_time_units: 64
         classifier_units:
-            - 1024
             - 512
+            - 256
             - 128
 dataset:
     class: BaseAudioOnlyChunkedDataset
