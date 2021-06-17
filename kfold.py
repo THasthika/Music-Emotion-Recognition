@@ -125,7 +125,7 @@ class CrossValidator:
         #     if isinstance(callback, pl.callbacks.ModelCheckpoint):
         #         self.update_modelcheckpoint(callback, fold_idx)
 
-        torch.cuda.memory_summary("cuda")
+        print(torch.cuda.memory_summary("cuda"))
 
         # Fit:
         trainer.fit(model, train_dataloader=train_dl)
