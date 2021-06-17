@@ -7,6 +7,7 @@ from pytorch_lightning.loggers import WandbLogger
 from coolname import generate_slug
 from copy import deepcopy
 import wandb
+import os
 
 class KFoldHelper:
     """Split data for (Stratified) K-Fold Cross-Validation."""
@@ -46,7 +47,7 @@ class KFoldHelper:
 
             yield train_loader, val_loader
 
-class WandBCV:
+class CrossValidator:
     """Cross-validation with a LightningModule."""
     def __init__(self,
                  n_splits=5,
@@ -56,6 +57,9 @@ class WandBCV:
                  wandb_group=None,
                  wandb_project_name=None,
                  wandb_tags=None,
+                 model_monitor='val/loss',
+                 early_stop_monitor='val/acc',
+                 early_stop_mode='max',
                  *trainer_args,
                  **trainer_kwargs):
         super().__init__()
@@ -73,6 +77,14 @@ class WandBCV:
             wandb_group = self.run_name
         self.wandb_group = wandb_group
 
+        self.model_monitor = model_monitor
+        self.early_stop_monitor = early_stop_monitor
+        self.early_stop_mode = early_stop_mode
+        self.use_wandb = (False if os.environ.get('USE_WANDB', 'true').lower() == 'false' else True)
+
+        if not self.use_wandb:
+            print("Not Using WandB")
+
     def fit(self, model: pl.LightningModule, data: Dataset, test_data: Dataset):
         print("Initiating KFoldHelper...")
         split_func = KFoldHelper(
@@ -89,23 +101,25 @@ class WandBCV:
 
             # Clone model & instantiate a new trainer:
             _model = deepcopy(model)
-            logger = WandbLogger(
-                offline=False,
-                log_model=True,
-                project=self.wandb_project_name,
-                group=self.wandb_group,
-                job_type="train",
-                tags=self.wandb_tags,
-                name="{}-fold-{}".format(self.run_name, fold_idx)
-            )
+            logger = None
+            if self.use_wandb:
+                logger = WandbLogger(
+                    offline=False,
+                    log_model=True,
+                    project=self.wandb_project_name,
+                    group=self.wandb_group,
+                    job_type="train",
+                    tags=self.wandb_tags,
+                    name="{}-fold-{}".format(self.run_name, fold_idx)
+                )
 
-            model_callback = ModelCheckpoint(monitor="val/loss")
+            model_callback = ModelCheckpoint(monitor=self.model_monitor)
             early_stop_callback = EarlyStopping(
-                monitor='val/acc',
+                monitor=self.early_stop_monitor,
                 min_delta=0.00,
                 patience=10,
                 verbose=True,
-                mode='max'
+                mode=self.early_stop_mode
             )
 
             trainer = pl.Trainer(
@@ -125,4 +139,5 @@ class WandBCV:
 
             trainer.test(_model, test_dl)
 
-            wandb.finish()
+            if self.use_wandb:
+                wandb.finish()

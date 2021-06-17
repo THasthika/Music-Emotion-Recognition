@@ -107,7 +107,7 @@ def kfold_run(n_splits=5, num_workers=4, up_model_config={}, up_dataset_args={})
         **dataset_args
     )
 
-    kfold_runner = kfold.WandBCV(
+    kfold_runner = kfold.CrossValidator(
             n_splits=n_splits,
             stratify=False,
             batch_size=model_config['batch_size'],
