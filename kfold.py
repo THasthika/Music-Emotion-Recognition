@@ -88,7 +88,7 @@ class CrossValidator:
             print("Not Using WandB")
 
     def fit(self, model: pl.LightningModule, data: Dataset, test_data: Dataset):
-        model = model.to('cpu')
+        # model = model.to('cpu')
 
         print("Initiating KFoldHelper...")
         split_func = KFoldHelper(
@@ -100,7 +100,7 @@ class CrossValidator:
         train_dl = DataLoader(data, batch_size=self.batch_size, num_workers=self.num_workers)
 
         # Clone model & instantiate a new trainer:
-        _model = deepcopy(model)
+        # _model = deepcopy(model)
         logger = None
         if self.use_wandb:
             logger = WandbLogger(
@@ -125,9 +125,9 @@ class CrossValidator:
         #         self.update_modelcheckpoint(callback, fold_idx)
 
         # Fit:
-        trainer.fit(_model, train_dataloader=train_dl)
+        trainer.fit(model, train_dataloader=train_dl)
 
-        trainer.test(_model, test_dl)
+        trainer.test(model, test_dl)
 
         if self.use_wandb:
             wandb.finish()
