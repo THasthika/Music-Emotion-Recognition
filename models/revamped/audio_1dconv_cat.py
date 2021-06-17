@@ -58,8 +58,7 @@ class Audio1DConvCat(BaseModel):
         self.test_f1_global = tm.F1(num_classes=4)
 
         ## loss
-        self.cross_loss = F.cross_entropy
-        self.mae_loss = F.l1_loss
+        self.loss = F.cross_entropy
 
     def __build(self):
 
