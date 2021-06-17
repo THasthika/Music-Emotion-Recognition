@@ -13,7 +13,7 @@ SAMPLE_RATE = 22050
 CHUNK_DURATION = 10
 OVERLAP = 5
 
-ROOT_STORAGE_FOLDER = '/storage/s3bkt/'
+ROOT_STORAGE_FOLDER = '/storage/s3/'
 
 DATA_DIR = {
     'mer-taffc': 'raw/mer-taffc/audio/',
