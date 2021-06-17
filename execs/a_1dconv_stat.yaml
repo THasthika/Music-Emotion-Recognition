@@ -1,0 +1,46 @@
+---
+model:
+    class: Audio1DConvStat
+    config:
+        lr: 0.01
+        raw_audio_extractor_units:
+            - 1
+            -
+                channels: 64
+                kernel_size: 64
+            - 64
+            - 128
+        raw_audio_latent_time_units: 64
+        classifier_units:
+            - 512
+            - 256
+            - 128
+dataset:
+    class: AudioOnlyStaticAVValues
+    config:
+        sr: 22050
+        chunk_duration: 10
+        overlap: 5
+        temp_folder: /storage/s3/precomputed/mer-taffc/22050-10-5
+        force_compute: true
+        audio_extension: mp3
+    data_dir: /storage/s3/raw/mer-taffc/audio/
+    split_dir: /storage/s3/splits/mer-taffc-kfold/
+kfold:
+    n_splits: 5
+    stratify: false
+    batch_size: 16
+    num_workers: 4
+    # max_runs: null
+    # wandb_group: null
+    # wandb_project_name: null
+    wandb_tags:
+        - input:audio
+        - output:stat
+        - dataset:mer-taffc
+        - model:Audio1DConvCat
+    model_monitor: val/loss
+    early_stop_monitor: val/loss
+    early_stop_mode: min
+    gpus: -1
+    max_epochs: 100

@@ -206,6 +206,16 @@ class AudioOnlyStaticQuadrantAndAVValues(BaseAudioOnlyChunkedDataset):
         y1 = torch.tensor(list(y[1:]), dtype=torch.float)
         return (y0, y1)
 
+class AudioOnlyStaticAVValues(BaseAudioOnlyChunkedDataset):
+
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=10, overlap=5, temp_folder=None, force_compute=False, audio_extension="mp3"):
+        super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap, temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension)
+
+    def get_label(self, info, args):
+        y = info[['static_valence_mean', 'static_valence_std', 'static_arousal_mean', 'static_arousal_std']].to_numpy()
+        y = torch.tensor(list(y), dtype=torch.float)
+        return y
+
 # class AudioDataset(BaseDataset):
 
 #     def __init__(self, meta_file, temp_folder=None):
