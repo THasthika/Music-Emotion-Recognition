@@ -88,6 +88,7 @@ class CrossValidator:
             print("Not Using WandB")
 
     def fit(self, model: pl.LightningModule, data: Dataset, test_data: Dataset):
+        model = model.to('cpu')
         print("Initiating KFoldHelper...")
         split_func = KFoldHelper(
             n_splits=self.n_splits,

@@ -64,34 +64,34 @@ class Audio1DConvCat(BaseModel):
 
         # 0 -> 1, 661500
 
-        self.raw_audio_feature_extractor = nn.Sequential(
-            Conv1DBlock(in_channels=1, out_channels=64),
-            Conv1DBlock(in_channels=64, out_channels=128),
-            Conv1DBlock(in_channels=128, out_channels=256),
-            nn.AdaptiveAvgPool1d(32)
-        )
-
-        self.classifier = nn.Sequential(
-            LinearBlock(in_features=32 * 256, out_features=512),
-            LinearBlock(in_features=512, out_features=256),
-            LinearBlock(in_features=256, out_features=128),
-            LinearBlock(in_features=128, out_features=4, batch_normalize=False, dropout=False, activation=None)
-        )
-
-        # self.raw_audio_feature_extractor = self.create_conv_network(
-        #     self.raw_audio_extractor_units,
-        #     self.raw_audio_latent_time_units
+        # self.raw_audio_feature_extractor = nn.Sequential(
+        #     Conv1DBlock(in_channels=1, out_channels=64),
+        #     Conv1DBlock(in_channels=64, out_channels=128),
+        #     Conv1DBlock(in_channels=128, out_channels=256),
+        #     nn.AdaptiveAvgPool1d(32)
         # )
 
-        # input_size = self.raw_audio_extractor_units[-1] * self.raw_audio_latent_time_units
+        # self.classifier = nn.Sequential(
+        #     LinearBlock(in_features=32 * 256, out_features=512),
+        #     LinearBlock(in_features=512, out_features=256),
+        #     LinearBlock(in_features=256, out_features=128),
+        #     LinearBlock(in_features=128, out_features=4, batch_normalize=False, dropout=False, activation=None)
+        # )
 
-        # self.classifier_units = [
-        #     input_size,
-        #     *self.classifier_units,
-        #     { 'features': self.n_classes, 'activation': None, 'dropout': False, 'batch_normalize': False }
-        # ]
+        self.raw_audio_feature_extractor = self.create_conv_network(
+            self.raw_audio_extractor_units,
+            self.raw_audio_latent_time_units
+        )
 
-        # self.classifier = self.create_linear_network(self.classifier_units)
+        input_size = self.raw_audio_extractor_units[-1] * self.raw_audio_latent_time_units
+
+        self.classifier_units = [
+            input_size,
+            *self.classifier_units,
+            { 'features': self.n_classes, 'activation': None, 'dropout': False, 'batch_normalize': False }
+        ]
+
+        self.classifier = self.create_linear_network(self.classifier_units)
 
 
     def forward(self, x):
