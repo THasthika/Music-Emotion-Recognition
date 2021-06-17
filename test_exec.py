@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 import torchinfo
 
 model = Audio1DConvStat()
+model = model.cuda()
 
 ds = AudioOnlyStaticAVValues(
     "/storage/s3/splits/mer-taffc-kfold/train.json",
