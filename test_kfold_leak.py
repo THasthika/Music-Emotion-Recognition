@@ -37,4 +37,4 @@ val_dl = DataLoader(val_ds, batch_size=32, num_workers=4)
 
 trainer = pl.Trainer(gpus=-1)
 
-trainer.fit(model, train_dl, val_dataloaders=val_dl)
+trainer.fit(model, train_dl)
