@@ -7,17 +7,14 @@ from torch.utils.data import Subset
 import pytorch_lightning as pl
 
 
-model = Audio1DConvCat({
-    'raw_audio_extractor_units': [
-        1, 64, 128
-    ],
-    'classifier_units': [
+model = Audio1DConvCat(
+    raw_audio_extractor_units=[1, 64, 128],
+    classifier_units=[
         512,
         256,
         128
     ],
-    'n_classes': 4
-})
+    n_classes=4)
 
 data = BaseAudioOnlyChunkedDataset(
     "/storage/s3/splits/mer-taffc-kfold/train.json",
