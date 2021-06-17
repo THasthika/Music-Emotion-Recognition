@@ -8,6 +8,7 @@ from coolname import generate_slug
 from copy import deepcopy
 import wandb
 import os
+import torch.cuda
 
 class KFoldHelper:
     """Split data for (Stratified) K-Fold Cross-Validation."""
@@ -123,6 +124,8 @@ class CrossValidator:
         # for callback in trainer.callbacks:
         #     if isinstance(callback, pl.callbacks.ModelCheckpoint):
         #         self.update_modelcheckpoint(callback, fold_idx)
+
+        torch.cuda.memory_summary("cuda")
 
         # Fit:
         trainer.fit(model, train_dataloader=train_dl)
