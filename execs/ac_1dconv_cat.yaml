@@ -30,6 +30,9 @@ model:
                     stride: 3
             - 128
         raw_audio_latent_time_units: 32
+        raw_audio_linear_units:
+            - 1024
+            - 512
         computed_feature_units:
             -
                 channels: 692
@@ -45,10 +48,13 @@ model:
                     stride: 1
             - 128
         computed_feature_time_units: 16
-        classifier_units:
+        computed_linear_units:
+            - 1024
             - 512
+        classifier_units:
             - 256
             - 128
+            - 64
     sample_input:
         audio: [1, 1, 110250]
         spec: [1, 513, 216]
@@ -74,11 +80,11 @@ dataset:
 kfold:
     n_splits: 5
     stratify: false
-    batch_size: 16
+    batch_size: 32
     num_workers: 4
     # max_runs: null
     wandb_tags:
-        - input:A
+        - input:AC
         - output:Cat
     model_monitor: val/loss
     early_stop_monitor: val/loss
