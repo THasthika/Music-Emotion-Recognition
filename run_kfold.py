@@ -118,7 +118,7 @@ def run(config_file):
     if debugMode:
         __print_configs(modelConfig, datasetConfig, default_kfold_args, dataDir, splitDir)
 
-    __check_dirs(dataDir, splitDir, path.dirname(tempFolder))
+    __check_dirs(dataDir, splitDir)
 
     model = ModelClass(**modelConfig)
     print("Model Created...")
