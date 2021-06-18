@@ -17,28 +17,25 @@ model:
             - 128
 dataset:
     class: BaseAudioOnlyChunkedDataset
+    name: mer-taffc
+    # split_dir: xxx
+    # data_dir_postfix: audio
     config:
         sr: 22050
         chunk_duration: 10
+        # duration: 10
         overlap: 5
-        temp_folder: /storage/s3/precomputed/mer-taffc/22050-10-5
         force_compute: true
         audio_extension: mp3
-    data_dir: /storage/s3/raw/mer-taffc/audio/
-    split_dir: /storage/s3/splits/mer-taffc-kfold/
 kfold:
     n_splits: 5
     stratify: false
     batch_size: 16
     num_workers: 4
     # max_runs: null
-    # wandb_group: null
-    # wandb_project_name: null
     wandb_tags:
-        - input:audio
-        - output:cat
-        - dataset:mer-taffc
-        - model:Audio1DConvCat
+        - input:A
+        - output:Cat
     model_monitor: val/loss
     early_stop_monitor: val/acc
     early_stop_mode: max

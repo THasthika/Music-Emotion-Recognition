@@ -11,4 +11,5 @@ __pycache__
 /wandb/
 pretrain_weights/
 config.yaml
+default.yaml
 execs/*.temp.yaml
