@@ -236,7 +236,7 @@ class AudioOnlyStaticAVValues(BaseAudioOnlyChunkedDataset):
 
 class AudioComputedBaseDataset(BaseAudioOnlyChunkedDataset):
 
-    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3", frame_size=1024, hop_size=512, n_fft=512, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3", frame_size=1024, hop_size=512, n_fft=1024, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
         super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap,
                          temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension)
 
@@ -332,7 +332,7 @@ class AudioComputedBaseDataset(BaseAudioOnlyChunkedDataset):
         x, sr = self.get_audio(info, args)
         raw_audio = preprocess_audio(self.frame_count, x, sr, self.sr)
 
-        computed = self.__compute_features(raw_audio,
+        computed = self.__compute_features(np.array(torch.squeeze(raw_audio)),
                                            frame_size=self.frame_size,
                                            hop_size=self.hop_size,
                                            n_fft=self.n_fft,
@@ -351,7 +351,7 @@ class AudioComputedBaseDataset(BaseAudioOnlyChunkedDataset):
 
 class ComputedBaseDataset(AudioComputedBaseDataset):
 
-    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3", frame_size=1024, hop_size=512, n_fft=512, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3", frame_size=1024, hop_size=512, n_fft=1024, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
         super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap, temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension, frame_size=frame_size, hop_size=hop_size, n_fft=n_fft, n_mels=n_mels, n_mfcc=n_mfcc, n_chroma=n_chroma, n_spectral_contrast_bands=n_spectral_contrast_bands)
 
     def get_features(self, info, args):
