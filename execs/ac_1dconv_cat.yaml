@@ -63,6 +63,7 @@ dataset:
     name: mer-taffc
     # split_dir: xxx
     data_dir_postfix: audio
+    temp_prefix: ac
     config:
         sr: 22050
         chunk_duration: 5
