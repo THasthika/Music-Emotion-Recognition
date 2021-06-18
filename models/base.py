@@ -44,12 +44,26 @@ class BaseModel(pl.LightningModule):
         ARG_DROPOUT = 'dropout'
         ARG_DROPOUT_P = 'dropout_p'
         ARG_ACTIVATION = 'activation'
+        ARG_POOL = 'pool'
+        ARG_POOL_TYPE = 'type'
+        ARG_POOL_KERNEL_SIZE = 'kernel_size'
+        ARG_POOL_STRIDE = 'stride'
+        ARG_POOL_DIALATION = 'dialation'
 
         ConvBlock = Conv1DBlock
         if conv_type == '1d':
             ConvBlock = Conv1DBlock
         elif conv_type == '2d':
             ConvBlock = Conv2DBlock
+
+        DefaultPool = nn.MaxPool1d
+        DefaultPoolArgs = { ARG_POOL_KERNEL_SIZE: 3, ARG_POOL_STRIDE: 1 }
+        if conv_type == '1d':
+            DefaultPool = nn.MaxPool1d
+            DefaultPoolArgs = { ARG_POOL_KERNEL_SIZE: 3, ARG_POOL_STRIDE: 1 }
+        elif conv_type == '2d':
+            DefaultPool = nn.MaxPool1d
+            DefaultPoolArgs = { ARG_POOL_KERNEL_SIZE: (3, 3), ARG_POOL_STRIDE: (1, 1) }
 
 
         config = list(map(lambda x: { ARG_CHANNELS: x } if type(x) is int or (type(x) is tuple and type(x[0]) is int) else x, config))
@@ -63,6 +77,38 @@ class BaseModel(pl.LightningModule):
                 if x in config[i]:
                     args[x] = config[i][x]
             layer_list.append(('conv{}'.format(i+1), ConvBlock(**args)))
+
+            ## check for pooling
+            if ARG_POOL in config[i]:
+                poolConfig = config[i][ARG_POOL]
+                args = {}
+                Pool = DefaultPool
+                print(poolConfig)
+                if type(poolConfig) is bool:
+                    if poolConfig == False:
+                        continue
+                    args = DefaultPoolArgs
+                if type(poolConfig) is int:
+                    kernel_size = poolConfig
+                    args = DefaultPoolArgs.copy()
+                    args.update({ ARG_POOL_KERNEL_SIZE: kernel_size })
+                if type(poolConfig) is dict:
+                    for x in [ARG_POOL_KERNEL_SIZE, ARG_POOL_STRIDE, ARG_POOL_DIALATION]:
+                        if x in poolConfig:
+                            args[x] = poolConfig[x]
+                    if ARG_POOL_TYPE in poolConfig:
+                        ptype = poolConfig[ARG_POOL_TYPE]
+                        if ptype == 'avg':
+                            if conv_type == '1d':
+                                Pool = nn.AvgPool1d
+                            elif conv_type == '2d':
+                                Pool = nn.AvgPool2d
+                        elif ptype == 'max':
+                            if conv_type == '1d':
+                                Pool = nn.MaxPool1d
+                            elif conv_type == '2d':
+                                Pool = nn.MaxPool2d
+                layer_list.append(('pool{}'.format(i+1), Pool(**args)))
 
         if adaptive_pooling_type == 'avg':
             layer_list.append(

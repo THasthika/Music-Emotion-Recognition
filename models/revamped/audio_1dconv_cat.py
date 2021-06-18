@@ -83,7 +83,7 @@ class Audio1DConvCat(BaseModel):
             self.raw_audio_latent_time_units
         )
 
-        input_size = self.raw_audio_extractor_units[-1] * self.raw_audio_latent_time_units
+        input_size = self.raw_audio_extractor_units[-1]['channels'] if type(self.raw_audio_extractor_units[-1]) is dict else self.raw_audio_extractor_units[-1] * self.raw_audio_latent_time_units
 
         self.classifier_units = [
             input_size,
