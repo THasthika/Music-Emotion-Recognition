@@ -57,7 +57,7 @@ kfold:
         - input:A
         - output:Cat
     model_monitor: val/loss
-    early_stop_monitor: val/acc
-    early_stop_mode: max
+    early_stop_monitor: val/loss
+    early_stop_mode: min
     gpus: -1
     max_epochs: 100
