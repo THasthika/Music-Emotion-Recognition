@@ -58,6 +58,8 @@ def run(config_file):
     datasetName = config['dataset']['name']
     basePath = defaultConfig['base_path']
 
+    tempPrefix = __get_value(config['dataset'], 'temp_prefix', default=None)
+
     dataDirPostfix = __get_value(config['dataset'], 'data_dir_postfix', default=None)
     dataDir = path.join(basePath, 'raw', datasetName)
     if not dataDirPostfix is None:
@@ -72,6 +74,9 @@ def run(config_file):
         config['dataset']['config']['sr'],
         duration
     )
+
+    if not tempPrefix is None:
+        tempFolderName = "{}-{}".format(tempPrefix, tempFolderName)
 
     if __check_exists(config['dataset']['config'], 'chunk_duration'):
         tempFolderName = path.join("chunked", tempFolderName + "-{}".format(config['dataset']['config']['overlap']))
