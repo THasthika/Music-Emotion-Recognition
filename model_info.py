@@ -34,7 +34,7 @@ def model_info(config_file):
     modelConfig = config['model']['config']
 
     model = ModelClass(**modelConfig)
-    print("Model Created...")
+    print("Model Created... - {}".format(config['model']['class']))
 
     input_data = None
     if 'sample_input' in config['model']:

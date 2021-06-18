@@ -33,6 +33,18 @@ class AudioComputed1DConvCat(BaseModel):
             ['raw_audio_latent_time_units'],
             128
         )
+
+        self.computed_feature_units = self.set_model_parameter(
+            config,
+            ['computed_feature_units'],
+            [692, 64]
+        )
+
+        self.computed_feature_time_units = self.set_model_parameter(
+            config,
+            ['computed_feature_time_units'],
+            128
+        )
         
         self.classifier_units = self.set_model_parameter(
             config,
@@ -62,28 +74,24 @@ class AudioComputed1DConvCat(BaseModel):
 
     def __build(self):
 
-        # 0 -> 1, 661500
-
-        # self.raw_audio_feature_extractor = nn.Sequential(
-        #     Conv1DBlock(in_channels=1, out_channels=64),
-        #     Conv1DBlock(in_channels=64, out_channels=128),
-        #     Conv1DBlock(in_channels=128, out_channels=256),
-        #     nn.AdaptiveAvgPool1d(32)
-        # )
-
-        # self.classifier = nn.Sequential(
-        #     LinearBlock(in_features=32 * 256, out_features=512),
-        #     LinearBlock(in_features=512, out_features=256),
-        #     LinearBlock(in_features=256, out_features=128),
-        #     LinearBlock(in_features=128, out_features=4, batch_normalize=False, dropout=False, activation=None)
-        # )
+        # 0 -> 1, 110250
+        # 1 -> 692, 216
 
         self.raw_audio_feature_extractor = self.create_conv_network(
             self.raw_audio_extractor_units,
             self.raw_audio_latent_time_units
         )
 
-        input_size = self.raw_audio_extractor_units[-1]['channels'] if type(self.raw_audio_extractor_units[-1]) is dict else self.raw_audio_extractor_units[-1] * self.raw_audio_latent_time_units
+        self.computed_feature_extractor = self.create_conv_network(
+            self.computed_feature_units,
+            self.computed_feature_time_units
+        )
+
+        raw_feature_size = self.raw_audio_extractor_units[-1]['channels'] if type(self.raw_audio_extractor_units[-1]) is dict else self.raw_audio_extractor_units[-1]
+        calcaulted_feature_size = self.computed_feature_units[-1]['channels'] if type(self.computed_feature_units[-1]) is dict else self.computed_feature_units[-1]
+
+        input_size = raw_feature_size * self.raw_audio_latent_time_units
+        input_size += calcaulted_feature_size * self.computed_feature_time_units
 
         self.classifier_units = [
             input_size,
@@ -94,12 +102,30 @@ class AudioComputed1DConvCat(BaseModel):
         self.classifier = self.create_linear_network(self.classifier_units)
 
 
-    def forward(self, x):
+    def forward(self, **x):
 
-        raw_audio = x
+        raw_audio = x['audio']
 
-        x = self.raw_audio_feature_extractor(raw_audio)
-        x = torch.flatten(x, start_dim=1)
+        concat_keys = [
+            'spec',
+            'mel_spec',
+            'mfccs',
+            'chroma',
+            'tonnetz',
+            'spectral_contrast',
+            'spectral_aggregate'
+        ]
+
+        t = tuple(map(lambda k: x[k], concat_keys))
+        farr = torch.cat(t, dim=1)
+
+        x0 = self.raw_audio_feature_extractor(raw_audio)
+        x0 = torch.flatten(x0, start_dim=1)
+
+        x1 = self.computed_feature_extractor(farr)
+        x1 = torch.flatten(x1, start_dim=1)
+
+        x = torch.cat((x0, x1), dim=1)
 
         x = self.classifier(x)
 

@@ -126,14 +126,14 @@ def run(config_file):
     __check_dirs(dataDir, splitDir)
 
     model = ModelClass(**modelConfig)
-    print("Model Created...")
+    print("Model Created... - {}".format(config['model']['class']))
 
     train_ds = DatasetClass(
         path.join(splitDir, "train.json"),
         dataDir,
         **datasetConfig
     )
-    print("Train Dataset Created...")
+    print("Train Dataset Created... - {} - {}".format(model['dataset']['class'], model['dataset']['name']))
 
     test_ds = DatasetClass(
         path.join(splitDir, "test.json"),

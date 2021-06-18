@@ -1,0 +1,86 @@
+---
+model:
+    class: AudioComputed1DConvCat
+    config:
+        lr: 0.01
+        raw_audio_extractor_units:
+            -
+                channels: 1
+                kernel_size: 128
+                pool:
+                    kernel_size: 9
+                    stride: 3
+            - 
+                channels: 64
+                kernel_size: 64
+                pool:
+                    kernel_size: 9
+                    stride: 3
+            - 
+                channels: 64
+                kernel_size: 32
+                pool:
+                    kernel_size: 9
+                    stride: 3
+            - 
+                channels: 64
+                kernel_size: 16
+                pool:
+                    kernel_size: 9
+                    stride: 3
+            - 128
+        raw_audio_latent_time_units: 32
+        computed_feature_units:
+            -
+                channels: 692
+                kernel_size: 32
+                pool:
+                    kernel_size: 7
+                    stride: 1
+            - 
+                channels: 256
+                kernel_size: 16
+                pool:
+                    kernel_size: 7
+                    stride: 1
+            - 128
+        computed_feature_time_units: 16
+        classifier_units:
+            - 512
+            - 256
+            - 128
+    sample_input:
+        audio: [1, 1, 110250]
+        spec: [1, 513, 216]
+        mel_spec: [1, 128, 216]
+        mfccs: [1, 20, 216]
+        chroma: [1, 12, 216]
+        tonnetz: [1, 6, 216]
+        spectral_contrast: [1, 7, 216]
+        spectral_aggregate: [1, 6, 216]
+dataset:
+    class: AudioComputedBaseDataset
+    name: mer-taffc
+    # split_dir: xxx
+    data_dir_postfix: audio
+    config:
+        sr: 22050
+        chunk_duration: 5
+        # duration: 5
+        overlap: 2.5
+        force_compute: false
+        audio_extension: mp3
+kfold:
+    n_splits: 5
+    stratify: false
+    batch_size: 16
+    num_workers: 4
+    # max_runs: null
+    wandb_tags:
+        - input:A
+        - output:Cat
+    model_monitor: val/loss
+    early_stop_monitor: val/loss
+    early_stop_mode: min
+    gpus: -1
+    max_epochs: 100
