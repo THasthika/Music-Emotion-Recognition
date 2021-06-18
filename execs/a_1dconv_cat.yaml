@@ -20,7 +20,7 @@ dataset:
     class: BaseAudioOnlyChunkedDataset
     name: mer-taffc
     # split_dir: xxx
-    # data_dir_postfix: audio
+    data_dir_postfix: audio
     config:
         sr: 22050
         chunk_duration: 10
