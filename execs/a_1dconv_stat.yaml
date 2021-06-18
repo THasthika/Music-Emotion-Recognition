@@ -23,8 +23,8 @@ dataset:
     data_dir_postfix: audio
     config:
         sr: 22050
-        chunk_duration: 10
-        overlap: 5
+        chunk_duration: 5
+        overlap: 2.5
         force_compute: false
         audio_extension: mp3
 kfold:
