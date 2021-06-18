@@ -248,7 +248,7 @@ class AudioComputedBaseDataset(BaseAudioOnlyChunkedDataset):
         self.n_chroma = n_chroma
         self.n_spectral_contrast_bands = n_spectral_contrast_bands
 
-    def __compute_features(self, audio, frame_size=2048, hop_size=512, sample_rate=22050, n_fft=2048, n_mels=128, n_mfcc=20, n_chroma=12, spectral_contrast_bands=6):
+    def __compute_features(self, audio, frame_size=2048, hop_size=512, sample_rate=22050, n_fft=2048, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
 
         sr = sample_rate
 
@@ -271,9 +271,9 @@ class AudioComputedBaseDataset(BaseAudioOnlyChunkedDataset):
         # calculate the tonnetz (perfect 5th, minor and major 3rd all in 2 d) - 6
         tonnetz = librosa.feature.tonnetz(y=audio, sr=sr, chroma=chroma)
 
-        # calculate spectral contrast - (spectral_contrast_bands + 1)
+        # calculate spectral contrast - (n_spectral_contrast_bands + 1)
         spectral_contrast = librosa.feature.spectral_contrast(
-            S=spec, sr=sr, n_bands=spectral_contrast_bands)
+            S=spec, sr=sr, n_bands=n_spectral_contrast_bands)
 
         # initialize array
         offset = 0
