@@ -102,7 +102,7 @@ class AudioComputed1DConvCat(BaseModel):
         self.classifier = self.create_linear_network(self.classifier_units)
 
 
-    def forward(self, **x):
+    def forward(self, x):
 
         raw_audio = x['audio']
 
