@@ -8,7 +8,8 @@ from coolname import generate_slug
 from copy import deepcopy
 import wandb
 import os
-import torch.cuda
+
+from yaml import load
 
 class KFoldHelper:
     """Split data for (Stratified) K-Fold Cross-Validation."""
@@ -62,6 +63,7 @@ class CrossValidator:
                  model_monitor='val/loss',
                  early_stop_monitor='val/acc',
                  early_stop_mode='max',
+                 use_wandb=True,
                  *trainer_args,
                  **trainer_kwargs):
         super().__init__()
@@ -83,7 +85,10 @@ class CrossValidator:
         self.model_monitor = model_monitor
         self.early_stop_monitor = early_stop_monitor
         self.early_stop_mode = early_stop_mode
-        self.use_wandb = (False if os.environ.get('USE_WANDB', 'true').lower() == 'false' else True)
+        
+        self.use_wandb = use_wandb
+        if 'USE_WANDB' in os.environ.keys():
+            self.use_wandb = (False if os.environ.get('USE_WANDB', 'true').lower() == 'false' else True)
 
         if not self.use_wandb:
             print("Not Using WandB")
@@ -145,7 +150,8 @@ class CrossValidator:
             #         self.update_modelcheckpoint(callback, fold_idx)
 
             # Fit:
-            trainer.fit(_model, *loaders)
+            train_dl, val_dl = loaders
+            trainer.fit(_model, train_dataloader=train_dl, val_dataloaders=val_dl)
 
             trainer.test(_model, test_dl)
 

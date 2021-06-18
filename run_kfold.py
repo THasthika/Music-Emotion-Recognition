@@ -43,6 +43,9 @@ def run(config_file):
 
     default_kfold_args.update(kfoldConfig)
 
+    if default_kfold_args['wandb_project_name'] is None:
+        default_kfold_args['wandb_project_name'] = 'mer'
+
     model = ModelClass(**modelConfig)
 
     train_ds = DatasetClass(
