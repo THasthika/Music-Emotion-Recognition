@@ -45,7 +45,7 @@ dataset:
         chunk_duration: 5
         # duration: 5
         overlap: 2.5
-        force_compute: true
+        force_compute: false
         audio_extension: mp3
 kfold:
     n_splits: 5

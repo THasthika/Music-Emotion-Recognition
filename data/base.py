@@ -27,6 +27,7 @@ DYNAMIC_VALENCE_STD = 'dynamic_valence_std'
 DYNAMIC_AROUSAL_MEAN = 'dynamic_arousal_mean'
 DYNAMIC_AROUSAL_STD = 'dynamic_arousal_std'
 
+
 def preprocess_audio(frame_count, audio, sr, ret_sr):
     x = torch.mean(audio, 0, True)
     out = torch.zeros(1, frame_count)
@@ -42,10 +43,12 @@ def preprocess_audio(frame_count, audio, sr, ret_sr):
     # out = torch.unsqueeze(out, dim=1)
     return out
 
+
 class BaseDataset(Dataset):
 
     def __get_temp_folder(self, length=8):
-        fname = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+        fname = ''.join(random.choices(
+            string.ascii_uppercase + string.digits, k=length))
         return path.join("/tmp/", fname)
 
     def __check_cache_and_get_features(self, info, args):
@@ -71,6 +74,8 @@ class BaseDataset(Dataset):
 
         self.force_compute = force_compute
         self.meta = self.__get_meta(meta_file)
+        if force_compute == True:
+            print("Warning: Using Force Compute")
 
         if temp_folder is None:
             temp_folder = self.__get_temp_folder()
@@ -85,7 +90,6 @@ class BaseDataset(Dataset):
         if not args is None:
             k += "-{}".format(args)
         return k
-
 
     def get_features(self, info, args):
         raise NotImplementedError()
@@ -116,7 +120,8 @@ class BaseChunkedDataset(BaseDataset):
             start_time = row[START_TIME]
             end_time = row[END_TIME]
             duration = end_time - start_time
-            n_frames = int(np.floor((duration - 1) / (chunk_duration - overlap)))
+            n_frames = int(np.floor((duration - 1) /
+                           (chunk_duration - overlap)))
             if n_frames == 0 and chunk_duration <= duration:
                 frames.append((row_i, 0))
                 continue
@@ -125,7 +130,7 @@ class BaseChunkedDataset(BaseDataset):
             row_i += 1
         return frames
 
-    def __init__(self, meta_file, chunk_duration=10, overlap=5, temp_folder=None, force_compute=False):
+    def __init__(self, meta_file, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False):
         super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
 
         self.chunk_duration = chunk_duration
@@ -153,7 +158,8 @@ class BaseAudioOnlyDataset(BaseDataset):
         self.frame_count = int(self.sr * self.duration)
 
     def get_audio(self, info, args):
-        audio_file = path.join(self.data_dir, "{}.{}".format(info[SONG_ID], self.audio_extension))
+        audio_file = path.join(self.data_dir, "{}.{}".format(
+            info[SONG_ID], self.audio_extension))
         meta_data = torchaudio.info(audio_file)
         sr = meta_data.sample_rate
         frames = int(sr * self.duration)
@@ -168,7 +174,7 @@ class BaseAudioOnlyDataset(BaseDataset):
 
 class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
 
-    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=10, overlap=5, temp_folder=None, force_compute=False, audio_extension="mp3"):
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3"):
         super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
 
         self.sr = sr
@@ -179,7 +185,8 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
         self.frame_count = int(self.sr * self.chunk_duration)
 
     def get_audio(self, info, args):
-        audio_file = path.join(self.data_dir, "{}.{}".format(info[SONG_ID], self.audio_extension))
+        audio_file = path.join(self.data_dir, "{}.{}".format(
+            info[SONG_ID], self.audio_extension))
         meta_data = torchaudio.info(audio_file)
         sr = meta_data.sample_rate
 
@@ -187,7 +194,8 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
         offset = int(sr * ((self.overlap * frame) + info[START_TIME]))
         frames = int(sr * self.chunk_duration)
 
-        x, sr = torchaudio.load(audio_file, frame_offset=offset, num_frames=frames)
+        x, sr = torchaudio.load(
+            audio_file, frame_offset=offset, num_frames=frames)
         return (x, sr)
 
     def get_features(self, info, args):
@@ -195,26 +203,211 @@ class BaseAudioOnlyChunkedDataset(BaseChunkedDataset):
         x = preprocess_audio(self.frame_count, x, sr, self.sr)
         return x
 
+
 class AudioOnlyStaticQuadrantAndAVValues(BaseAudioOnlyChunkedDataset):
 
-    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=10, overlap=5, temp_folder=None, force_compute=False, audio_extension="mp3"):
-        super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap, temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension)
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3"):
+        super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap,
+                         temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension)
 
     def get_label(self, info, args):
-        y = info[['quadrant', 'static_valence_mean', 'static_valence_std', 'static_arousal_mean', 'static_arousal_std']].to_numpy()
+        y = info[['quadrant', 'static_valence_mean', 'static_valence_std',
+                  'static_arousal_mean', 'static_arousal_std']].to_numpy()
         y0 = y[0]
         y1 = torch.tensor(list(y[1:]), dtype=torch.float)
         return (y0, y1)
 
+
 class AudioOnlyStaticAVValues(BaseAudioOnlyChunkedDataset):
 
-    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=10, overlap=5, temp_folder=None, force_compute=False, audio_extension="mp3"):
-        super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap, temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension)
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3"):
+        super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap,
+                         temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension)
 
     def get_label(self, info, args):
-        y = info[['static_valence_mean', 'static_valence_std', 'static_arousal_mean', 'static_arousal_std']].to_numpy()
+        y = info[['static_valence_mean', 'static_valence_std',
+                  'static_arousal_mean', 'static_arousal_std']].to_numpy()
         y = torch.tensor(list(y), dtype=torch.float)
         return y
+
+
+class AudioComputedBaseDataset(BaseAudioOnlyChunkedDataset):
+
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3", frame_size=1024, hop_size=512, n_fft=512, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
+        super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap,
+                         temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension)
+
+        self.frame_size = frame_size
+        self.hop_size = hop_size
+        self.n_fft = n_fft
+        self.n_mels = n_mels
+        self.n_mfcc = n_mfcc
+        self.n_chroma = n_chroma
+        self.n_spectral_contrast_bands = n_spectral_contrast_bands
+
+    def __compute_features(self, audio, frame_size=2048, hop_size=512, sample_rate=22050, n_fft=2048, n_mels=128, n_mfcc=20, n_chroma=12, spectral_contrast_bands=6):
+
+        sr = sample_rate
+
+        # calculate stft (n_fft//2 + 1) - features
+        spec = np.abs(librosa.spectrum.stft(
+            audio, win_length=frame_size, n_fft=n_fft, hop_length=hop_size, window="hann"))
+        power_spec = np.power(spec, 2)
+
+        # calculate mel spectrogram (n_mels) - features
+        mel_spec = librosa.feature.melspectrogram(
+            S=power_spec, sr=sr, n_fft=frame_size, n_mels=n_mels)
+
+        # calculate mfccs (n_mfcc) - features
+        mfccs = librosa.feature.mfcc(
+            S=librosa.power_to_db(mel_spec), n_mfcc=n_mfcc)
+
+        # calculate chroma (n_chroma) - features
+        chroma = librosa.feature.chroma_stft(S=spec, sr=sr, n_chroma=n_chroma)
+
+        # calculate the tonnetz (perfect 5th, minor and major 3rd all in 2 d) - 6
+        tonnetz = librosa.feature.tonnetz(y=audio, sr=sr, chroma=chroma)
+
+        # calculate spectral contrast - (spectral_contrast_bands + 1)
+        spectral_contrast = librosa.feature.spectral_contrast(
+            S=spec, sr=sr, n_bands=spectral_contrast_bands)
+
+        # initialize array
+        offset = 0
+        feature_count = 6
+        frame_count = spec.shape[1]
+        arr = np.zeros((feature_count, frame_count))
+
+        # calculate tempo - 1
+        onset_env = librosa.onset.onset_strength(audio, sr=sr)
+        tempo = librosa.beat.tempo(
+            onset_envelope=onset_env, sr=sr, aggregate=None)
+        arr[offset:offset+1] = tempo
+        offset += 1
+
+        # calculate spectral centroid - 1
+        spectral_centroid = librosa.feature.spectral_centroid(S=spec, sr=sr)
+        arr[offset:offset+1] = spectral_centroid
+        offset += 1
+
+        # calculate spectral bandwidth - 1
+        spectral_bandwidth = librosa.feature.spectral_bandwidth(S=spec, sr=sr)
+        arr[offset:offset+1] = spectral_bandwidth
+        offset += 1
+
+        # calculate spectral flatness - 1
+        spectral_flatness = librosa.feature.spectral_flatness(S=spec)
+        arr[offset:offset+1] = spectral_flatness
+        offset += 1
+
+        # calculate spectral rolloff - 1
+        spectral_rolloff = librosa.feature.spectral_rolloff(
+            S=spec, sr=sr, roll_percent=0.85)
+        arr[offset:offset+1] = spectral_rolloff
+        offset += 1
+
+        # calculate zero crossing rate - 1
+        zcr = librosa.feature.zero_crossing_rate(
+            audio, frame_length=frame_size, hop_length=hop_size)
+        arr[offset:offset+1] = zcr
+
+        ret = {
+            'spec': torch.tensor(spec, dtype=torch.float32),
+            'mel_spec': torch.tensor(mel_spec, dtype=torch.float32),
+            'mfccs': torch.tensor(mfccs, dtype=torch.float32),
+            'chroma': torch.tensor(chroma, dtype=torch.float32),
+            'tonnetz': torch.tensor(tonnetz, dtype=torch.float32),
+            'spectral_contrast': torch.tensor(spectral_contrast, dtype=torch.float32)
+        }
+
+        return {
+            **ret,
+            'spectral_aggregate': torch.tensor(arr, dtype=torch.float32)
+        }
+
+    def get_features(self, info, args):
+        x, sr = self.get_audio(info, args)
+        raw_audio = preprocess_audio(self.frame_count, x, sr, self.sr)
+
+        computed = self.__compute_features(raw_audio,
+                                           frame_size=self.frame_size,
+                                           hop_size=self.hop_size,
+                                           n_fft=self.n_fft,
+                                           n_mels=self.n_mels,
+                                           n_mfcc=self.n_mfcc,
+                                           n_chroma=self.n_chroma,
+                                           n_spectral_contrast_bands=self.n_spectral_contrast_bands
+                                           )
+
+        x = {
+            'audio': raw_audio,
+            **computed
+        }
+
+        return x
+
+class ComputedBaseDataset(AudioComputedBaseDataset):
+
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3", frame_size=1024, hop_size=512, n_fft=512, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
+        super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap, temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension, frame_size=frame_size, hop_size=hop_size, n_fft=n_fft, n_mels=n_mels, n_mfcc=n_mfcc, n_chroma=n_chroma, n_spectral_contrast_bands=n_spectral_contrast_bands)
+
+    def get_features(self, info, args):
+        x, sr = self.get_audio(info, args)
+        raw_audio = preprocess_audio(self.frame_count, x, sr, self.sr)
+
+        computed = self.__compute_features(raw_audio,
+                                           frame_size=self.frame_size,
+                                           hop_size=self.hop_size,
+                                           n_fft=self.n_fft,
+                                           n_mels=self.n_mels,
+                                           n_mfcc=self.n_mfcc,
+                                           n_chroma=self.n_chroma,
+                                           n_spectral_contrast_bands=self.n_spectral_contrast_bands
+                                           )
+
+        return computed
+
+
+    # def get_features(self, info, args):
+
+    #     key = path.join(self.temp_folder, "{}-{}.pkl".format(info[self.audio_index], args))
+    #     if path.exists(key):
+    #         out = pickle.load(open(key, mode="rb"))
+    #         return out
+
+    #     x, sr = self.get_audio(info, args)
+    #     audio_out = self.preprocess_audio(x, sr)
+
+    #     features_out = self.__compute_features(
+    #         np.array(torch.squeeze(audio_out)),
+    #         duration=self.chunk_duration,
+    #         sample_rate=self.sample_rate,
+    #         **self.extractor_config
+    #     )
+
+    #     out = {
+    #         'raw': audio_out,
+    #         **features_out
+    #     }
+
+    #     pickle.dump(out, open(key, mode="wb"))
+
+    #     return out
+
+    # def get_features(self, info, args):
+
+    #     x, sr = self.get_audio(info, args)
+    #     audio_out = self.preprocess_audio(x, sr)
+
+    #     features_out = self.__compute_features(
+    #         np.array(torch.squeeze(audio_out)), frame_size=self.frame_size, hop_size=self.hop_size, sample_rate=self.sample_rate)
+
+    #     out = (
+    #         audio_out,
+    #         *features_out
+    #     )
+
+    #     return out
 
 # class AudioDataset(BaseDataset):
 
@@ -481,148 +674,6 @@ class AudioOnlyStaticAVValues(BaseAudioOnlyChunkedDataset):
 #         audio_out = self.preprocess_audio(x, sr)
 
 #         features_out = self.get_extracted_features(info, args)
-
-#         out = (
-#             audio_out,
-#             *features_out
-#         )
-
-#         return out
-
-# class GenericStaticChunkedAudioOnlyFeatureExtractionDataset(GenericStaticChunkedAudioOnlyDataset):
-
-#     def __init__(self, meta_file, data_dir, audio_index='song_id', audio_extension='mp3', label_index='quadrant', sample_rate=22050, chunk_duration=5, overlap=2.5, extractor_config={}, temp_folder="/tmp/"):
-#         super().__init__(
-#             meta_file=meta_file,
-#             data_dir=data_dir,
-#             audio_index=audio_index,
-#             audio_extension=audio_extension,
-#             label_index=label_index,
-#             sample_rate=sample_rate,
-#             chunk_duration=chunk_duration,
-#             overlap=overlap)
-
-#         self.extractor_config = extractor_config
-
-#         self.labels = np.array(
-#             list(map(lambda x: self.meta.iloc[x[0]][self.label_index], self.frames))
-#         )
-
-#         self.temp_folder = temp_folder
-
-#     def get_labels(self):
-#         return self.labels
-
-#     def __compute_features(self, audio, duration, frame_size=2048, hop_size=512, sample_rate=22050, n_fft=2048, n_mels=128, n_mfcc=20, n_chroma=12, spectral_contrast_bands=6):
-
-#         sr = sample_rate
-
-#         stft_feature_count = (1 + n_fft//2)
-
-#         # calculate stft (n_fft//2 + 1) - features
-#         spec = np.abs(librosa.spectrum.stft(audio, win_length=frame_size, n_fft=n_fft, hop_length=hop_size, window="hann"))
-#         power_spec = np.power(spec, 2)
-
-#         # calculate mel spectrogram (n_mels) - features
-#         mel_spec = librosa.feature.melspectrogram(S=power_spec, sr=sr, n_fft=frame_size, n_mels=n_mels)
-
-#         # calculate mfccs (n_mfcc) - features
-#         mfccs = librosa.feature.mfcc(S=librosa.power_to_db(mel_spec), n_mfcc=n_mfcc)
-
-#         # calculate chroma (n_chroma) - features
-#         chroma = librosa.feature.chroma_stft(S=spec, sr=sr, n_chroma=n_chroma)
-
-#         # calculate the tonnetz (perfect 5th, minor and major 3rd all in 2 d) - 6
-#         tonnetz = librosa.feature.tonnetz(y=audio, sr=sr, chroma=chroma)
-
-#         # calculate spectral contrast - (spectral_contrast_bands + 1)
-#         spectral_contrast = librosa.feature.spectral_contrast(S=spec, sr=sr, n_bands=spectral_contrast_bands)
-
-#         # initialize array
-#         offset = 0
-#         feature_count = 6
-#         frame_count = spec.shape[1]
-#         arr = np.zeros((feature_count, frame_count))
-
-#         # calculate tempo - 1
-#         onset_env = librosa.onset.onset_strength(audio, sr=sr)
-#         tempo = librosa.beat.tempo(onset_envelope=onset_env, sr=sr, aggregate=None)
-#         arr[offset:offset+1] = tempo
-#         offset += 1
-
-#         # calculate spectral centroid - 1
-#         spectral_centroid = librosa.feature.spectral_centroid(S=spec, sr=sr)
-#         arr[offset:offset+1] = spectral_centroid
-#         offset += 1
-
-#         # calculate spectral bandwidth - 1
-#         spectral_bandwidth = librosa.feature.spectral_bandwidth(S=spec, sr=sr)
-#         arr[offset:offset+1] = spectral_bandwidth
-#         offset += 1
-
-#         # calculate spectral flatness - 1
-#         spectral_flatness = librosa.feature.spectral_flatness(S=spec)
-#         arr[offset:offset+1] = spectral_flatness
-#         offset += 1
-
-#         # calculate spectral rolloff - 1
-#         spectral_rolloff = librosa.feature.spectral_rolloff(S=spec, sr=sr, roll_percent=0.85)
-#         arr[offset:offset+1] = spectral_rolloff
-#         offset += 1
-
-#         # calculate zero crossing rate - 1
-#         zcr = librosa.feature.zero_crossing_rate(audio, frame_length=frame_size, hop_length=hop_size)
-#         arr[offset:offset+1] = zcr
-
-#         ret = {
-#             'spec': torch.tensor(spec, dtype=torch.float32),
-#             'mel_spec': torch.tensor(mel_spec, dtype=torch.float32),
-#             'mfccs': torch.tensor(mfccs, dtype=torch.float32),
-#             'chroma': torch.tensor(chroma, dtype=torch.float32),
-#             'tonnetz': torch.tensor(tonnetz, dtype=torch.float32),
-#             'spectral_contrast': torch.tensor(spectral_contrast, dtype=torch.float32)
-#         }
-
-#         return {
-#             **ret,
-#             'spectral_aggregate': torch.tensor(arr, dtype=torch.float32)
-#         }
-
-#     def get_features(self, info, args):
-
-#         key = path.join(self.temp_folder, "{}-{}.pkl".format(info[self.audio_index], args))
-#         if path.exists(key):
-#             out = pickle.load(open(key, mode="rb"))
-#             return out
-
-#         x, sr = self.get_audio(info, args)
-#         audio_out = self.preprocess_audio(x, sr)
-
-#         features_out = self.__compute_features(
-#             np.array(torch.squeeze(audio_out)),
-#             duration=self.chunk_duration,
-#             sample_rate=self.sample_rate,
-#             **self.extractor_config
-#         )
-
-
-#         out = {
-#             'raw': audio_out,
-#             **features_out
-#         }
-
-#         pickle.dump(out, open(key, mode="wb"))
-
-#         return out
-
-#     def get_features(self, info, args):
-
-#         x, sr = self.get_audio(info, args)
-#         audio_out = self.preprocess_audio(x, sr)
-
-#         features_out = self.__compute_features(
-#             np.array(torch.squeeze(audio_out)), frame_size=self.frame_size, hop_size=self.hop_size, sample_rate=self.sample_rate)
-
 
 #         out = (
 #             audio_out,
