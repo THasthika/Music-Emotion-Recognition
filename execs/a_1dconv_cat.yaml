@@ -34,7 +34,7 @@ model:
             - 512
             - 256
             - 128
-    sample_input: [1, 1, 220500]
+    sample_input: [1, 1, 110250]
 dataset:
     class: BaseAudioOnlyChunkedDataset
     name: mer-taffc

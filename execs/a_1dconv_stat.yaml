@@ -4,18 +4,37 @@ model:
     config:
         lr: 0.01
         raw_audio_extractor_units:
-            - 1
             -
+                channels: 1
+                kernel_size: 128
+                pool:
+                    kernel_size: 9
+                    stride: 3
+            - 
                 channels: 64
                 kernel_size: 64
-            - 64
+                pool:
+                    kernel_size: 9
+                    stride: 3
+            - 
+                channels: 64
+                kernel_size: 32
+                pool:
+                    kernel_size: 9
+                    stride: 3
+            - 
+                channels: 64
+                kernel_size: 16
+                pool:
+                    kernel_size: 9
+                    stride: 3
             - 128
-        raw_audio_latent_time_units: 64
+        raw_audio_latent_time_units: 32
         classifier_units:
             - 512
             - 256
             - 128
-    sample_input: [1, 1, 220500]
+    sample_input: [1, 1, 110250]
 dataset:
     class: BaseAudioOnlyChunkedDataset
     name: mer-taffc
