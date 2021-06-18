@@ -83,7 +83,6 @@ class BaseModel(pl.LightningModule):
                 poolConfig = config[i][ARG_POOL]
                 args = {}
                 Pool = DefaultPool
-                print(poolConfig)
                 if type(poolConfig) is bool:
                     if poolConfig == False:
                         continue
