@@ -143,7 +143,5 @@ def run(config_file):
     crossValidator.fit(model, train_ds, test_ds)
 
 if __name__ == "__main__":
-    config_file = "config.yaml"
-    if len(sys.argv) > 1:
-        config_file = sys.argv[1]
+    config_file = sys.argv[1]
     run(config_file)
