@@ -13,3 +13,4 @@ pretrain_weights/
 config.yaml
 default.yaml
 execs/*.temp.yaml
+run_list
