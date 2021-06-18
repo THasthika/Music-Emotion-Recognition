@@ -1,2 +1,4 @@
 from .audio_1dconv_cat import Audio1DConvCat
 from .audio_1dconv_stat import Audio1DConvStat
+
+from .audio_computed_1dconv_cat import AudioComputed1DConvCat
