@@ -55,8 +55,11 @@ class BaseDataset(Dataset):
         key = self.get_key(info, args)
         fkey = path.join(self.temp_folder, "{}.pkl".format(key))
         if (not self.force_compute) and path.exists(fkey):
-            X = pickle.load(open(fkey, mode="rb"))
-            return X
+            try:
+                X = pickle.load(open(fkey, mode="rb"))
+                return X
+            except:
+                print("Warning: failed to load pickle file. getting features... {}".format(fkey))
         X = self.get_features(info, args)
         pickle.dump(X, open(fkey, mode="wb"))
         return X
