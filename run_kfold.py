@@ -133,7 +133,7 @@ def run(config_file):
         dataDir,
         **datasetConfig
     )
-    print("Train Dataset Created... - {} - {}".format(model['dataset']['class'], model['dataset']['name']))
+    print("Train Dataset Created... - {} - {}".format(config['dataset']['class'], config['dataset']['name']))
 
     test_ds = DatasetClass(
         path.join(splitDir, "test.json"),
