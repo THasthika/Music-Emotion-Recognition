@@ -36,7 +36,7 @@ model:
             - 128
     sample_input: [1, 1, 110250]
 dataset:
-    class: BaseAudioOnlyChunkedDataset
+    class: AudioOnlyStaticAVValues
     name: mer-taffc
     # split_dir: xxx
     data_dir_postfix: audio
