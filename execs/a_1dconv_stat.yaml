@@ -38,6 +38,7 @@ model:
 dataset:
     class: AudioOnlyStaticAVValues
     name: mer-taffc
+    temp_prefix: o-av
     # split_dir: xxx
     data_dir_postfix: audio
     config:
