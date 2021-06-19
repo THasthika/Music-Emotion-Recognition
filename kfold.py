@@ -64,6 +64,7 @@ class CrossValidator:
                  early_stop_monitor='val/acc',
                  early_stop_mode='max',
                  use_wandb=True,
+                 cv_dry_run=False,
                  *trainer_args,
                  **trainer_kwargs):
         super().__init__()
@@ -85,6 +86,10 @@ class CrossValidator:
         self.model_monitor = model_monitor
         self.early_stop_monitor = early_stop_monitor
         self.early_stop_mode = early_stop_mode
+
+        self.cv_dry_run = cv_dry_run
+        if cv_dry_run:
+            print("Warning: CV - Dry Run")
         
         self.use_wandb = use_wandb
         if 'USE_WANDB' in os.environ.keys():
@@ -113,6 +118,26 @@ class CrossValidator:
                 break
 
             print("Starting {} Fold...".format(fold_idx))
+
+            train_dl, val_dl = loaders
+
+            # accommodate dry run to check model is working
+            if self.cv_dry_run:
+                for (dl_i, dl) in enumerate([train_dl, val_dl, test_dl]):
+                    print("Checking DataLoader - {}".format(dl_i))
+                    for (X, y) in dl:
+                        if type(X) is dict:
+                            for k in X:
+                                print("{} - {}".format(k, X[k].shape))
+                        if type(X) is list:
+                            for (i, x) in enumerate(X):
+                                print("{} - {}".format(i, x.shape))
+                        print(X.shape)
+                        print(y.shape)
+                        yp = model(X)
+                        print(yp.shape)
+                        break
+                continue
 
             # Clone model & instantiate a new trainer:
             _model = deepcopy(model)
@@ -150,7 +175,6 @@ class CrossValidator:
             #         self.update_modelcheckpoint(callback, fold_idx)
 
             # Fit:
-            train_dl, val_dl = loaders
             trainer.fit(_model, train_dataloader=train_dl, val_dataloaders=val_dl)
 
             trainer.test(_model, test_dl)

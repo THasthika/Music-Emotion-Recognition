@@ -104,7 +104,8 @@ def run(config_file):
         'wandb_tags': None,
         'model_monitor': 'val/loss',
         'early_stop_monitor': 'val/acc',
-        'early_stop_mode': 'max'
+        'early_stop_mode': 'max',
+        'cv_dry_run': False
     }
 
     default_kfold_args.update(kfoldConfig)
