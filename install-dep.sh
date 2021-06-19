@@ -1,42 +1,42 @@
 #!/bin/bash
 
 # wandb
-pip3 install wandb
+pip install wandb
 
 # pytorch
-# pip3 install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 torchtext==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+# pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 torchtext==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
 
 # pytorch_lightning
-pip3 install pytorch-lightning
+pip install pytorch-lightning
 
 # torchmetrics
-pip3 install torchmetrics
+pip install torchmetrics
 
-# pip3 install torchaudio
+# pip install torchaudio
 
 # torchlibrosa
-pip3 install torchlibrosa
+pip install torchlibrosa
 
 # dotenv
-pip3 install python-dotenv
+pip install python-dotenv
 
 # torchinfo
-pip3 install torchinfo
+pip install torchinfo
 
 # nnaudio
-pip3 install nnAudio
+pip install nnAudio
 
 # essentia
-pip3 install essentia
+pip install essentia
 
 #pylrc
-pip3 install git+https://github.com/THasthika/pylrc.git@timestamp-search
+pip install git+https://github.com/THasthika/pylrc.git@timestamp-search
 
 # trainsformers
-pip3 install transformers
+pip install transformers
 
 # coolname
-pip3 install coolname
+pip install coolname
 
 # librosa
-pip3 install librosa
+pip install librosa
