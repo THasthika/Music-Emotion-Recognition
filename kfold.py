@@ -126,16 +126,17 @@ class CrossValidator:
                 for (dl_i, dl) in enumerate([train_dl, val_dl, test_dl]):
                     print("Checking DataLoader - {}".format(dl_i))
                     for (X, y) in dl:
+                        print("Input Dimensions")
                         if type(X) is dict:
                             for k in X:
                                 print("{} - {}".format(k, X[k].shape))
-                        if type(X) is list:
+                        elif type(X) is list:
                             for (i, x) in enumerate(X):
                                 print("{} - {}".format(i, x.shape))
-                        print(X.shape)
+                        else:
+                            print(X.shape)
+                        print("Target Dimensions")
                         print(y.shape)
-                        yp = model(X)
-                        print(yp.shape)
                         break
                 continue
 
