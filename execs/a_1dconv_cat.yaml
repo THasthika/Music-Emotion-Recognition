@@ -38,6 +38,7 @@ model:
 dataset:
     class: BaseAudioOnlyChunkedDataset
     name: mer-taffc
+    temp_prefix: i-a-o-cat
     # split_dir: xxx
     data_dir_postfix: audio
     config:
