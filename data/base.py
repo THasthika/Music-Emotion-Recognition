@@ -248,7 +248,7 @@ class AudioComputedBaseDataset(BaseAudioOnlyChunkedDataset):
         self.n_chroma = n_chroma
         self.n_spectral_contrast_bands = n_spectral_contrast_bands
 
-    def __compute_features(self, audio, frame_size=2048, hop_size=512, sample_rate=22050, n_fft=2048, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
+    def __compute_features(self, audio, frame_size=1024, hop_size=512, sample_rate=22050, n_fft=1024, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
 
         sr = sample_rate
 
