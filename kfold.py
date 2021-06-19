@@ -39,12 +39,14 @@ class KFoldHelper:
             train_loader = DataLoader(dataset=train_dataset,
                                       batch_size=self.batch_size,
                                       shuffle=False,
+                                      drop_last=True,
                                       num_workers=self.num_workers)
 
             val_dataset = Subset(data, val_idx)
             val_loader = DataLoader(dataset=val_dataset,
                                     batch_size=self.batch_size,
                                     shuffle=False,
+                                    drop_last=True,
                                     num_workers=self.num_workers)
 
             yield train_loader, val_loader
