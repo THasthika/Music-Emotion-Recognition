@@ -10,6 +10,6 @@ cd /home/ec2-user/SageMaker/mer_research/
 
 bash ./install-dep.sh
 
-conda install -c anaconda ipykernel
+conda install -y -c anaconda ipykernel
 
 python -m ipykernel install --user --name=mer
