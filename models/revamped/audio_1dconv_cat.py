@@ -25,7 +25,7 @@ class Audio1DConvCat(BaseModel):
         self.raw_audio_extractor_units = self.set_model_parameter(
             config,
             ['raw_audio_extractor_units'],
-            [1, 64, 128]
+            [1, { 'channels': 64, 'pool': { 'kernel_size': 3 } }, 128]
         )
 
         self.raw_audio_latent_time_units = self.set_model_parameter(
