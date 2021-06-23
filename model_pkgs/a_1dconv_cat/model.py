@@ -55,11 +55,11 @@ class A1DConvCat(pl.LightningModule):
             nn.BatchNorm1d(250),
             nn.ReLU(),
 
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=512, stride=128),
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
             nn.ReLU(),
 
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=256, stride=64),
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
             nn.ReLU(),
 
