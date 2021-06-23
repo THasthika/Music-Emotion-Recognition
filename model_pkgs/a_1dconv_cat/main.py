@@ -1,3 +1,4 @@
+from re import sub
 from dotenv import load_dotenv
 import argparse
 import multiprocessing
@@ -87,7 +88,6 @@ def train_kfold(args):
         stratify=False,
         batch_size=args['batch_size'],
         num_workers=args['num_workers'],
-        max_runs=1,
         model_monitor=Model.MODEL_CHECKPOINT,
         model_monitor_mode=Model.MODEL_CHECKPOINT_MODE,
         early_stop_monitor=Model.EARLY_STOPPING,
