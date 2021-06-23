@@ -111,6 +111,8 @@ def check(model, train_ds, test_ds, validation_ds):
 
         for (X, _) in dl:
             model(X)
+            break
+
     print("Model: foward passes ok!")
 
     torchinfo.summary(model, input_size=(2, 1, 22050*5))
@@ -155,10 +157,7 @@ def train(args):
     trainer = pl.Trainer(
         logger=logger,
         gpus=get_gpu_count(),
-        callbacks=[model_callback, early_stop_callback],
-        auto_scale_batch_size=True)
-
-    trainer.tune(model)
+        callbacks=[model_callback, early_stop_callback])
 
     trainer.fit(model)
 

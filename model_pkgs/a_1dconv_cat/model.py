@@ -55,13 +55,13 @@ class A1DConvCat(pl.LightningModule):
             nn.BatchNorm1d(250),
             nn.ReLU(),
 
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=3, stride=1),
-            nn.BatchNorm1d(250),
-            nn.ReLU(),
+            # nn.Conv1d(in_channels=250, out_channels=250, kernel_size=3, stride=1),
+            # nn.BatchNorm1d(250),
+            # nn.ReLU(),
 
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=3, stride=1),
-            nn.BatchNorm1d(250),
-            nn.ReLU(),
+            # nn.Conv1d(in_channels=250, out_channels=250, kernel_size=3, stride=1),
+            # nn.BatchNorm1d(250),
+            # nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
             nn.Dropout()
@@ -72,7 +72,7 @@ class A1DConvCat(pl.LightningModule):
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),
-            nn.Linear(in_features=64, out_features=4)
+            nn.Linear(in_features=128, out_features=4)
         )
 
     def forward(self, x):
