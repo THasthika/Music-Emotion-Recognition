@@ -9,6 +9,8 @@ from copy import deepcopy
 import wandb
 import os
 
+from yaml import load
+
 class KFoldHelper:
     """Split data for (Stratified) K-Fold Cross-Validation."""
     def __init__(self,
@@ -61,8 +63,10 @@ class CrossValidator:
                  wandb_project_name=None,
                  wandb_tags=None,
                  model_monitor='val/loss',
+                 model_monitor_mode='min',
                  early_stop_monitor='val/acc',
                  early_stop_mode='max',
+                 config={},
                  use_wandb=True,
                  cv_dry_run=False,
                  *trainer_args,
@@ -84,8 +88,10 @@ class CrossValidator:
         self.wandb_group = wandb_group
 
         self.model_monitor = model_monitor
+        self.model_monitor_mode = model_monitor_mode
         self.early_stop_monitor = early_stop_monitor
         self.early_stop_mode = early_stop_mode
+        self.model_config = config
 
         self.cv_dry_run = cv_dry_run
         if cv_dry_run:
@@ -140,6 +146,8 @@ class CrossValidator:
                         break
                 continue
 
+            config = {**self.model_config}
+
             # Clone model & instantiate a new trainer:
             _model = deepcopy(model)
             logger = None
@@ -147,6 +155,7 @@ class CrossValidator:
                 logger = WandbLogger(
                     offline=False,
                     log_model=True,
+                    config=config,
                     project=self.wandb_project_name,
                     group=self.wandb_group,
                     job_type="train",
@@ -154,7 +163,10 @@ class CrossValidator:
                     name="{}-fold-{}".format(self.run_name, fold_idx)
                 )
 
-            model_callback = ModelCheckpoint(monitor=self.model_monitor)
+            model_callback = ModelCheckpoint(
+                monitor=self.model_monitor,
+                mode=self.model_monitor_mode
+            )
             early_stop_callback = EarlyStopping(
                 monitor=self.early_stop_monitor,
                 min_delta=0.00,

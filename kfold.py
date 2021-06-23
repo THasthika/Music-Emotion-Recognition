@@ -91,6 +91,7 @@ class CrossValidator:
         self.model_monitor_mode = model_monitor_mode
         self.early_stop_monitor = early_stop_monitor
         self.early_stop_mode = early_stop_mode
+        self.model_config = config
 
         self.cv_dry_run = cv_dry_run
         if cv_dry_run:
@@ -145,6 +146,8 @@ class CrossValidator:
                         break
                 continue
 
+            config = {**self.model_config}
+
             # Clone model & instantiate a new trainer:
             _model = deepcopy(model)
             logger = None
@@ -152,6 +155,7 @@ class CrossValidator:
                 logger = WandbLogger(
                     offline=False,
                     log_model=True,
+                    config=config,
                     project=self.wandb_project_name,
                     group=self.wandb_group,
                     job_type="train",
