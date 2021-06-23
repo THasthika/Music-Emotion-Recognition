@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 import argparse
 import multiprocessing
+from torch.utils.data.dataloader import DataLoader
+import torchinfo
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
@@ -99,6 +101,19 @@ def train_kfold(args):
 
     cv.fit(model, train_ds, test_ds)
 
+def check(model, train_ds, test_ds, validation_ds):
+
+    for ds in [train_ds, test_ds, validation_ds]:
+        if ds is None:
+            continue
+
+        dl = DataLoader(ds, batch_size=2, num_workers=2, drop_last=True)
+
+        for (X, _) in dl:
+            model(X)
+    print("Model: foward passes ok!")
+
+    torchinfo.summary(model, input_size=(2, 1, 22050*5))
 
 def train(args):
 
@@ -108,6 +123,10 @@ def train(args):
 
     (train_ds, test_ds, validation_ds) = make_datasets(args)
     (model, model_config) = make_model(args, train_ds, test_ds, validation_ds)
+
+    if args['check']:
+        check(model, train_ds, test_ds, validation_ds)
+        return
 
     config={
         **model_config
@@ -160,6 +179,7 @@ def main():
     subparser_train.add_argument('--kfold-k', type=int, default=5)
 
     model_args = subparser_train.add_argument_group('Model Arguments')
+    model_args.add_argument('--check', action='store_true', default=False)
     model_args.add_argument('--lr', '--learning-rate',
                             type=float, default=0.01)
     model_args.add_argument('--adaptive-layer-units',
