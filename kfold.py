@@ -63,6 +63,7 @@ class CrossValidator:
                  wandb_project_name=None,
                  wandb_tags=None,
                  model_monitor='val/loss',
+                 model_monitor_mode='min',
                  early_stop_monitor='val/acc',
                  early_stop_mode='max',
                  use_wandb=True,
@@ -86,6 +87,7 @@ class CrossValidator:
         self.wandb_group = wandb_group
 
         self.model_monitor = model_monitor
+        self.model_monitor_mode = model_monitor_mode
         self.early_stop_monitor = early_stop_monitor
         self.early_stop_mode = early_stop_mode
 
@@ -156,7 +158,10 @@ class CrossValidator:
                     name="{}-fold-{}".format(self.run_name, fold_idx)
                 )
 
-            model_callback = ModelCheckpoint(monitor=self.model_monitor)
+            model_callback = ModelCheckpoint(
+                monitor=self.model_monitor,
+                mode=self.model_monitor_mode
+            )
             early_stop_callback = EarlyStopping(
                 monitor=self.early_stop_monitor,
                 min_delta=0.00,

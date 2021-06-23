@@ -9,6 +9,11 @@ import torchmetrics as tm
 
 class A1DConvCat(pl.LightningModule):
 
+    EARLY_STOPPING = "val/loss"
+    EARLY_STOPPING_MODE = "min"
+    MODEL_CHECKPOINT = "val/loss"
+    MODEL_CHECKPOINT_MODE = "min"
+
     def __init__(self,
                 batch_size=32,
                 num_workers=4,
@@ -78,7 +83,7 @@ class A1DConvCat(pl.LightningModule):
         return F.softmax(x, dim=1)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.config['lr'])
         return optimizer
 
     def training_step(self, batch, batch_idx):

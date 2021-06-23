@@ -8,12 +8,11 @@ from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
 import torch.cuda
 
-from .model import A1DConvCat as Model
-from .kfold import CrossValidator
-from .data import ModelDataset
+from model import A1DConvCat as Model
+from kfold import CrossValidator
+from data import ModelDataset
 
 load_dotenv(verbose=True)
-
 
 def make_datasets(args):
     data_folder = args['data_folder']
@@ -77,9 +76,10 @@ def train_kfold(args):
         batch_size=args['batch_size'],
         num_workers=args['num_workers'],
         max_runs=1,
-        model_monitor='val/loss',
-        early_stop_monitor='val/loss',
-        early_stop_mode='min',
+        model_monitor=Model.MODEL_CHECKPOINT,
+        model_monitor_mode=Model.MODEL_CHECKPOINT_MODE,
+        early_stop_monitor=Model.EARLY_STOPPING,
+        early_stop_mode=Model.EARLY_STOPPING_MODE,
         use_wandb=(not args['no_wandb']),
         cv_dry_run=False,
         wandb_tags=get_wandb_tags(args),
@@ -118,8 +118,11 @@ def train(args):
 
     trainer = pl.Trainer(
         logger=logger,
+        gpus=get_gpu_count(),
         callbacks=[model_callback, early_stop_callback],
         auto_scale_batch_size=True)
+
+    trainer.tune(model)
 
     trainer.fit(model)
 
@@ -129,7 +132,7 @@ def train(args):
 def main():
     parser = argparse.ArgumentParser(prog="Model")
 
-    subparsers = parser.add_subparsers(help='helo')
+    subparsers = parser.add_subparsers(help='sub programs')
     subparser_train = subparsers.add_parser('train', help='train the model')
     subparser_train.set_defaults(func=train)
     subparser_train.add_argument(

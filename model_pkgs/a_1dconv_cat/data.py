@@ -6,12 +6,11 @@ from torch.utils.data import Dataset
 
 import random
 import string
+import os
 from os import path
 import pickle
 import numpy as np
 import pandas as pd
-
-from mer_research_base import TEST
 
 SONG_ID = 'song_id'
 START_TIME = 'start_time'
