@@ -14,6 +14,7 @@ from data import ModelDataset
 
 load_dotenv(verbose=True)
 
+
 def make_datasets(args):
     data_folder = args['data_folder']
     train_meta = args['train_meta']
@@ -43,10 +44,15 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
     num_workers = args['num_workers']
 
     lr = args['lr']
+    adaptive_layer_units = args['adaptive_layer_units']
+    model_config = dict(
+        lr=lr,
+        adaptive_layer_units=adaptive_layer_units
+    )
 
     model = Model(batch_size=batch_size, num_workers=num_workers,
-                  train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, lr=lr)
-    return model
+                  train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
+    return (model, model_config)
 
 
 def get_gpu_count():
@@ -68,7 +74,11 @@ def get_wandb_tags(args):
 
 def train_kfold(args):
     (train_ds, test_ds, _) = make_datasets(args)
-    model = make_model(args, None, None)
+    (model, model_config) = make_model(args, None, None)
+
+    config = {
+        **model_config
+    }
 
     cv = CrossValidator(
         n_splits=args['kfold_k'],
@@ -83,10 +93,12 @@ def train_kfold(args):
         use_wandb=(not args['no_wandb']),
         cv_dry_run=False,
         wandb_tags=get_wandb_tags(args),
+        config=config,
         gpus=get_gpu_count()
     )
 
     cv.fit(model, train_ds, test_ds)
+
 
 def train(args):
 
@@ -95,7 +107,11 @@ def train(args):
         return
 
     (train_ds, test_ds, validation_ds) = make_datasets(args)
-    model = make_model(args, train_ds, test_ds, validation_ds)
+    (model, model_config) = make_model(args, train_ds, test_ds, validation_ds)
+
+    config={
+        **model_config
+    }
 
     model_callback = ModelCheckpoint(monitor='val/loss')
     early_stop_callback = EarlyStopping(
@@ -113,6 +129,7 @@ def train(args):
             log_model=True,
             project='mer',
             job_type="train",
+            config=config,
             tags=get_wandb_tags(args)
         )
 
@@ -145,6 +162,8 @@ def main():
     model_args = subparser_train.add_argument_group('Model Arguments')
     model_args.add_argument('--lr', '--learning-rate',
                             type=float, default=0.01)
+    model_args.add_argument('--adaptive-layer-units',
+                            type=int, default=128)
     model_args.add_argument('--batch-size', type=int, default=32)
 
     data_args = subparser_train.add_argument_group('Dataset Arguments')

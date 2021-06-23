@@ -9,6 +9,9 @@ import torchmetrics as tm
 
 class A1DConvCat(pl.LightningModule):
 
+    LR = "lr"
+    ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
+
     EARLY_STOPPING = "val/loss"
     EARLY_STOPPING_MODE = "min"
     MODEL_CHECKPOINT = "val/loss"
@@ -60,12 +63,12 @@ class A1DConvCat(pl.LightningModule):
             nn.BatchNorm1d(250),
             nn.ReLU(),
 
-            nn.AdaptiveAvgPool1d(output_size=self.config['adaptive_layer']),
+            nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
             nn.Dropout()
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=self.config['adaptive_layer']*250, out_features=512),
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS]*250, out_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),
@@ -83,7 +86,7 @@ class A1DConvCat(pl.LightningModule):
         return F.softmax(x, dim=1)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.config['lr'])
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR])
         return optimizer
 
     def training_step(self, batch, batch_idx):

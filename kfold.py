@@ -66,6 +66,7 @@ class CrossValidator:
                  model_monitor_mode='min',
                  early_stop_monitor='val/acc',
                  early_stop_mode='max',
+                 config={},
                  use_wandb=True,
                  cv_dry_run=False,
                  *trainer_args,
