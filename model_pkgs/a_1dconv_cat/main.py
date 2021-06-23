@@ -164,7 +164,7 @@ def train(args):
     trainer.test(model)
 
 
-def main():
+def main(in_args=None):
     parser = argparse.ArgumentParser(prog="Model")
 
     subparsers = parser.add_subparsers(help='sub programs')
@@ -202,7 +202,7 @@ def main():
     audio_args.add_argument('--overlap', type=float, default=2.5)
     audio_args.add_argument('--ext', '--extention', type=str, default='mp3')
 
-    args = parser.parse_args()
+    args = parser.parse_args(in_args)
     args.func(vars(args))
 
 
