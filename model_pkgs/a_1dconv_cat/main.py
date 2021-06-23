@@ -115,7 +115,7 @@ def check(model, train_ds, test_ds, validation_ds):
 
     print("Model: foward passes ok!")
 
-    torchinfo.summary(model, input_size=(2, 1, 22050*5))
+    print(torchinfo.summary(model, input_size=(2, 1, 22050*5)))
 
 def train(args):
 
