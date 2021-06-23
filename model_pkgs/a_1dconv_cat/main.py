@@ -134,13 +134,13 @@ def train(args):
         **model_config
     }
 
-    model_callback = ModelCheckpoint(monitor='val/loss')
+    model_callback = ModelCheckpoint(monitor=Model.MODEL_CHECKPOINT, mode=Model.MODEL_CHECKPOINT_MODE)
     early_stop_callback = EarlyStopping(
-        monitor='val/loss',
+        monitor=Model.EARLY_STOPPING,
         min_delta=0.00,
         patience=10,
         verbose=True,
-        mode='min'
+        mode=Model.EARLY_STOPPING_MODE
     )
 
     logger = None
