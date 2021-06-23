@@ -174,6 +174,12 @@ class ModelDataset(BaseChunkedDataset):
             audio_file, frame_offset=offset, num_frames=frames)
         return (x, sr)
 
+    def get_label(self, info, args):
+        y = info[['static_valence_mean', 'static_valence_std',
+                  'static_arousal_mean', 'static_arousal_std']].to_numpy()
+        y = torch.tensor(list(y), dtype=torch.float)
+        return y
+
     def get_features(self, info, args):
         x, sr = self.get_audio(info, args)
         x = preprocess_audio(self.frame_count, x, sr, self.sr)
