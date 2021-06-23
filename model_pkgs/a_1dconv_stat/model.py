@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 
 import torchmetrics as tm
 
-class A1DConvCat(pl.LightningModule):
+class A1DConvStat(pl.LightningModule):
 
     LR = "lr"
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
