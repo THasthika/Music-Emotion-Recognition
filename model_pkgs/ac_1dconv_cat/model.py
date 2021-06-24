@@ -86,10 +86,9 @@ class AC1DConvCat(pl.LightningModule):
         )
 
     def forward(self, x):
-
-        print(x)
         
         audio_x = x['audio']
+        print(x['spec'].shape)
         computed_x = np.row_stack([
             x['spec'],
             x['mel_spec'],
@@ -99,6 +98,8 @@ class AC1DConvCat(pl.LightningModule):
             x['spectral_contrast'],
             x['spectral_aggregate']
         ])
+
+        print(computed_x.shape)
 
         audio_x = self.feature_extractor(audio_x)
         audio_x = torch.flatten(audio_x, start_dim=1)
