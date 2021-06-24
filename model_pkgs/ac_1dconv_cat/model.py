@@ -79,21 +79,25 @@ class AC1DConvCat(pl.LightningModule):
 
         self.computed_feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=692, out_channels=500, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=3),
             nn.BatchNorm1d(500),
             nn.Dropout(),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=500, out_channels=500, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=3),
             nn.BatchNorm1d(500),
             nn.Dropout(),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=500, out_channels=500, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=3),
             nn.BatchNorm1d(500),
             nn.Dropout(),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=500, out_channels=500, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=3),
             nn.BatchNorm1d(500),
             nn.Dropout(),
             nn.ReLU()
