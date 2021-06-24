@@ -100,10 +100,8 @@ class AC1DConvCat(pl.LightningModule):
             nn.MaxPool1d(kernel_size=3),
             nn.BatchNorm1d(500),
             nn.Dropout(),
-            nn.ReLU()
-        )
+            nn.ReLU(),
 
-        self.tt = nn.Sequential(
             nn.AdaptiveAvgPool1d(output_size=self.config[self.COMPUTED_ADAPTIVE_LAYER_UNITS]),
             nn.Dropout()
         )
@@ -134,12 +132,6 @@ class AC1DConvCat(pl.LightningModule):
 
         audio_x = self.audio_feature_extractor(audio_x)
         computed_x = self.computed_feature_extractor(computed_x)
-
-        print(computed_x.shape)
-
-        computed_x = self.tt(computed_x)
-
-        print(computed_x.shape)
 
         audio_x = torch.flatten(audio_x, start_dim=1)
         computed_x = torch.flatten(computed_x, start_dim=1)
