@@ -52,7 +52,7 @@ class AC1DConvCat(pl.LightningModule):
     
     def __build_model(self):
 
-        self.feature_extractor = nn.Sequential(
+        self.audio_feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
             nn.BatchNorm1d(250),
             nn.Dropout(),
@@ -77,8 +77,36 @@ class AC1DConvCat(pl.LightningModule):
             nn.Dropout()
         )
 
+        self.computed_feature_extractor = nn.Sequential(
+            nn.Conv1d(in_channels=692, out_channels=500, kernel_size=7, stride=3),
+            nn.BatchNorm1d(500),
+            nn.Dropout(),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=500, out_channels=500, kernel_size=7, stride=3),
+            nn.BatchNorm1d(500),
+            nn.Dropout(),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=500, out_channels=500, kernel_size=7, stride=3),
+            nn.BatchNorm1d(500),
+            nn.Dropout(),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=500, out_channels=500, kernel_size=7, stride=3),
+            nn.BatchNorm1d(500),
+            nn.Dropout(),
+            nn.ReLU(),
+
+            nn.AdaptiveAvgPool1d(output_size=self.config[self.COMPUTED_ADAPTIVE_LAYER_UNITS]),
+            nn.Dropout()
+        )
+
+        input_size = self.config[self.AUDIO_ADAPTIVE_LAYER_UNITS] * 250
+        input_size += self.config[self.COMPUTED_ADAPTIVE_LAYER_UNITS] * 500
+
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=self.config[self.AUDIO_ADAPTIVE_LAYER_UNITS]*250, out_features=512),
+            nn.Linear(in_features=input_size, out_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),
@@ -88,7 +116,6 @@ class AC1DConvCat(pl.LightningModule):
     def forward(self, x):
         
         audio_x = x['audio']
-        print(x['spec'].shape)
         computed_x = np.column_stack([
             x['spec'],
             x['mel_spec'],
@@ -99,11 +126,20 @@ class AC1DConvCat(pl.LightningModule):
             x['spectral_aggregate']
         ])
 
+        audio_x = self.audio_feature_extractor(audio_x)
+        computed_x = self.computed_feature_extractor(computed_x)
+
+        audio_x = torch.flatten(audio_x, start_dim=1)
+        computed_x = torch.flatten(computed_x, start_dim=1)
+
+        print(audio_x.shape)
         print(computed_x.shape)
 
-        audio_x = self.feature_extractor(audio_x)
-        audio_x = torch.flatten(audio_x, start_dim=1)
-        x = self.classifier(audio_x)
+        x = torch.cat((audio_x, computed_x), dim=1)
+
+        print(x.shape)
+
+        x = self.classifier(x)
         return x
 
     def predict(self, x):
