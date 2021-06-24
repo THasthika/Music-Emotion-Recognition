@@ -89,7 +89,7 @@ class AC1DConvCat(pl.LightningModule):
         
         audio_x = x['audio']
         print(x['spec'].shape)
-        computed_x = np.row_stack([
+        computed_x = np.column_stack([
             x['spec'],
             x['mel_spec'],
             x['mfccs'],
