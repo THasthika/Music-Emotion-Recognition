@@ -184,12 +184,12 @@ class AC1DConvCat(pl.LightningModule):
 
     def train_dataloader(self):
         if self.test_ds is None: return None
-        return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
 
     def val_dataloader(self):
         if self.val_ds is None: return None
-        return DataLoader(self.val_ds, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(self.val_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
 
     def test_dataloader(self):
         if self.test_ds is None: return None
-        return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
