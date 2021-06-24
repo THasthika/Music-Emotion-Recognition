@@ -11,7 +11,7 @@ from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
 import torch.cuda
 
-from model import A1DConvCat as Model
+from model import AC1DConvCat as Model
 from kfold import CrossValidator
 from data import ModelDataset
 
@@ -46,11 +46,13 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
     batch_size = args['batch_size']
     num_workers = args['num_workers']
 
-    lr = args['lr']
-    adaptive_layer_units = args['adaptive_layer_units']
+    lr = args[Model.LR]
+    audio_adaptive_layer_units = args[Model.AUDIO_ADAPTIVE_LAYER_UNITS]
+    computed_adaptive_layer_units = args[Model.COMPUTED_ADAPTIVE_LAYER_UNITS]
     model_config = dict(
         lr=lr,
-        adaptive_layer_units=adaptive_layer_units
+        audio_adaptive_layer_units=audio_adaptive_layer_units,
+        computed_adaptive_layer_units=computed_adaptive_layer_units
     )
 
     model = Model(batch_size=batch_size, num_workers=num_workers,
@@ -180,7 +182,9 @@ def main(in_args=None):
     model_args.add_argument('--check', action='store_true', default=False)
     model_args.add_argument('--lr', '--learning-rate',
                             type=float, default=0.01)
-    model_args.add_argument('--adaptive-layer-units',
+    model_args.add_argument('--audio-adaptive-layer-units',
+                            type=int, default=128)
+    model_args.add_argument('--computed-adaptive-layer-units',
                             type=int, default=128)
     model_args.add_argument('--batch-size', type=int, default=32)
 

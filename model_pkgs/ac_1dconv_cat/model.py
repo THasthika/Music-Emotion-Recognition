@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 import torchmetrics as tm
 
-class A1DConvCat(pl.LightningModule):
+class AC1DConvCat(pl.LightningModule):
 
     LR = "lr"
     AUDIO_ADAPTIVE_LAYER_UNITS = "audio_adaptive_layer_units"
