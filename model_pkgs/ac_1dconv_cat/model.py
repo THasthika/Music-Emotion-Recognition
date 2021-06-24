@@ -116,7 +116,7 @@ class AC1DConvCat(pl.LightningModule):
     def forward(self, x):
         
         audio_x = x['audio']
-        computed_x = np.column_stack([
+        computed_x = torch.column_stack([
             x['spec'],
             x['mel_spec'],
             x['mfccs'],
