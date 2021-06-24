@@ -78,7 +78,7 @@ class AC1DConvCat(pl.LightningModule):
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS]*250, out_features=512),
+            nn.Linear(in_features=self.config[self.AUDIO_ADAPTIVE_LAYER_UNITS]*250, out_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),
