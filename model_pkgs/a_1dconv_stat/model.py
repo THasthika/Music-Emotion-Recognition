@@ -114,7 +114,7 @@ class A1DConvStat(pl.LightningModule):
         distanceMeasure = self.val_distance(pred, y)
         
         self.log("val/loss", loss, prog_bar=True)
-        self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
@@ -124,7 +124,7 @@ class A1DConvStat(pl.LightningModule):
         distanceMeasure = self.test_distance(pred, y)
 
         self.log("test/loss", loss)
-        self.log('train/distance', distanceMeasure)
+        self.log('test/distance', distanceMeasure)
 
     def train_dataloader(self):
         if self.test_ds is None: return None
