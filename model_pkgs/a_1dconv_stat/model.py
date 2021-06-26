@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 # import torchmetrics as tm
-from .metrics import DistributionDistanceMeasure
+from metrics import DistributionDistanceMeasure
 
 class A1DConvStat(pl.LightningModule):
 
