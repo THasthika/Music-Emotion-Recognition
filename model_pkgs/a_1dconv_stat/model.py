@@ -5,7 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-import torchmetrics as tm
+# import torchmetrics as tm
+from .metrics import DistributionDistanceMeasure
 
 class A1DConvStat(pl.LightningModule):
 
@@ -39,7 +40,11 @@ class A1DConvStat(pl.LightningModule):
 
         ## loss
         self.loss = F.l1_loss
-    
+        
+        self.train_distance = DistributionDistanceMeasure()
+        self.val_distance = DistributionDistanceMeasure()
+        self.test_distance = DistributionDistanceMeasure()
+
     def __build_model(self):
 
         self.feature_extractor = nn.Sequential(
@@ -94,8 +99,10 @@ class A1DConvStat(pl.LightningModule):
 
         pred = self(x)
         loss = self.loss(pred, y)
+        distanceMeasure = self.train_distance(pred, y)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
         return loss
 
@@ -104,16 +111,20 @@ class A1DConvStat(pl.LightningModule):
 
         pred = self(x)
         loss = self.loss(pred, y)
+        distanceMeasure = self.val_distance(pred, y)
         
         self.log("val/loss", loss, prog_bar=True)
+        self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
 
         pred = self(x)
         loss = self.loss(pred, y)
+        distanceMeasure = self.test_distance(pred, y)
 
         self.log("test/loss", loss)
+        self.log('train/distance', distanceMeasure)
 
     def train_dataloader(self):
         if self.test_ds is None: return None
