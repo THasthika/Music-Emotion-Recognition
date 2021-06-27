@@ -51,8 +51,9 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
     model_version = args['model_version']
 
     if model_version == 1:
-        args_k = [ModelV1.LR, ModelV1.N_FFT, ModelV1.ADAPTIVE_LAYER_UNITS_0, ModelV1.ADAPTIVE_LAYER_UNITS_1]
-        model_config = { k: args[k] for k in args_k }
+        args_k = [ModelV1.LR, ModelV1.N_FFT, ModelV1.ADAPTIVE_LAYER_UNITS_0,
+                  ModelV1.ADAPTIVE_LAYER_UNITS_1, ModelV1.SPEC_TRAINABLE]
+        model_config = {k: args[k] for k in args_k}
         model = ModelV1(batch_size=batch_size, num_workers=num_workers,
                         train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
         return (model, model_config)
@@ -199,7 +200,8 @@ def main(in_args=None):
     model_args.add_argument('--adaptive-layer-units-1',
                             type=int, default=128)
     model_args.add_argument('--batch-size', type=int, default=32)
-    model_args.add_argument('--spec-trainable', action='store_true', default=False)
+    model_args.add_argument(
+        '--spec-trainable', action='store_true', default=False)
 
     data_args = subparser_train.add_argument_group('Dataset Arguments')
     data_args.add_argument('--dataset', type=str, required=True)
