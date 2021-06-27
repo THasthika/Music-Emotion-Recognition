@@ -12,6 +12,7 @@ from pytorch_lightning.loggers.wandb import WandbLogger
 import torch.cuda
 
 from model import A1DConvCat as Model
+from model_v2 import A1DConvCat_V2 as Model_V2
 from kfold import CrossValidator
 from data import ModelDataset
 
@@ -53,7 +54,12 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
         adaptive_layer_units=adaptive_layer_units
     )
 
-    model = Model(batch_size=batch_size, num_workers=num_workers,
+    ModelCls = Model
+    if args['model_version'] == 2:
+        ModelCls = Model_V2
+    print("Using Model Verions... {}".format(args['model_version']))
+
+    model = ModelCls(batch_size=batch_size, num_workers=num_workers,
                   train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
     return (model, model_config)
 
@@ -72,7 +78,7 @@ def get_wandb_tags(args):
     return [
         'model:A1DConvCat',
         'dataset:{}'.format(args['dataset']),
-        'version:1'
+        'version:{}'.format(args['model_version'])
     ]
 
 
@@ -178,6 +184,7 @@ def main(in_args=None):
         '--no-wandb', action='store_true', default=False)
     subparser_train.add_argument('--kfold', action='store_true', default=False)
     subparser_train.add_argument('--kfold-k', type=int, default=5)
+    subparser_train.add_argument('--model-version', type=int, default=1)
 
     model_args = subparser_train.add_argument_group('Model Arguments')
     model_args.add_argument('--check', action='store_true', default=False)
