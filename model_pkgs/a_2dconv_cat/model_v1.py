@@ -57,7 +57,7 @@ class A2DConvCat_V1(pl.LightningModule):
 
         f_bins = (self.config[self.N_FFT] // 2) + 1
 
-        self.stft = nnSpectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE])
+        self.stft = nnSpectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
 
         self.feature_extractor = nn.Sequential(
 
