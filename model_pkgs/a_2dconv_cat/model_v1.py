@@ -57,8 +57,9 @@ class A2DConvCat_V1(pl.LightningModule):
 
         f_bins = (self.config[self.N_FFT] // 2) + 1
 
+        self.stft = nnSpectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE])
+
         self.feature_extractor = nn.Sequential(
-            nnSpectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE]),
 
             nn.Conv2d(in_channels=1, out_channels=16, kernel_size=7, stride=3),
             nn.BatchNorm2d(num_features=16),
@@ -94,6 +95,9 @@ class A2DConvCat_V1(pl.LightningModule):
         )
 
     def forward(self, x):
+        print(x.shape)
+        x = self.stft(x)
+        print(x.shape)
         x = self.feature_extractor(x)
         x = torch.flatten(x, start_dim=1)
         x = self.classifier(x)
