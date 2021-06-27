@@ -73,7 +73,8 @@ def get_num_workers():
 def get_wandb_tags(args):
     return [
         'model:AC1DConvCat',
-        'dataset:{}'.format(args['dataset'])
+        'dataset:{}'.format(args['dataset']),
+        'version:1'
     ]
 
 

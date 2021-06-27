@@ -39,7 +39,7 @@ def _calculate_distance(preds: torch.Tensor, target: torch.Tensor):
     
     return _x + _t
 
-class DistributionDistanceMeasure(tm.Metric):
+class BhattacharyyaDistance(tm.Metric):
     def __init__(self, dist_sync_on_step=False):
         # call `self.add_state`for every internal state that is needed for the metrics computations
         # dist_reduce_fx indicates the function that should be used to reduce

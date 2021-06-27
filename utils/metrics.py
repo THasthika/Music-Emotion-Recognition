@@ -1,10 +1,10 @@
 import torch
 import torchmetrics as tm
 
-def __get_distribution_mean(d: torch.Tensor):
+def _get_distribution_mean(d: torch.Tensor):
     return d[:,[0, 2]]
 
-def __get_distribution_covariance(d: torch.Tensor, corr=0.0):
+def _get_distribution_covariance(d: torch.Tensor, corr=0.0):
     _d = d[:, [1, 3]]
     ret = torch.zeros((len(d), 2, 2))
     for (i, x) in enumerate(map(lambda x: torch.diag(x), _d)):
@@ -12,13 +12,13 @@ def __get_distribution_covariance(d: torch.Tensor, corr=0.0):
         ret[i] = x
     return ret
 
-def __calculate_distance(preds: torch.Tensor, target: torch.Tensor):
+def _calculate_distance(preds: torch.Tensor, target: torch.Tensor):
 
-    p_mean = __get_distribution_mean(preds)
-    p_corr = __get_distribution_covariance(preds)
+    p_mean = _get_distribution_mean(preds)
+    p_corr = _get_distribution_covariance(preds)
 
-    t_mean = __get_distribution_mean(target)
-    t_corr = __get_distribution_covariance(target)
+    t_mean = _get_distribution_mean(target)
+    t_corr = _get_distribution_covariance(target)
 
 
     sum_corr = (t_corr + p_corr) / 2
@@ -53,7 +53,7 @@ class DistributionDistanceMeasure(tm.Metric):
         # preds, target = self._input_format(preds, target)
         # assert preds.shape == target.shape
 
-        self.distance += torch.sum(__calculate_distance(preds, target))
+        self.distance += torch.sum(_calculate_distance(preds, target))
         self.total += target.numel()
 
     def compute(self):

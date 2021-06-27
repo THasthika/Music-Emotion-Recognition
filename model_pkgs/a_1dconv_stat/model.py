@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 # import torchmetrics as tm
-from metrics import DistributionDistanceMeasure
+from metrics import BhattacharyyaDistance
 
 class A1DConvStat(pl.LightningModule):
 
@@ -41,9 +41,9 @@ class A1DConvStat(pl.LightningModule):
         ## loss
         self.loss = F.l1_loss
         
-        self.train_distance = DistributionDistanceMeasure()
-        self.val_distance = DistributionDistanceMeasure()
-        self.test_distance = DistributionDistanceMeasure()
+        self.train_distance = BhattacharyyaDistance()
+        self.val_distance = BhattacharyyaDistance()
+        self.test_distance = BhattacharyyaDistance()
 
     def __build_model(self):
 
