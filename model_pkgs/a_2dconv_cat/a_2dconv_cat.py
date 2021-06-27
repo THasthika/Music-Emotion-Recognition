@@ -199,6 +199,7 @@ def main(in_args=None):
     model_args.add_argument('--adaptive-layer-units-1',
                             type=int, default=128)
     model_args.add_argument('--batch-size', type=int, default=32)
+    model_args.add_argument('--spec-trainable', action='store_true', default=False)
 
     data_args = subparser_train.add_argument_group('Dataset Arguments')
     data_args.add_argument('--dataset', type=str, required=True)
