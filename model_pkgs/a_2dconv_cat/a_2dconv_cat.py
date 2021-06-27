@@ -11,7 +11,7 @@ from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
 import torch.cuda
 
-from model_v1 import A2DConvCat_V1 as ModelV1
+from .model_v1 import A2DConvCat_V1 as ModelV1
 from model_v2 import A2DConvCat_V2 as ModelV2
 from model_v3 import A2DConvCat_V3 as ModelV3
 from kfold import CrossValidator
@@ -48,23 +48,20 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
     batch_size = args['batch_size']
     num_workers = args['num_workers']
 
-    lr = args['lr']
-    adaptive_layer_units = args['adaptive_layer_units']
-    model_config = dict(
-        lr=lr,
-        adaptive_layer_units=adaptive_layer_units
-    )
+    model_version = args['model_version']
 
-    ModelCls = ModelV1
-    if args['model_version'] == 2:
-        ModelCls = ModelV2
-    elif args['model_version'] == 3:
-        ModelCls = ModelV3
-    print("Using Model Verions... {}".format(args['model_version']))
-
-    model = ModelCls(batch_size=batch_size, num_workers=num_workers,
-                  train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
-    return (model, model_config)
+    if model_version == 1:
+        args_k = [ModelV1.LR, ModelV1.N_FFT, ModelV1.ADAPTIVE_LAYER_UNITS_0, ModelV1.ADAPTIVE_LAYER_UNITS_1]
+        model_config = { k: args[k] for k in args_k }
+        model = ModelV1(batch_size=batch_size, num_workers=num_workers,
+                        train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
+        return (model, model_config)
+    elif model_version == 2:
+        raise NotImplementedError()
+    elif model_version == 3:
+        raise NotImplementedError()
+    else:
+        raise ModuleNotFoundError()
 
 
 def get_gpu_count():
@@ -79,7 +76,7 @@ def get_num_workers():
 
 def get_wandb_tags(args):
     return [
-        'model:A1DConvCat',
+        'model:A2DConvCat',
         'dataset:{}'.format(args['dataset']),
         'version:{}'.format(args['model_version'])
     ]
@@ -99,10 +96,10 @@ def train_kfold(args):
         batch_size=args['batch_size'],
         num_workers=args['num_workers'],
         wandb_project_name="mer",
-        model_monitor=Model.MODEL_CHECKPOINT,
-        model_monitor_mode=Model.MODEL_CHECKPOINT_MODE,
-        early_stop_monitor=Model.EARLY_STOPPING,
-        early_stop_mode=Model.EARLY_STOPPING_MODE,
+        model_monitor=model.MODEL_CHECKPOINT,
+        model_monitor_mode=model.MODEL_CHECKPOINT_MODE,
+        early_stop_monitor=model.EARLY_STOPPING,
+        early_stop_mode=model.EARLY_STOPPING_MODE,
         use_wandb=(not args['no_wandb']),
         cv_dry_run=False,
         wandb_tags=get_wandb_tags(args),
@@ -111,6 +108,7 @@ def train_kfold(args):
     )
 
     cv.fit(model, train_ds, test_ds)
+
 
 def check(model, train_ds, test_ds, validation_ds):
 
@@ -128,6 +126,7 @@ def check(model, train_ds, test_ds, validation_ds):
 
     print(torchinfo.summary(model, input_size=(2, 1, 22050*5)))
 
+
 def train(args):
 
     if args['kfold']:
@@ -141,17 +140,18 @@ def train(args):
         check(model, train_ds, test_ds, validation_ds)
         return
 
-    config={
+    config = {
         **model_config
     }
 
-    model_callback = ModelCheckpoint(monitor=Model.MODEL_CHECKPOINT, mode=Model.MODEL_CHECKPOINT_MODE)
+    model_callback = ModelCheckpoint(
+        monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
     early_stop_callback = EarlyStopping(
-        monitor=Model.EARLY_STOPPING,
+        monitor=model.EARLY_STOPPING,
         min_delta=0.00,
         patience=10,
         verbose=True,
-        mode=Model.EARLY_STOPPING_MODE
+        mode=model.EARLY_STOPPING_MODE
     )
 
     logger = None
@@ -193,7 +193,10 @@ def main(in_args=None):
     model_args.add_argument('--check', action='store_true', default=False)
     model_args.add_argument('--lr', '--learning-rate',
                             type=float, default=0.01)
-    model_args.add_argument('--adaptive-layer-units',
+    model_args.add_argument('--n-fft', type=int, default=2048)
+    model_args.add_argument('--adaptive-layer-units-0',
+                            type=int, default=128)
+    model_args.add_argument('--adaptive-layer-units-1',
                             type=int, default=128)
     model_args.add_argument('--batch-size', type=int, default=32)
 
