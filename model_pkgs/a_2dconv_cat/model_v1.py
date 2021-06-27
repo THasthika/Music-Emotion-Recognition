@@ -95,9 +95,7 @@ class A2DConvCat_V1(pl.LightningModule):
         )
 
     def forward(self, x):
-        print(x.shape)
         x = self.stft(x)
-        print(x.shape)
         x = self.feature_extractor(x)
         x = torch.flatten(x, start_dim=1)
         x = self.classifier(x)
