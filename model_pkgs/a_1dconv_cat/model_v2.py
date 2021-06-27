@@ -80,6 +80,24 @@ class A1DConvCat_V2(pl.LightningModule):
             nn.Dropout(),
             nn.ReLU(),
 
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.MaxPool1d(kernel_size=3, stride=1),
+            nn.BatchNorm1d(250),
+            nn.Dropout(),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.MaxPool1d(kernel_size=3, stride=1),
+            nn.BatchNorm1d(250),
+            nn.Dropout(),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.MaxPool1d(kernel_size=3, stride=1),
+            nn.BatchNorm1d(250),
+            nn.Dropout(),
+            nn.ReLU(),
+
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
             nn.Dropout()
         )
