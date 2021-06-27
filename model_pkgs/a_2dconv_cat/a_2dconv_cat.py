@@ -11,8 +11,9 @@ from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
 import torch.cuda
 
-from model_v1 import A1DConvCat_V1 as ModelV1
-from model_v2 import A1DConvCat_V2 as ModelV2
+from model_v1 import A2DConvCat_V1 as ModelV1
+from model_v2 import A2DConvCat_V2 as ModelV2
+from model_v3 import A2DConvCat_V3 as ModelV3
 from kfold import CrossValidator
 from data import ModelDataset
 
@@ -57,6 +58,8 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
     ModelCls = ModelV1
     if args['model_version'] == 2:
         ModelCls = ModelV2
+    elif args['model_version'] == 3:
+        ModelCls = ModelV3
     print("Using Model Verions... {}".format(args['model_version']))
 
     model = ModelCls(batch_size=batch_size, num_workers=num_workers,
