@@ -91,11 +91,11 @@ class A2DConvCat_V2(pl.LightningModule):
             nn.Dropout2d(),
             nn.ReLU(),
             
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
-            nn.MaxPool2d(kernel_size=(2, 2)),
-            nn.BatchNorm2d(num_features=256),
-            nn.Dropout2d(),
-            nn.ReLU(),
+            # nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            # nn.MaxPool2d(kernel_size=(2, 2)),
+            # nn.BatchNorm2d(num_features=256),
+            # nn.Dropout2d(),
+            # nn.ReLU(),
 
             nn.AdaptiveAvgPool2d(output_size=(
                 self.config[self.ADAPTIVE_LAYER_UNITS_0],
