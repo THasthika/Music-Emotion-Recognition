@@ -68,7 +68,7 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
         args_k = [ModelV3.LR, ModelV3.N_FFT, ModelV3.ADAPTIVE_LAYER_UNITS_0,
                   ModelV3.ADAPTIVE_LAYER_UNITS_1, ModelV3.SPEC_TRAINABLE, ModelV3.N_MELS, ModelV3.N_MFCC]
         model_config = {k: args[k] for k in args_k}
-        model = ModelV2(batch_size=batch_size, num_workers=num_workers,
+        model = ModelV3(batch_size=batch_size, num_workers=num_workers,
                         train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
         return (model, model_config)
     else:

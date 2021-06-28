@@ -64,7 +64,7 @@ class A2DConvCat_V3(pl.LightningModule):
 
         self.stft = nnSpectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
         self.mel_spec = nnSpectrogram.MelSpectrogram(sr=22050, n_fft=self.config[self.N_FFT], n_mels=self.config[self.N_MELS], trainable_mel=self.config[self.SPEC_TRAINABLE], trainable_STFT=self.config[self.SPEC_TRAINABLE])
-        self.mfccs = nnSpectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
+        self.mfcc = nnSpectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
 
         self.stft_feature_extractor = nn.Sequential(
 
@@ -141,7 +141,7 @@ class A2DConvCat_V3(pl.LightningModule):
             ))
         )
 
-        self.mfcc_extractor_feature_extractor = nn.Sequential(
+        self.mfcc_feature_extractor = nn.Sequential(
             nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(2, 2)),
             nn.BatchNorm2d(num_features=16),
@@ -172,10 +172,30 @@ class A2DConvCat_V3(pl.LightningModule):
         )
 
     def forward(self, x):
-        x = self.stft(x)
-        x = torch.unsqueeze(x, dim=1)
-        x = self.feature_extractor(x)
-        x = torch.flatten(x, start_dim=1)
+        
+        x0 = self.stft(x)
+        x0 = torch.unsqueeze(x0, dim=1)
+        x0 = self.stft_feature_extractor(x0)
+        x0 = torch.flatten(x0, start_dim=1)
+
+        x1 = self.mel_spec(x)
+        x1 = torch.unsqueeze(x1, dim=1)
+        x1 = self.mel_spec_feature_extractor(x1)
+        x1 = torch.flatten(x1, start_dim=1)
+
+        x2 = self.mfcc(x)
+        x2 = torch.unsqueeze(x2, dim=1)
+        x2 = self.mfcc_feature_extractor(x2)
+        x2 = torch.flatten(x2, start_dim=1)
+
+        print(x1.shape)
+        print(x2.shape)
+        print(x0.shape)
+
+        x = torch.cat((x0, x1, x2))
+
+        print(x.shape)
+
         x = self.classifier(x)
         return x
 
