@@ -65,7 +65,12 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
                         train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
         return (model, model_config)
     elif model_version == 3:
-        raise NotImplementedError()
+        args_k = [ModelV3.LR, ModelV3.N_FFT, ModelV3.ADAPTIVE_LAYER_UNITS_0,
+                  ModelV3.ADAPTIVE_LAYER_UNITS_1, ModelV3.SPEC_TRAINABLE, ModelV3.N_MELS, ModelV3.N_MFCC]
+        model_config = {k: args[k] for k in args_k}
+        model = ModelV2(batch_size=batch_size, num_workers=num_workers,
+                        train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
+        return (model, model_config)
     else:
         raise ModuleNotFoundError()
 
@@ -204,6 +209,7 @@ def main(in_args=None):
                             type=float, default=0.01)
     model_args.add_argument('--n-fft', type=int, default=2048)
     model_args.add_argument('--n-mels', type=int, default=128)
+    model_args.add_argument('--n-mfcc', type=int, default=20)
     model_args.add_argument('--adaptive-layer-units-0',
                             type=int, default=128)
     model_args.add_argument('--adaptive-layer-units-1',

@@ -7,10 +7,17 @@ from torch.utils.data import DataLoader
 
 import torchmetrics as tm
 
-class A2DConvCat_V3(pl.LightningModule):
+from nnAudio import Spectrogram as nnSpectrogram
+
+class A2DConvCat_V1(pl.LightningModule):
 
     LR = "lr"
-    ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
+    ADAPTIVE_LAYER_UNITS_0 = "adaptive_layer_units_0"
+    ADAPTIVE_LAYER_UNITS_1 = "adaptive_layer_units_1"
+    N_FFT = "n_fft"
+    N_MELS = "n_mels"
+    N_MFCC = "n_mfcc"
+    SPEC_TRAINABLE = "spec_trainable"
 
     EARLY_STOPPING = "val/loss"
     EARLY_STOPPING_MODE = "min"
@@ -39,7 +46,10 @@ class A2DConvCat_V3(pl.LightningModule):
 
         ## metrics
         self.train_acc = tm.Accuracy(top_k=3)
+
         self.val_acc = tm.Accuracy(top_k=3)
+        self.val_f1_class = tm.F1(num_classes=4, average='none')
+        self.val_f1_global = tm.F1(num_classes=4)
 
         self.test_acc = tm.Accuracy(top_k=3)
         self.test_f1_class = tm.F1(num_classes=4, average='none')
@@ -50,40 +60,120 @@ class A2DConvCat_V3(pl.LightningModule):
     
     def __build_model(self):
 
-        self.feature_extractor = nn.Sequential(
-            nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
-            nn.BatchNorm1d(250),
-            nn.Dropout(),
+        f_bins = (self.config[self.N_FFT] // 2) + 1
+
+        self.stft = nnSpectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
+        self.mel_spec = nnSpectrogram.MelSpectrogram(sr=22050, n_fft=self.config[self.N_FFT], n_mels=self.config[self.N_MELS], trainable_mel=self.config[self.SPEC_TRAINABLE], trainable_STFT=self.config[self.SPEC_TRAINABLE])
+        self.mfccs = nnSpectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
+
+        self.stft_feature_extractor = nn.Sequential(
+
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=16),
             nn.ReLU(),
 
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
-            nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=32),
             nn.ReLU(),
 
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
-            nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=64),
             nn.ReLU(),
 
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
-            nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=128),
             nn.ReLU(),
 
-            nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
-            nn.Dropout()
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=256),
+            nn.Dropout2d(),
+            nn.ReLU(),
+            
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=256),
+            nn.Dropout2d(),
+            nn.ReLU(),
+
+            nn.AdaptiveAvgPool2d(output_size=(
+                self.config[self.ADAPTIVE_LAYER_UNITS_0],
+                self.config[self.ADAPTIVE_LAYER_UNITS_1]
+            ))
         )
 
-        self.classifier = nn.Sequential(
-            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS]*250, out_features=512),
+        self.mel_spec_feature_extractor = nn.Sequential(
+
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=16),
             nn.ReLU(),
+
+            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=32),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=64),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=128),
+            nn.Dropout2d(),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=256),
+            nn.Dropout2d(),
+            nn.ReLU(),
+
+            nn.AdaptiveAvgPool2d(output_size=(
+                self.config[self.ADAPTIVE_LAYER_UNITS_0],
+                self.config[self.ADAPTIVE_LAYER_UNITS_1]
+            ))
+        )
+
+        self.mfcc_extractor_feature_extractor = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=16),
+            nn.ReLU(),
+
+            nn.AdaptiveAvgPool2d(output_size=(
+                self.config[self.ADAPTIVE_LAYER_UNITS_0],
+                self.config[self.ADAPTIVE_LAYER_UNITS_1]
+            ))
+        )
+
+        out_channels = 256
+        input_size = (self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
+
+        out_channels = 256
+        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
+
+        out_channels = 16
+        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
+
+        self.classifier = nn.Sequential(
+            nn.Linear(in_features=input_size, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),
             nn.Linear(in_features=128, out_features=4)
         )
 
     def forward(self, x):
+        x = self.stft(x)
+        x = torch.unsqueeze(x, dim=1)
         x = self.feature_extractor(x)
         x = torch.flatten(x, start_dim=1)
         x = self.classifier(x)
@@ -118,6 +208,12 @@ class A2DConvCat_V3(pl.LightningModule):
         
         self.log("val/loss", loss, prog_bar=True)
         self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
+
+        self.log("val/f1_global", self.val_f1_global(pred, y), on_step=False, on_epoch=True)
+
+        f1_scores = self.val_f1_class(pred, y)
+        for (i, x) in enumerate(torch.flatten(f1_scores)):
+            self.log("val/f1_class_{}".format(i), x, on_step=False, on_epoch=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
