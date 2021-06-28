@@ -97,7 +97,7 @@ class A2DConvCat_V1(pl.LightningModule):
             ))
         )
 
-        out_channels = 16
+        out_channels = 32
         input_size = (self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
 
         self.classifier = nn.Sequential(
