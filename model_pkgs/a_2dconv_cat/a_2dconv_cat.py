@@ -116,7 +116,10 @@ def train_kfold(args):
     cv.fit(model, train_ds, test_ds)
 
 
-def check(model, train_ds, test_ds, validation_ds):
+def check(args):
+
+    (train_ds, test_ds, validation_ds) = make_datasets(args)
+    (model, _) = make_model(args, train_ds, test_ds, validation_ds)
 
     for ds in [train_ds, test_ds, validation_ds]:
         if ds is None:
@@ -135,16 +138,16 @@ def check(model, train_ds, test_ds, validation_ds):
 
 def train(args):
 
+    if args['check']:
+        check(args)
+        return
+
     if args['kfold']:
         train_kfold(args)
         return
 
     (train_ds, test_ds, validation_ds) = make_datasets(args)
     (model, model_config) = make_model(args, train_ds, test_ds, validation_ds)
-
-    if args['check']:
-        check(model, train_ds, test_ds, validation_ds)
-        return
 
     config = {
         **model_config
