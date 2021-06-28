@@ -192,7 +192,7 @@ class A2DConvCat_V3(pl.LightningModule):
         print(x1.shape)
         # print(x2.shape)
 
-        x = torch.cat((x0, x1))
+        x = torch.cat((x0, x1), dim=1)
 
         print(x.shape)
 
