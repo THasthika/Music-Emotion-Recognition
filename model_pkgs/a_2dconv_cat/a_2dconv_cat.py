@@ -200,6 +200,7 @@ def main(in_args=None):
     model_args.add_argument('--lr', '--learning-rate',
                             type=float, default=0.01)
     model_args.add_argument('--n-fft', type=int, default=2048)
+    model_args.add_argument('--n-mels', type=int, default=128)
     model_args.add_argument('--adaptive-layer-units-0',
                             type=int, default=128)
     model_args.add_argument('--adaptive-layer-units-1',
