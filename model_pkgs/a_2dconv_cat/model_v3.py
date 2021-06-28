@@ -9,7 +9,7 @@ import torchmetrics as tm
 
 from nnAudio import Spectrogram as nnSpectrogram
 
-class A2DConvCat_V1(pl.LightningModule):
+class A2DConvCat_V3(pl.LightningModule):
 
     LR = "lr"
     ADAPTIVE_LAYER_UNITS_0 = "adaptive_layer_units_0"
