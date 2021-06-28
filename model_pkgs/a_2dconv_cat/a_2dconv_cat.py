@@ -58,7 +58,12 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
                         train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
         return (model, model_config)
     elif model_version == 2:
-        raise NotImplementedError()
+        args_k = [ModelV2.LR, ModelV2.N_FFT, ModelV2.ADAPTIVE_LAYER_UNITS_0,
+                  ModelV2.ADAPTIVE_LAYER_UNITS_1, ModelV2.SPEC_TRAINABLE, ModelV2.N_MELS]
+        model_config = {k: args[k] for k in args_k}
+        model = ModelV2(batch_size=batch_size, num_workers=num_workers,
+                        train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
+        return (model, model_config)
     elif model_version == 3:
         raise NotImplementedError()
     else:
