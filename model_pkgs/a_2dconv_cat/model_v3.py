@@ -142,8 +142,8 @@ class A2DConvCat_V3(pl.LightningModule):
         )
 
         self.mfcc_feature_extractor = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
-            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 13), stride=(1, 2)),
+            nn.MaxPool2d(kernel_size=(2, 4)),
             nn.BatchNorm2d(num_features=16),
             nn.ReLU(),
 
