@@ -141,17 +141,17 @@ class A2DConvCat_V3(pl.LightningModule):
             ))
         )
 
-        # self.mfcc_feature_extractor = nn.Sequential(
-        #     nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
-        #     nn.MaxPool2d(kernel_size=(2, 2)),
-        #     nn.BatchNorm2d(num_features=16),
-        #     nn.ReLU(),
+        self.mfcc_feature_extractor = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=16),
+            nn.ReLU(),
 
-        #     nn.AdaptiveAvgPool2d(output_size=(
-        #         self.config[self.ADAPTIVE_LAYER_UNITS_0],
-        #         self.config[self.ADAPTIVE_LAYER_UNITS_1]
-        #     ))
-        # )
+            nn.AdaptiveAvgPool2d(output_size=(
+                self.config[self.ADAPTIVE_LAYER_UNITS_0],
+                self.config[self.ADAPTIVE_LAYER_UNITS_1]
+            ))
+        )
 
         out_channels = 256
         input_size = (self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
@@ -159,8 +159,8 @@ class A2DConvCat_V3(pl.LightningModule):
         out_channels = 256
         input_size += (self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
 
-        # out_channels = 16
-        # input_size += (self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
+        out_channels = 16
+        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
 
         self.classifier = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
@@ -183,10 +183,10 @@ class A2DConvCat_V3(pl.LightningModule):
         x1 = self.mel_spec_feature_extractor(x1)
         x1 = torch.flatten(x1, start_dim=1)
 
-        # x2 = self.mfcc(x)
-        # x2 = torch.unsqueeze(x2, dim=1)
-        # x2 = self.mfcc_feature_extractor(x2)
-        # x2 = torch.flatten(x2, start_dim=1)
+        x2 = self.mfcc(x)
+        x2 = torch.unsqueeze(x2, dim=1)
+        x2 = self.mfcc_feature_extractor(x2)
+        x2 = torch.flatten(x2, start_dim=1)
 
         x = torch.cat((x0, x1), dim=1)
 

@@ -25,7 +25,8 @@ pip install python-dotenv
 pip install torchinfo
 
 # nnaudio
-pip install nnAudio
+# pip install nnAudio
+pip install git+https://github.com/THasthika/nnAudio.git#subdirectory=Installation
 
 # essentia
 pip install essentia
