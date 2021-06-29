@@ -188,7 +188,7 @@ class A2DConvCat_V3(pl.LightningModule):
         x2 = self.mfcc_feature_extractor(x2)
         x2 = torch.flatten(x2, start_dim=1)
 
-        x = torch.cat((x0, x1), dim=1)
+        x = torch.cat((x0, x1, x2), dim=1)
 
         x = self.classifier(x)
         return x
