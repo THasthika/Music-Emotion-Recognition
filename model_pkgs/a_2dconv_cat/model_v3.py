@@ -147,6 +147,12 @@ class A2DConvCat_V3(pl.LightningModule):
             nn.BatchNorm2d(num_features=16),
             nn.ReLU(),
 
+            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 7), stride=(1, 2)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=32),
+            nn.Dropout2d(),
+            nn.ReLU(),
+
             nn.AdaptiveAvgPool2d(output_size=(
                 self.config[self.ADAPTIVE_LAYER_UNITS_0],
                 self.config[self.ADAPTIVE_LAYER_UNITS_1]
