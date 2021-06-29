@@ -64,7 +64,7 @@ class A2DConvCat_V3(pl.LightningModule):
 
         self.stft = nnSpectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
         self.mel_spec = nnSpectrogram.MelSpectrogram(sr=22050, n_fft=self.config[self.N_FFT], n_mels=self.config[self.N_MELS], trainable_mel=self.config[self.SPEC_TRAINABLE], trainable_STFT=self.config[self.SPEC_TRAINABLE])
-        # self.mfcc = nnSpectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
+        self.mfcc = nnSpectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
 
         self.stft_feature_extractor = nn.Sequential(
 
