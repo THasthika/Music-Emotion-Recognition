@@ -22,6 +22,11 @@ def _calculate_distance(preds: torch.Tensor, target: torch.Tensor):
     t_mean = _get_distribution_mean(target)
     t_corr = _get_distribution_covariance(target)
 
+    print(p_mean)
+    print(p_corr)
+    print(t_mean)
+    print(t_corr)
+
     sum_corr = (t_corr + p_corr) / 2
 
     sum_corr_inv = torch.inverse(sum_corr)
@@ -54,13 +59,8 @@ class BhattacharyyaDistance(tm.Metric):
         # assert preds.shape == target.shape
 
         d = torch.sum(_calculate_distance(preds, target))
-        print(d)
         n = target.numel()
-        print(n)
-
         self.avg_d += d / n
-        print(self.avg_d)
-
 
     def compute(self):
         # compute final result
