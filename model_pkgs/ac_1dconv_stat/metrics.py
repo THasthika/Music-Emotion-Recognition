@@ -53,7 +53,13 @@ class BhattacharyyaDistance(tm.Metric):
         # preds, target = self._input_format(preds, target)
         # assert preds.shape == target.shape
 
-        self.avg_d += (torch.sum(_calculate_distance(preds, target)) / target.numel())
+        d = torch.sum(_calculate_distance(preds, target))
+        print(d)
+        n = target.numel()
+        print(n)
+
+        self.avg_d += d / n
+        print(self.avg_d)
 
 
     def compute(self):
