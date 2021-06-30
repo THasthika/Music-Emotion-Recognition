@@ -28,19 +28,20 @@ def _calculate_distance(preds: torch.Tensor, target: torch.Tensor):
 
     _x_mean = p_mean - t_mean
     _x_mean = torch.unsqueeze(_x_mean, 1)
-    print(_x_mean)
     _x_mean_t = torch.transpose(_x_mean, 1, 2)
-    print(_x_mean_t)
     _x = torch.matmul(_x_mean, sum_corr_inv)
-    print(_x)
     _x = (1/8) * torch.matmul(_x, _x_mean_t)
-    print(_x)
     _x = torch.squeeze(_x)
-    print("----------")
 
-    _t = (1/2) * torch.log(torch.linalg.det(sum_corr) / (torch.sqrt(
-        torch.linalg.det(p_corr) * torch.linalg.det(t_corr)
-    )))
+    _t = torch.linalg.det(p_corr) * torch.linalg.det(t_corr)
+    print(_t)
+    _t = torch.sqrt(_t)
+    print(_t)
+    _t = torch.linalg.det(sum_corr) / _t
+    print(_t)
+    _t = 0.5 * torch.log(_t)
+    print(_t)
+    print("-----------------")
     
     return _x + _t
 
