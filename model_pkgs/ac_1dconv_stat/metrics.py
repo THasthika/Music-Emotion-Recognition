@@ -26,9 +26,8 @@ def _calculate_distance(preds: torch.Tensor, target: torch.Tensor):
 
     sum_corr_inv = torch.inverse(sum_corr)
 
-    print(sum_corr_inv)
-
     _x_mean = p_mean - t_mean
+    print(_x_mean)
     _x_mean = torch.unsqueeze(_x_mean, 1)
     _x_mean_t = torch.transpose(_x_mean, 1, 2)
     _x = torch.matmul(_x_mean, sum_corr_inv)
