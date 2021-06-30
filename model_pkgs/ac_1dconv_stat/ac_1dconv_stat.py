@@ -11,7 +11,7 @@ from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
 import torch.cuda
 
-from model import AC1DConvCat as Model
+from model import AC1DConvStat as Model
 from kfold import CrossValidator
 from data import ModelDataset
 
