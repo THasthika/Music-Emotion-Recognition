@@ -57,8 +57,6 @@ class BhattacharyyaDistance(tm.Metric):
         nan_count = torch.sum(torch.isnan(d))
         d = torch.nan_to_num(d, nan=0.0)
 
-        print(nan_count)
-
         self.distance += torch.sum(d)
         self.total += target.numel() - nan_count
 
