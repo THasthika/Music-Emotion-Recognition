@@ -41,14 +41,6 @@ class AC1DConvStat(pl.LightningModule):
 
         self.__build_model()
 
-        ## metrics
-        self.train_acc = tm.Accuracy(top_k=3)
-        self.val_acc = tm.Accuracy(top_k=3)
-
-        self.test_acc = tm.Accuracy(top_k=3)
-        self.test_f1_class = tm.F1(num_classes=4, average='none')
-        self.test_f1_global = tm.F1(num_classes=4)
-
         ## loss
         self.loss = F.l1_loss
         
