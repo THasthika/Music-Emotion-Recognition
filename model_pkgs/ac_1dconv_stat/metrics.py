@@ -22,12 +22,9 @@ def _calculate_distance(preds: torch.Tensor, target: torch.Tensor):
     t_mean = _get_distribution_mean(target)
     t_corr = _get_distribution_covariance(target)
 
-    print(p_mean)
-    print(p_corr)
-    print(t_mean)
-    print(t_corr)
-
     sum_corr = (t_corr + p_corr) / 2
+
+    print(sum_corr)
 
     sum_corr_inv = torch.inverse(sum_corr)
 
