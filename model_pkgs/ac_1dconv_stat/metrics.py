@@ -33,7 +33,7 @@ def _calculate_distance(preds: torch.Tensor, target: torch.Tensor):
     _x = (1/8) * torch.matmul(_x, _x_mean_t)
     _x = torch.squeeze(_x)
 
-    _t = torch.sqrt(torch.abs(torch.linalg.det(p_corr)) * torch.linalg.det(t_corr))
+    _t = torch.sqrt(torch.linalg.det(p_corr) * torch.linalg.det(t_corr))
     _t = (1/2) * torch.log(torch.linalg.det(sum_corr) / _t)
     
     return _x + _t
@@ -53,8 +53,14 @@ class BhattacharyyaDistance(tm.Metric):
         # preds, target = self._input_format(preds, target)
         # assert preds.shape == target.shape
 
-        self.distance += torch.sum(_calculate_distance(preds, target))
-        self.total += target.numel()
+        d = _calculate_distance(preds, target)
+        nan_count = torch.sum(torch.isnan(d))
+        d = torch.nan_to_num(d, nan=0.0)
+
+        print(nan_count)
+
+        self.distance += torch.sum(d)
+        self.total += target.numel() - nan_count
 
     def compute(self):
         # compute final result
