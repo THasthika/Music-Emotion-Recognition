@@ -299,5 +299,4 @@ class ModelDataset(AudioChunkedDataset):
         y = info[['static_valence_mean', 'static_valence_std',
                   'static_arousal_mean', 'static_arousal_std']].to_numpy()
         y = torch.tensor(list(y), dtype=torch.float)
-        print(y[[1,3]])
         return y
