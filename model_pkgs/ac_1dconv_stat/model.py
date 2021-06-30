@@ -145,7 +145,7 @@ class AC1DConvStat(pl.LightningModule):
 
     def predict(self, x):
         x = self.forward(x)
-        return F.softmax(x, dim=1)
+        return x
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR])
@@ -154,39 +154,35 @@ class AC1DConvStat(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
 
-        y_logit = self(x)
-        loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
+        pred = self(x)
+        loss = self.loss(pred, y)
+        distanceMeasure = self.train_distance(pred, y)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-        self.log('train/acc', self.train_acc(pred, y), prog_bar=True, on_step=False, on_epoch=True)
+        self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
 
-        y_logit = self(x)
-        loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
+        pred = self(x)
+        loss = self.loss(pred, y)
+        distanceMeasure = self.val_distance(pred, y)
         
         self.log("val/loss", loss, prog_bar=True)
-        self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
+        self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
     def test_step(self, batch, batch_idx):
+
         x, y = batch
 
-        y_logit = self(x)
-        loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
+        pred = self(x)
+        loss = self.loss(pred, y)
+        distanceMeasure = self.test_distance(pred, y)
 
         self.log("test/loss", loss)
-        self.log("test/acc", self.test_acc(pred, y))
-        self.log("test/f1_global", self.test_f1_global(pred, y))
-
-        f1_scores = self.test_f1_class(pred, y)
-        for (i, x) in enumerate(torch.flatten(f1_scores)):
-            self.log("test/f1_class_{}".format(i), x)
+        self.log('test/distance', distanceMeasure)
 
     def train_dataloader(self):
         if self.test_ds is None: return None
