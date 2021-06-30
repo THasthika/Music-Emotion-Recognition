@@ -46,17 +46,16 @@ class BhattacharyyaDistance(tm.Metric):
         # state from multiple processes
         super().__init__(dist_sync_on_step=dist_sync_on_step)
 
-        self.add_state("distance", default=torch.tensor(0, dtype=torch.float, device=device), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0, device=device), dist_reduce_fx="sum")
+        self.add_state("avg_d", default=torch.tensor(0, dtype=torch.float, device=device), dist_reduce_fx="sum")
 
     def update(self, preds: torch.Tensor, target: torch.Tensor):
         # update metric states
         # preds, target = self._input_format(preds, target)
         # assert preds.shape == target.shape
 
-        self.distance += torch.sum(_calculate_distance(preds, target))
-        self.total += target.numel()
+        self.avg_d += (torch.sum(_calculate_distance(preds, target)) / target.numel())
+
 
     def compute(self):
         # compute final result
-        return self.distance / self.total
+        return self.avg_d
