@@ -34,13 +34,16 @@ def _calculate_distance(preds: torch.Tensor, target: torch.Tensor):
     _x = torch.squeeze(_x)
 
     _t = torch.linalg.det(p_corr) * torch.linalg.det(t_corr)
+    print(p_corr)
+    print(t_corr)
     print(_t)
     _t = torch.sqrt(_t)
-    print(_t)
+    # _t = torch.nan_to_num(_t)
+    # print(_t)
     _t = torch.linalg.det(sum_corr) / _t
-    print(_t)
+    # print(_t)
     _t = 0.5 * torch.log(_t)
-    print(_t)
+    # print(_t)
     print("-----------------")
     
     return _x + _t
