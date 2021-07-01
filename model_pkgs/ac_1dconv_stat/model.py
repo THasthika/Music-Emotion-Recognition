@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 import torchmetrics as tm
 
 from metrics import BhattacharyyaDistance
+from activation import CustomELU
 
 class AC1DConvStat(pl.LightningModule):
 
@@ -106,8 +107,10 @@ class AC1DConvStat(pl.LightningModule):
         self.fc0 = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
             nn.Dropout(),
+            nn.BatchNorm1d(num_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
+            nn.BatchNorm1d(128),
             nn.ReLU()
         )
 
@@ -117,7 +120,7 @@ class AC1DConvStat(pl.LightningModule):
 
         self.fc_std = nn.Sequential(
             nn.Linear(in_features=128, out_features=2),
-            nn.ReLU()
+            CustomELU(alpha=1.0)
         )
 
     def forward(self, x):

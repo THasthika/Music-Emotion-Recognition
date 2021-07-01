@@ -55,6 +55,9 @@ class BaseDataset(Dataset):
 
     def __check_cache_and_get_features(self, info, args):
         key = self.get_key(info, args)
+        if self.cache_in_memory and key in self.cache:
+            return self.cache[key]
+
         fkey = path.join(self.temp_folder, "{}.pkl".format(key))
         if (not self.force_compute) and path.exists(fkey):
             try:
@@ -64,6 +67,9 @@ class BaseDataset(Dataset):
                 print("Warning: failed to load pickle file. getting features... {}".format(fkey))
         X = self.get_features(info, args)
         pickle.dump(X, open(fkey, mode="wb"))
+        if self.cache_in_memory:
+            self.cache[key] = X
+
         return X
 
     def __get_meta(self, meta_file):
@@ -75,7 +81,10 @@ class BaseDataset(Dataset):
         else:
             raise Exception("Unknown File Extension {}".format(meta_ext))
 
-    def __init__(self, meta_file, temp_folder=None, force_compute=False):
+    def __init__(self, meta_file, temp_folder=None, force_compute=False, cache_in_memory=False):
+
+        self.cache_in_memory = cache_in_memory
+        self.cache = {}
 
         self.force_compute = force_compute
         self.meta = self.__get_meta(meta_file)
@@ -135,8 +144,8 @@ class BaseChunkedDataset(BaseDataset):
             row_i += 1
         return frames
 
-    def __init__(self, meta_file, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False):
-        super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
+    def __init__(self, meta_file, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, cache_in_memory=False):
+        super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute, cache_in_memory=cache_in_memory)
 
         self.chunk_duration = chunk_duration
         self.overlap = overlap
@@ -152,8 +161,8 @@ class BaseChunkedDataset(BaseDataset):
 
 class AudioChunkedDataset(BaseChunkedDataset):
 
-    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3"):
-        super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, cache_in_memory=False, audio_extension="mp3"):
+        super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute, cache_in_memory=cache_in_memory)
 
         self.sr = sr
         self.data_dir = data_dir
@@ -183,8 +192,8 @@ class AudioChunkedDataset(BaseChunkedDataset):
 
 class ModelDataset(AudioChunkedDataset):
 
-    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3", frame_size=1024, hop_size=512, n_fft=1024, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
-        super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap, temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension)
+    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, cache_in_memory=False, audio_extension="mp3", frame_size=1024, hop_size=512, n_fft=1024, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
+        super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap, temp_folder=temp_folder, force_compute=force_compute, cache_in_memory=cache_in_memory, audio_extension=audio_extension)
 
         self.frame_size = frame_size
         self.hop_size = hop_size

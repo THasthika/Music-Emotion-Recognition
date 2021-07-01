@@ -199,6 +199,7 @@ def main(in_args=None):
     data_args.add_argument('--temp-folder', type=str, required=True)
     data_args.add_argument(
         '--force-compute', action='store_true', default=False)
+    data_args.add_argument('--cache-in-memory', action='store_true', default=False)
 
     audio_args = subparser_train.add_argument_group('Audio Arguments')
     audio_args.add_argument('--sr', '--sample-rate', type=int, default=22050)
