@@ -37,7 +37,7 @@ def get_args(dataset_name, split_name, temp_dir, sub_folder="audio"):
             ret.append(x)
     return ret
 
-def main():
+def main(in_args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--temp-folder", type=str, required=True)
@@ -45,7 +45,7 @@ def main():
     parser.add_argument("--split", type=str, required=True)
     parser.add_argument("--sub-folder", type=str, default="audio")
 
-    pargs, other = parser.parse_known_args()
+    pargs, other = parser.parse_known_args(in_args)
     pargs = vars(pargs)
 
     dataset = pargs['dataset']
