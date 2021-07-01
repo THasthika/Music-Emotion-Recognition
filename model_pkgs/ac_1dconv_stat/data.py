@@ -57,11 +57,12 @@ class BaseDataset(Dataset):
         key = self.get_key(info, args)
         if self.cache_in_memory and key in self.cache:
             return self.cache[key]
-
         fkey = path.join(self.temp_folder, "{}.pkl".format(key))
         if (not self.force_compute) and path.exists(fkey):
             try:
                 X = pickle.load(open(fkey, mode="rb"))
+                if self.cache_in_memory:
+                    self.cache[key] = X
                 return X
             except:
                 print("Warning: failed to load pickle file. getting features... {}".format(fkey))
