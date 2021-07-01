@@ -72,18 +72,36 @@ class A1DConvStat(pl.LightningModule):
             nn.Dropout()
         )
 
-        self.classifier = nn.Sequential(
-            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS]*250, out_features=512),
+        input_size = self.config[self.ADAPTIVE_LAYER_UNITS] * 250
+
+        self.fc0 = nn.Sequential(
+            nn.Linear(in_features=input_size, out_features=512),
+            nn.Dropout(),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
-            nn.ReLU(),
-            nn.Linear(in_features=128, out_features=4)
+            nn.ReLU()
         )
+
+        self.fc_mean = nn.Sequential(
+            nn.Linear(in_features=128, out_features=2)
+        )
+
+        self.fc_std = nn.Sequential(
+            nn.Linear(in_features=128, out_features=2),
+            nn.ReLU()
+        )
+
+
 
     def forward(self, x):
         x = self.feature_extractor(x)
         x = torch.flatten(x, start_dim=1)
-        x = self.classifier(x)
+
+        x = self.fc0(x)
+
+        x_mean = self.fc_mean(x)
+        x_std = self.fc_std(x)
+        x = torch.cat((x_mean, x_std), dim=1)
         return x
 
     def predict(self, x):

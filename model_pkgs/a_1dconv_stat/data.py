@@ -175,8 +175,8 @@ class ModelDataset(BaseChunkedDataset):
         return (x, sr)
 
     def get_label(self, info, args):
-        y = info[['static_valence_mean', 'static_valence_std',
-                  'static_arousal_mean', 'static_arousal_std']].to_numpy()
+        y = info[['static_valence_mean', 'static_arousal_mean',
+                  'static_valence_std', 'static_arousal_std']].to_numpy()
         y = torch.tensor(list(y), dtype=torch.float)
         return y
 
