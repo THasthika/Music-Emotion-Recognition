@@ -3,7 +3,7 @@ from os import path
 import argparse
 from dotenv import load_dotenv
 
-import ac_1dconv_stat
+import ac_1dconv_stat as execf
 
 load_dotenv(verbose=True)
 
@@ -57,7 +57,7 @@ def main():
 
     args.extend(other)
 
-    ac_1dconv_stat.main([
+    execf.main([
         'train',
         *args
     ])

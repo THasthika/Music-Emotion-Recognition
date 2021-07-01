@@ -130,8 +130,6 @@ class AC1DConvCat(pl.LightningModule):
         out_channels = 16
         input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
-        print(input_size)
-
         self.classifier = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
             nn.ReLU(),
@@ -158,12 +156,7 @@ class AC1DConvCat(pl.LightningModule):
         mel_x = torch.flatten(mel_x, start_dim=1)
         mfcc_x = torch.flatten(mfcc_x, start_dim=1)
 
-        print(audio_x.shape)
-        print(stft_x.shape)
-
         x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=1)
-
-        print(x.shape)
 
         x = self.classifier(x)
         return x

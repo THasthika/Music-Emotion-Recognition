@@ -8,14 +8,20 @@ from torch.utils.data import DataLoader
 
 import torchmetrics as tm
 
+from nnAudio import Spectrogram
+
 from metrics import BhattacharyyaDistance
 from activation import CustomELU
 
 class AC1DConvStat(pl.LightningModule):
 
     LR = "lr"
-    AUDIO_ADAPTIVE_LAYER_UNITS = "audio_adaptive_layer_units"
-    COMPUTED_ADAPTIVE_LAYER_UNITS = "computed_adaptive_layer_units"
+    ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
+
+    N_FFT = "n_fft"
+    N_MELS = "n_mels"
+    N_MFCC = "n_mfcc"
+    SPEC_TRAINABLE = "spec_trainable"
 
     EARLY_STOPPING = "val/loss"
     EARLY_STOPPING_MODE = "min"
@@ -51,6 +57,12 @@ class AC1DConvStat(pl.LightningModule):
     
     def __build_model(self):
 
+        f_bins = (self.config[self.N_FFT] // 2) + 1
+
+        self.stft = Spectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
+        self.mel_spec = Spectrogram.MelSpectrogram(sr=22050, n_fft=self.config[self.N_FFT], n_mels=self.config[self.N_MELS], trainable_mel=self.config[self.SPEC_TRAINABLE], trainable_STFT=self.config[self.SPEC_TRAINABLE])
+        self.mfcc = Spectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
+
         self.audio_feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
             nn.BatchNorm1d(250),
@@ -72,37 +84,51 @@ class AC1DConvStat(pl.LightningModule):
             nn.Dropout(),
             nn.ReLU(),
 
-            nn.AdaptiveAvgPool1d(output_size=self.config[self.AUDIO_ADAPTIVE_LAYER_UNITS]),
+            nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
             nn.Dropout()
         )
 
-        self.computed_feature_extractor = nn.Sequential(
-            nn.Conv1d(in_channels=692, out_channels=500, kernel_size=5, stride=1),
-            nn.BatchNorm1d(500),
-            nn.Dropout(),
+        self.stft_feature_extractor = nn.Sequential(
+
+            nn.Conv1d(in_channels=f_bins, out_channels=16, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=16),
             nn.ReLU(),
 
-            nn.Conv1d(in_channels=500, out_channels=500, kernel_size=5, stride=1),
-            nn.BatchNorm1d(500),
-            nn.Dropout(),
-            nn.ReLU(),
-
-            nn.Conv1d(in_channels=500, out_channels=500, kernel_size=5, stride=1),
-            nn.BatchNorm1d(500),
-            nn.Dropout(),
-            nn.ReLU(),
-
-            nn.Conv1d(in_channels=500, out_channels=500, kernel_size=5, stride=1),
-            nn.BatchNorm1d(500),
-            nn.Dropout(),
-            nn.ReLU(),
-
-            nn.AdaptiveAvgPool1d(output_size=self.config[self.COMPUTED_ADAPTIVE_LAYER_UNITS]),
-            nn.Dropout()
+            nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
         )
 
-        input_size = self.config[self.AUDIO_ADAPTIVE_LAYER_UNITS] * 250
-        input_size += self.config[self.COMPUTED_ADAPTIVE_LAYER_UNITS] * 500
+        self.mel_spec_feature_extractor = nn.Sequential(
+
+            nn.Conv1d(in_channels=self.config[self.N_MELS], out_channels=16, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=16),
+            nn.ReLU(),
+
+            nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
+        )
+
+        self.mfcc_feature_extractor = nn.Sequential(
+
+            nn.Conv1d(in_channels=self.config[self.N_MFCC], out_channels=16, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=16),
+            nn.ReLU(),
+
+            nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
+        )
+
+        out_channels = 250
+        input_size = (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
+
+        out_channels = 16
+        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
+
+        out_channels = 16
+        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
+
+        out_channels = 16
+        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
         self.fc0 = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
@@ -125,24 +151,23 @@ class AC1DConvStat(pl.LightningModule):
 
     def forward(self, x):
 
-        audio_x = x['audio']
-        computed_x = torch.column_stack([
-            x['spec'],
-            x['mel_spec'],
-            x['mfccs'],
-            x['chroma'],
-            x['tonnetz'],
-            x['spectral_contrast'],
-            x['spectral_aggregate']
-        ])
+        audio_x = self.audio_feature_extractor(x)
 
-        audio_x = self.audio_feature_extractor(audio_x)
-        computed_x = self.computed_feature_extractor(computed_x)
+        stft_x = self.stft(x)
+        stft_x = self.stft_feature_extractor(stft_x)
+
+        mel_x = self.mel_spec(x)
+        mel_x = self.mel_spec_feature_extractor(mel_x)
+
+        mfcc_x = self.mfcc(x)
+        mfcc_x = self.mfcc_feature_extractor(mfcc_x)
 
         audio_x = torch.flatten(audio_x, start_dim=1)
-        computed_x = torch.flatten(computed_x, start_dim=1)
+        stft_x = torch.flatten(stft_x, start_dim=1)
+        mel_x = torch.flatten(mel_x, start_dim=1)
+        mfcc_x = torch.flatten(mfcc_x, start_dim=1)
 
-        x = torch.cat((audio_x, computed_x), dim=1)
+        x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=1)
 
         x = self.fc0(x)
 

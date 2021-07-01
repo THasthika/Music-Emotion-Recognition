@@ -12,8 +12,6 @@ import pickle
 import numpy as np
 import pandas as pd
 
-import librosa
-
 SONG_ID = 'song_id'
 START_TIME = 'start_time'
 END_TIME = 'end_time'
@@ -59,6 +57,7 @@ class BaseDataset(Dataset):
         if (not self.force_compute) and path.exists(fkey):
             try:
                 X = pickle.load(open(fkey, mode="rb"))
+                return X
             except:
                 print("Warning: failed to load pickle file. getting features... {}".format(fkey))
         X = self.get_features(info, args)
@@ -149,7 +148,7 @@ class BaseChunkedDataset(BaseDataset):
         info = self.meta.iloc[meta_index]
         return (info, frame)
 
-class AudioChunkedDataset(BaseChunkedDataset):
+class ModelDataset(BaseChunkedDataset):
 
     def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3"):
         super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
@@ -175,127 +174,14 @@ class AudioChunkedDataset(BaseChunkedDataset):
             audio_file, frame_offset=offset, num_frames=frames)
         return (x, sr)
 
-    def get_features(self, info, args):
-        x, sr = self.get_audio(info, args)
-        x = preprocess_audio(self.frame_count, x, sr, self.sr)
-        return x
-
-class ModelDataset(AudioChunkedDataset):
-
-    def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3", frame_size=1024, hop_size=512, n_fft=1024, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
-        super().__init__(meta_file, data_dir, sr=sr, chunk_duration=chunk_duration, overlap=overlap, temp_folder=temp_folder, force_compute=force_compute, audio_extension=audio_extension)
-
-        self.frame_size = frame_size
-        self.hop_size = hop_size
-        self.n_fft = n_fft
-        self.n_mels = n_mels
-        self.n_mfcc = n_mfcc
-        self.n_chroma = n_chroma
-        self.n_spectral_contrast_bands = n_spectral_contrast_bands
-
-    def __compute_features(self, audio, frame_size=1024, hop_size=512, sample_rate=22050, n_fft=1024, n_mels=128, n_mfcc=20, n_chroma=12, n_spectral_contrast_bands=6):
-
-        sr = sample_rate
-
-        # calculate stft (n_fft//2 + 1) - features
-        spec = np.abs(librosa.spectrum.stft(
-            audio, win_length=frame_size, n_fft=n_fft, hop_length=hop_size, window="hann"))
-        power_spec = np.power(spec, 2)
-
-        # calculate mel spectrogram (n_mels) - features
-        mel_spec = librosa.feature.melspectrogram(
-            S=power_spec, sr=sr, n_fft=frame_size, n_mels=n_mels)
-
-        # calculate mfccs (n_mfcc) - features
-        mfccs = librosa.feature.mfcc(
-            S=librosa.power_to_db(mel_spec), n_mfcc=n_mfcc)
-
-        # calculate chroma (n_chroma) - features
-        chroma = librosa.feature.chroma_stft(S=spec, sr=sr, n_chroma=n_chroma)
-
-        # calculate the tonnetz (perfect 5th, minor and major 3rd all in 2 d) - 6
-        tonnetz = librosa.feature.tonnetz(y=audio, sr=sr, chroma=chroma)
-
-        # calculate spectral contrast - (n_spectral_contrast_bands + 1)
-        spectral_contrast = librosa.feature.spectral_contrast(
-            S=spec, sr=sr, n_bands=n_spectral_contrast_bands)
-
-        # initialize array
-        offset = 0
-        feature_count = 6
-        frame_count = spec.shape[1]
-        arr = np.zeros((feature_count, frame_count))
-
-        # calculate tempo - 1
-        onset_env = librosa.onset.onset_strength(audio, sr=sr)
-        tempo = librosa.beat.tempo(
-            onset_envelope=onset_env, sr=sr, aggregate=None)
-        arr[offset:offset+1] = tempo
-        offset += 1
-
-        # calculate spectral centroid - 1
-        spectral_centroid = librosa.feature.spectral_centroid(S=spec, sr=sr)
-        arr[offset:offset+1] = spectral_centroid
-        offset += 1
-
-        # calculate spectral bandwidth - 1
-        spectral_bandwidth = librosa.feature.spectral_bandwidth(S=spec, sr=sr)
-        arr[offset:offset+1] = spectral_bandwidth
-        offset += 1
-
-        # calculate spectral flatness - 1
-        spectral_flatness = librosa.feature.spectral_flatness(S=spec)
-        arr[offset:offset+1] = spectral_flatness
-        offset += 1
-
-        # calculate spectral rolloff - 1
-        spectral_rolloff = librosa.feature.spectral_rolloff(
-            S=spec, sr=sr, roll_percent=0.85)
-        arr[offset:offset+1] = spectral_rolloff
-        offset += 1
-
-        # calculate zero crossing rate - 1
-        zcr = librosa.feature.zero_crossing_rate(
-            audio, frame_length=frame_size, hop_length=hop_size)
-        arr[offset:offset+1] = zcr
-
-        ret = {
-            'spec': torch.tensor(spec, dtype=torch.float32),
-            'mel_spec': torch.tensor(mel_spec, dtype=torch.float32),
-            'mfccs': torch.tensor(mfccs, dtype=torch.float32),
-            'chroma': torch.tensor(chroma, dtype=torch.float32),
-            'tonnetz': torch.tensor(tonnetz, dtype=torch.float32),
-            'spectral_contrast': torch.tensor(spectral_contrast, dtype=torch.float32)
-        }
-
-        return {
-            **ret,
-            'spectral_aggregate': torch.tensor(arr, dtype=torch.float32)
-        }
-
-    def get_features(self, info, args):
-        x, sr = self.get_audio(info, args)
-        raw_audio = preprocess_audio(self.frame_count, x, sr, self.sr)
-
-        computed = self.__compute_features(np.array(torch.squeeze(raw_audio)),
-                                           frame_size=self.frame_size,
-                                           hop_size=self.hop_size,
-                                           n_fft=self.n_fft,
-                                           n_mels=self.n_mels,
-                                           n_mfcc=self.n_mfcc,
-                                           n_chroma=self.n_chroma,
-                                           n_spectral_contrast_bands=self.n_spectral_contrast_bands
-                                           )
-
-        x = {
-            'audio': raw_audio,
-            **computed
-        }
-
-        return x
-
     def get_label(self, info, args):
         y = info[['static_valence_mean', 'static_arousal_mean',
                   'static_valence_std', 'static_arousal_std']].to_numpy()
         y = torch.tensor(list(y), dtype=torch.float)
         return y
+
+    def get_features(self, info, args):
+        x, sr = self.get_audio(info, args)
+        x = preprocess_audio(self.frame_count, x, sr, self.sr)
+        return x
+
