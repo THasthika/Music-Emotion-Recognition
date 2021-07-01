@@ -1,9 +1,7 @@
-from re import sub
 from dotenv import load_dotenv
 import argparse
 import multiprocessing
 from torch.utils.data.dataloader import DataLoader
-import torchinfo
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
