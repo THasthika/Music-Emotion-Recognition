@@ -46,17 +46,10 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
     batch_size = args['batch_size']
     num_workers = args['num_workers']
 
-    lr = args[Model.LR]
-    audio_adaptive_layer_units = args[Model.AUDIO_ADAPTIVE_LAYER_UNITS]
-    computed_adaptive_layer_units = args[Model.COMPUTED_ADAPTIVE_LAYER_UNITS]
-    model_config = dict(
-        lr=lr,
-        audio_adaptive_layer_units=audio_adaptive_layer_units,
-        computed_adaptive_layer_units=computed_adaptive_layer_units
-    )
 
-    model = Model(batch_size=batch_size, num_workers=num_workers,
-                  train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
+    args_k = [Model.LR, Model.N_FFT, Model.N_MELS, Model.N_MFCC, Model.SPEC_TRAINABLE, Model.ADAPTIVE_LAYER_UNITS]
+    model_config = {k: args[k] for k in args_k}
+    model = Model(batch_size=batch_size, num_workers=num_workers, train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
     return (model, model_config)
 
 
@@ -105,21 +98,36 @@ def train_kfold(args):
 
     cv.fit(model, train_ds, test_ds)
 
-def check(model, train_ds, test_ds, validation_ds):
+def check(args):
 
-    for ds in [train_ds, test_ds, validation_ds]:
-        if ds is None:
-            continue
+    if not args['only_shape']:
 
-        dl = DataLoader(ds, batch_size=2, num_workers=2, drop_last=True)
+        (train_ds, test_ds, validation_ds) = make_datasets(args)
+        (model, model_config) = make_model(args, train_ds, test_ds, validation_ds)
 
-        for (X, _) in dl:
-            model(X)
-            break
+        for ds in [train_ds, test_ds, validation_ds]:
+            if ds is None:
+                continue
 
-    print("Model: foward passes ok!")
+            dl = DataLoader(ds, batch_size=2, num_workers=2, drop_last=True)
+
+            for (X, _) in dl:
+                model(X)
+                break
+
+        print("Model: foward passes ok!")
+
+    else:
+        (model, model_config) = make_model(args, None, None, None)
+
+    print(torchinfo.summary(model, input_size=(2, 1, 22050*5)))
 
 def train(args):
+
+
+    if args['check']:
+        check(args)
+        return
 
     if args['kfold']:
         train_kfold(args)
@@ -127,10 +135,6 @@ def train(args):
 
     (train_ds, test_ds, validation_ds) = make_datasets(args)
     (model, model_config) = make_model(args, train_ds, test_ds, validation_ds)
-
-    if args['check']:
-        check(model, train_ds, test_ds, validation_ds)
-        return
 
     config={
         **model_config
@@ -181,13 +185,16 @@ def main(in_args=None):
 
     model_args = subparser_train.add_argument_group('Model Arguments')
     model_args.add_argument('--check', action='store_true', default=False)
+    model_args.add_argument('--only-shape', action='store_true', default=False)
     model_args.add_argument('--lr', '--learning-rate',
                             type=float, default=0.01)
-    model_args.add_argument('--audio-adaptive-layer-units',
-                            type=int, default=128)
-    model_args.add_argument('--computed-adaptive-layer-units',
-                            type=int, default=128)
     model_args.add_argument('--batch-size', type=int, default=32)
+    model_args.add_argument('--adaptive-layer-units', type=int, default=128)
+    model_args.add_argument('--n-fft', type=int, default=2048)
+    model_args.add_argument('--n-mels', type=int, default=128)
+    model_args.add_argument('--n-mfcc', type=int, default=20)
+    model_args.add_argument(
+        '--spec-trainable', action='store_true', default=False)
 
     data_args = subparser_train.add_argument_group('Dataset Arguments')
     data_args.add_argument('--dataset', type=str, required=True)
