@@ -56,6 +56,7 @@ class BaseDataset(Dataset):
     def __check_cache_and_get_features(self, info, args):
         key = self.get_key(info, args)
         if self.cache_in_memory and key in self.cache:
+            print("Serving cache...")
             return self.cache[key]
         fkey = path.join(self.temp_folder, "{}.pkl".format(key))
         if (not self.force_compute) and path.exists(fkey):
