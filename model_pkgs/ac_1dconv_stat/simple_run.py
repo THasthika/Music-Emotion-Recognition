@@ -57,7 +57,10 @@ def main():
 
     args.extend(other)
 
-    ac_1dconv_stat.main(args)
+    ac_1dconv_stat.main([
+        'train',
+        *args
+    ])
 
 if __name__ == "__main__":
     main()
