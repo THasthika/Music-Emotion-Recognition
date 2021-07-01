@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 
 # import torchmetrics as tm
 from metrics import BhattacharyyaDistance
+from activation import CustomELU
 
 class A1DConvStat(pl.LightningModule):
 
@@ -88,7 +89,7 @@ class A1DConvStat(pl.LightningModule):
 
         self.fc_std = nn.Sequential(
             nn.Linear(in_features=128, out_features=2),
-            nn.ReLU()
+            CustomELU(alpha=1.0)
         )
 
 
