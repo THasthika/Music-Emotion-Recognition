@@ -4,10 +4,10 @@ import torchmetrics as tm
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 def _get_distribution_mean(d: torch.Tensor):
-    return d[:,[0, 2]]
+    return d[:,[0, 1]]
 
 def _get_distribution_covariance(d: torch.Tensor, corr=0.0):
-    _d = d[:, [1, 3]]
+    _d = d[:, [2, 3]]
     ret = torch.zeros((len(d), 2, 2), device=device)
     for (i, x) in enumerate(map(lambda x: torch.diag(x), _d)):
         x[0][1] = x[1][0] = corr * x[0][0] * x[1][1]
