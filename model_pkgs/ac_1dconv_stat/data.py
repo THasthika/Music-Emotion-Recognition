@@ -108,10 +108,12 @@ class BaseDataset(Dataset):
         return self.count
 
     def __getitem__(self, index):
+        print("{} - Loading...".format(index))
         (info, args) = self.get_info(index)
         X = self.__check_cache_and_get_features(info, args)
         # X = self.get_features(info, args)
         y = self.get_label(info, args)
+        print("{} - Loaded".format(index))
         return (X, y)
 
 
