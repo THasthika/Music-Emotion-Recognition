@@ -124,6 +124,8 @@ class AC1DConvStat(pl.LightningModule):
         )
 
     def forward(self, x):
+
+        print("Forward: Started!")
         
         audio_x = x['audio']
         computed_x = torch.column_stack([
@@ -149,6 +151,7 @@ class AC1DConvStat(pl.LightningModule):
         x_mean = self.fc_mean(x)
         x_std = self.fc_std(x)
         x = torch.cat((x_mean, x_std), dim=1)
+        print("Forward: Ended")
         return x
 
     def predict(self, x):
