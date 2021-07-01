@@ -11,7 +11,8 @@ from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
 import torch.cuda
 
-from model import A1DConvStat as Model
+from model_v1 import A1DConvCat_V1 as ModelV1
+from model_v2 import A1DConvCat_V2 as ModelV2
 from kfold import CrossValidator
 from data import ModelDataset
 
@@ -53,7 +54,12 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
         adaptive_layer_units=adaptive_layer_units
     )
 
-    model = Model(batch_size=batch_size, num_workers=num_workers,
+    ModelCls = ModelV1
+    if args['model_version'] == 2:
+        ModelCls = ModelV2
+    print("Using Model Verions... {}".format(args['model_version']))
+
+    model = ModelCls(batch_size=batch_size, num_workers=num_workers,
                   train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
     return (model, model_config)
 
@@ -70,9 +76,9 @@ def get_num_workers():
 
 def get_wandb_tags(args):
     return [
-        'model:A1DConvStat',
+        'model:A1DConvCat',
         'dataset:{}'.format(args['dataset']),
-        'version:1'
+        'version:{}'.format(args['model_version'])
     ]
 
 
@@ -90,10 +96,10 @@ def train_kfold(args):
         batch_size=args['batch_size'],
         num_workers=args['num_workers'],
         wandb_project_name="mer",
-        model_monitor=Model.MODEL_CHECKPOINT,
-        model_monitor_mode=Model.MODEL_CHECKPOINT_MODE,
-        early_stop_monitor=Model.EARLY_STOPPING,
-        early_stop_mode=Model.EARLY_STOPPING_MODE,
+        model_monitor=model.MODEL_CHECKPOINT,
+        model_monitor_mode=model.MODEL_CHECKPOINT_MODE,
+        early_stop_monitor=model.EARLY_STOPPING,
+        early_stop_mode=model.EARLY_STOPPING_MODE,
         use_wandb=(not args['no_wandb']),
         cv_dry_run=False,
         wandb_tags=get_wandb_tags(args),
@@ -103,23 +109,36 @@ def train_kfold(args):
 
     cv.fit(model, train_ds, test_ds)
 
-def check(model, train_ds, test_ds, validation_ds):
+def check(args):
 
-    for ds in [train_ds, test_ds, validation_ds]:
-        if ds is None:
-            continue
+    if not args['only_shape']:
 
-        dl = DataLoader(ds, batch_size=2, num_workers=2, drop_last=True)
+        (train_ds, test_ds, validation_ds) = make_datasets(args)
+        (model, model_config) = make_model(args, train_ds, test_ds, validation_ds)
 
-        for (X, _) in dl:
-            model(X)
-            break
+        for ds in [train_ds, test_ds, validation_ds]:
+            if ds is None:
+                continue
 
-    print("Model: foward passes ok!")
+            dl = DataLoader(ds, batch_size=2, num_workers=2, drop_last=True)
+
+            for (X, _) in dl:
+                model(X)
+                break
+
+        print("Model: foward passes ok!")
+
+    else:
+        (model, model_config) = make_model(args, None, None, None)
 
     print(torchinfo.summary(model, input_size=(2, 1, 22050*5)))
 
 def train(args):
+
+
+    if args['check']:
+        check(args)
+        return
 
     if args['kfold']:
         train_kfold(args)
@@ -128,21 +147,17 @@ def train(args):
     (train_ds, test_ds, validation_ds) = make_datasets(args)
     (model, model_config) = make_model(args, train_ds, test_ds, validation_ds)
 
-    if args['check']:
-        check(model, train_ds, test_ds, validation_ds)
-        return
-
     config={
         **model_config
     }
 
-    model_callback = ModelCheckpoint(monitor=Model.MODEL_CHECKPOINT, mode=Model.MODEL_CHECKPOINT_MODE)
+    model_callback = ModelCheckpoint(monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
     early_stop_callback = EarlyStopping(
-        monitor=Model.EARLY_STOPPING,
+        monitor=model.EARLY_STOPPING,
         min_delta=0.00,
         patience=10,
         verbose=True,
-        mode=Model.EARLY_STOPPING_MODE
+        mode=model.EARLY_STOPPING_MODE
     )
 
     logger = None
@@ -178,9 +193,11 @@ def main(in_args=None):
         '--no-wandb', action='store_true', default=False)
     subparser_train.add_argument('--kfold', action='store_true', default=False)
     subparser_train.add_argument('--kfold-k', type=int, default=5)
+    subparser_train.add_argument('--model-version', type=int, default=1)
 
     model_args = subparser_train.add_argument_group('Model Arguments')
     model_args.add_argument('--check', action='store_true', default=False)
+    model_args.add_argument('--only-shape', action='store_true', default=False)
     model_args.add_argument('--lr', '--learning-rate',
                             type=float, default=0.01)
     model_args.add_argument('--adaptive-layer-units',
