@@ -1,4 +1,5 @@
 from re import sub
+from warnings import catch_warnings
 from dotenv import load_dotenv
 import argparse
 import multiprocessing
@@ -25,6 +26,7 @@ def make_datasets(args):
     test_meta = args['test_meta']
     temp_folder = args['temp_folder']
     force_compute = args['force_compute']
+    cache_in_memory = args['cache_in_memory']
 
     sr = args['sr']
     duration = args['duration']
@@ -32,13 +34,13 @@ def make_datasets(args):
     ext = args['ext']
 
     train_ds = ModelDataset(train_meta, data_folder, temp_folder=temp_folder, chunk_duration=duration,
-                            overlap=overlap, force_compute=force_compute, sr=sr, audio_extension=ext)
+                            overlap=overlap, force_compute=force_compute, sr=sr, cache_in_memory=cache_in_memory, audio_extension=ext)
     test_ds = ModelDataset(test_meta, data_folder, temp_folder=temp_folder, chunk_duration=duration,
-                           overlap=overlap, force_compute=force_compute, sr=sr, audio_extension=ext)
+                           overlap=overlap, force_compute=force_compute, sr=sr, cache_in_memory=cache_in_memory, audio_extension=ext)
     validation_ds = None
     if not validation_meta is None:
         validation_ds = ModelDataset(train_meta, data_folder, temp_folder=temp_folder, chunk_duration=duration,
-                                     overlap=overlap, force_compute=force_compute, sr=sr, audio_extension=ext)
+                                     overlap=overlap, force_compute=force_compute, sr=sr, cache_in_memory=cache_in_memory, audio_extension=ext)
     return (train_ds, test_ds, validation_ds)
 
 
