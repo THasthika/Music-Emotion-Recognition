@@ -7,4 +7,4 @@ class CustomELU(nn.ELU):
         super().__init__(alpha=alpha, inplace=inplace)
     
     def forward(self, input: Tensor) -> Tensor:
-        return 1 + super().forward(input)
+        return 1 + super().forward(input - 1)
