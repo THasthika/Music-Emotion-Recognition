@@ -100,6 +100,9 @@ class BaseDataset(Dataset):
     def get_label(self, info, args):
         return info[QUADRANT]
 
+    def get_labels(self):
+        return self.meta[QUADRANT]
+
     def get_info(self, index):
         return (self.meta.iloc[index], None)
 

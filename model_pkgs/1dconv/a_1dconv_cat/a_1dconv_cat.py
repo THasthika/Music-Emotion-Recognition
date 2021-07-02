@@ -92,7 +92,7 @@ def train_kfold(args):
 
     cv = CrossValidator(
         n_splits=args['kfold_k'],
-        stratify=False,
+        stratify=args['stratify'],
         batch_size=args['batch_size'],
         num_workers=args['num_workers'],
         wandb_project_name="mer",
@@ -193,6 +193,7 @@ def main(in_args=None):
         '--no-wandb', action='store_true', default=False)
     subparser_train.add_argument('--kfold', action='store_true', default=False)
     subparser_train.add_argument('--kfold-k', type=int, default=5)
+    subparser_train.add_argument('--stratify', action='store_true', default=False)
     subparser_train.add_argument('--model-version', type=int, default=1)
 
     model_args = subparser_train.add_argument_group('Model Arguments')
