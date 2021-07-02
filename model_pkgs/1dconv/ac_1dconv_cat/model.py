@@ -146,10 +146,10 @@ class AC1DConvCat(pl.LightningModule):
         out_channels = 250
         input_size = (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
-        out_channels = 16
+        out_channels = 500
         input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
-        out_channels = 16
+        out_channels = 100
         input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
         out_channels = 16
