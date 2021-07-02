@@ -100,9 +100,6 @@ class BaseDataset(Dataset):
     def get_label(self, info, args):
         return info[QUADRANT]
 
-    def get_labels(self):
-        return self.meta[QUADRANT]
-
     def get_info(self, index):
         return (self.meta.iloc[index], None)
 
@@ -136,9 +133,6 @@ class BaseChunkedDataset(BaseDataset):
             row_i += 1
         return frames
 
-    def get_labels(self):
-        return self.labels
-
     def __init__(self, meta_file, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False):
         super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
 
@@ -148,11 +142,6 @@ class BaseChunkedDataset(BaseDataset):
         self.frames = self.__calculate_frames(
             self.meta, self.chunk_duration, self.overlap)
         self.count = len(self.frames)
-
-
-        self.labels = np.array(
-            list(map(lambda x: self.meta.iloc[x[0]][QUADRANT], self.frames))
-        )
 
     def get_info(self, index):
         (meta_index, frame) = self.frames[index]

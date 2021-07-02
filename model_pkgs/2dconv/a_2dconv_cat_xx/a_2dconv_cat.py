@@ -1,4 +1,4 @@
-from re import A, sub
+from re import sub
 from dotenv import load_dotenv
 import argparse
 import multiprocessing
@@ -11,7 +11,9 @@ from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
 import torch.cuda
 
-from model import A2DConvCat_V1 as ModelV1
+from model_v1 import A2DConvCat_V1 as ModelV1
+from model_v2 import A2DConvCat_V2 as ModelV2
+from model_v3 import A2DConvCat_V3 as ModelV3
 from kfold import CrossValidator
 from data import ModelDataset
 
@@ -46,15 +48,31 @@ def make_model(args, train_ds, test_ds, validation_ds=None):
     batch_size = args['batch_size']
     num_workers = args['num_workers']
 
-    print("Using Model Verions... {}".format(args['model_version']))
+    model_version = args['model_version']
 
-    if args['model_version'] == 1:
-        args_k = [ModelV1.LR, ModelV1.ADAPTIVE_LAYER_UNITS_0, ModelV1.ADAPTIVE_LAYER_UNITS_1]
+    if model_version == 1:
+        args_k = [ModelV1.LR, ModelV1.N_FFT, ModelV1.ADAPTIVE_LAYER_UNITS_0,
+                  ModelV1.ADAPTIVE_LAYER_UNITS_1, ModelV1.SPEC_TRAINABLE]
         model_config = {k: args[k] for k in args_k}
-        model = ModelV1(batch_size=batch_size, num_workers=num_workers, train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
+        model = ModelV1(batch_size=batch_size, num_workers=num_workers,
+                        train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
+        return (model, model_config)
+    elif model_version == 2:
+        args_k = [ModelV2.LR, ModelV2.N_FFT, ModelV2.ADAPTIVE_LAYER_UNITS_0,
+                  ModelV2.ADAPTIVE_LAYER_UNITS_1, ModelV2.SPEC_TRAINABLE, ModelV2.N_MELS]
+        model_config = {k: args[k] for k in args_k}
+        model = ModelV2(batch_size=batch_size, num_workers=num_workers,
+                        train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
+        return (model, model_config)
+    elif model_version == 3:
+        args_k = [ModelV3.LR, ModelV3.N_FFT, ModelV3.ADAPTIVE_LAYER_UNITS_0,
+                  ModelV3.ADAPTIVE_LAYER_UNITS_1, ModelV3.SPEC_TRAINABLE, ModelV3.N_MELS, ModelV3.N_MFCC]
+        model_config = {k: args[k] for k in args_k}
+        model = ModelV3(batch_size=batch_size, num_workers=num_workers,
+                        train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
         return (model, model_config)
     else:
-        raise ModuleNotFoundError("Model Not Found")
+        raise ModuleNotFoundError()
 
 
 def get_gpu_count():
@@ -85,7 +103,7 @@ def train_kfold(args):
 
     cv = CrossValidator(
         n_splits=args['kfold_k'],
-        stratify=args['stratify'],
+        stratify=False,
         batch_size=args['batch_size'],
         num_workers=args['num_workers'],
         wandb_project_name="mer",
@@ -102,32 +120,28 @@ def train_kfold(args):
 
     cv.fit(model, train_ds, test_ds)
 
+
 def check(args):
 
-    if not args['only_shape']:
+    (train_ds, test_ds, validation_ds) = make_datasets(args)
+    (model, _) = make_model(args, train_ds, test_ds, validation_ds)
 
-        (train_ds, test_ds, validation_ds) = make_datasets(args)
-        (model, model_config) = make_model(args, train_ds, test_ds, validation_ds)
+    for ds in [train_ds, test_ds, validation_ds]:
+        if ds is None:
+            continue
 
-        for ds in [train_ds, test_ds, validation_ds]:
-            if ds is None:
-                continue
+        dl = DataLoader(ds, batch_size=2, num_workers=2, drop_last=True)
 
-            dl = DataLoader(ds, batch_size=2, num_workers=2, drop_last=True)
+        for (X, _) in dl:
+            model(X)
+            break
 
-            for (X, _) in dl:
-                model(X)
-                break
-
-        print("Model: foward passes ok!")
-
-    else:
-        (model, model_config) = make_model(args, None, None, None)
+    print("Model: foward passes ok!")
 
     print(torchinfo.summary(model, input_size=(2, 1, 22050*5)))
 
-def train(args):
 
+def train(args):
 
     if args['check']:
         check(args)
@@ -140,11 +154,12 @@ def train(args):
     (train_ds, test_ds, validation_ds) = make_datasets(args)
     (model, model_config) = make_model(args, train_ds, test_ds, validation_ds)
 
-    config={
+    config = {
         **model_config
     }
 
-    model_callback = ModelCheckpoint(monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
+    model_callback = ModelCheckpoint(
+        monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
     early_stop_callback = EarlyStopping(
         monitor=model.EARLY_STOPPING,
         min_delta=0.00,
@@ -186,20 +201,22 @@ def main(in_args=None):
         '--no-wandb', action='store_true', default=False)
     subparser_train.add_argument('--kfold', action='store_true', default=False)
     subparser_train.add_argument('--kfold-k', type=int, default=5)
-    subparser_train.add_argument('--stratify', action='store_true', default=False)
     subparser_train.add_argument('--model-version', type=int, default=1)
 
     model_args = subparser_train.add_argument_group('Model Arguments')
     model_args.add_argument('--check', action='store_true', default=False)
-    model_args.add_argument('--only-shape', action='store_true', default=False)
     model_args.add_argument('--lr', '--learning-rate',
                             type=float, default=0.01)
-    model_args.add_argument('--batch-size', type=int, default=32)
+    model_args.add_argument('--n-fft', type=int, default=2048)
+    model_args.add_argument('--n-mels', type=int, default=128)
+    model_args.add_argument('--n-mfcc', type=int, default=20)
     model_args.add_argument('--adaptive-layer-units-0',
                             type=int, default=128)
     model_args.add_argument('--adaptive-layer-units-1',
                             type=int, default=128)
-
+    model_args.add_argument('--batch-size', type=int, default=32)
+    model_args.add_argument(
+        '--spec-trainable', action='store_true', default=False)
 
     data_args = subparser_train.add_argument_group('Dataset Arguments')
     data_args.add_argument('--dataset', type=str, required=True)
