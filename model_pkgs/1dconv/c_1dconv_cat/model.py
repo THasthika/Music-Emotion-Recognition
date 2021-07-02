@@ -46,7 +46,10 @@ class C1DConvCat(pl.LightningModule):
 
         ## metrics
         self.train_acc = tm.Accuracy(top_k=3)
+
         self.val_acc = tm.Accuracy(top_k=3)
+        self.val_f1_class = tm.F1(num_classes=4, average='none')
+        self.val_f1_global = tm.F1(num_classes=4)
 
         self.test_acc = tm.Accuracy(top_k=3)
         self.test_f1_class = tm.F1(num_classes=4, average='none')
@@ -159,6 +162,12 @@ class C1DConvCat(pl.LightningModule):
         
         self.log("val/loss", loss, prog_bar=True)
         self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
+
+        self.log("val/f1_global", self.val_f1_global(pred, y), on_step=False, on_epoch=True)
+
+        f1_scores = self.val_f1_class(pred, y)
+        for (i, x) in enumerate(torch.flatten(f1_scores)):
+            self.log("val/f1_class_{}".format(i), x, on_step=False, on_epoch=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
