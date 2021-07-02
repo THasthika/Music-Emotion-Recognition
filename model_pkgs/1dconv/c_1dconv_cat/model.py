@@ -68,9 +68,19 @@ class C1DConvCat(pl.LightningModule):
 
         self.stft_feature_extractor = nn.Sequential(
 
-            nn.Conv1d(in_channels=f_bins, out_channels=16, kernel_size=3, stride=1),
+            nn.Conv1d(in_channels=f_bins, out_channels=500, kernel_size=3, stride=1),
             nn.MaxPool1d(kernel_size=2),
-            nn.BatchNorm1d(num_features=16),
+            nn.BatchNorm1d(num_features=500),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=500, out_channels=500, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=500),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=500, out_channels=500, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=500),
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
@@ -78,9 +88,14 @@ class C1DConvCat(pl.LightningModule):
 
         self.mel_spec_feature_extractor = nn.Sequential(
 
-            nn.Conv1d(in_channels=self.config[self.N_MELS], out_channels=16, kernel_size=3, stride=1),
+            nn.Conv1d(in_channels=self.config[self.N_MELS], out_channels=100, kernel_size=3, stride=1),
             nn.MaxPool1d(kernel_size=2),
-            nn.BatchNorm1d(num_features=16),
+            nn.BatchNorm1d(num_features=100),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=100, out_channels=100, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=100),
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
@@ -93,13 +108,23 @@ class C1DConvCat(pl.LightningModule):
             nn.BatchNorm1d(num_features=16),
             nn.ReLU(),
 
+            nn.Conv1d(in_channels=16, out_channels=16, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=16),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=16, out_channels=16, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=16),
+            nn.ReLU(),
+
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
         )
 
-        out_channels = 16
+        out_channels = 500
         input_size = (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
-        out_channels = 16
+        out_channels = 100
         input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
         out_channels = 16
