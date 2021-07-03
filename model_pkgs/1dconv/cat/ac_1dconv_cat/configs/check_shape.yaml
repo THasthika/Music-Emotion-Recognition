@@ -1,0 +1,10 @@
+dataset: mer-taffc
+temp_folder: a_mer-taffc
+split: kfold
+stratify: true
+lr: 0.001
+adaptive_layer_units: 1
+batch_size: 128
+n_fft: 1024
+check: true
+only_shape: true

@@ -3,7 +3,7 @@ from os import path
 import argparse
 from dotenv import load_dotenv
 
-import a_1dconv_stat as execf
+import ac_1dconv_cat as execf
 
 load_dotenv(verbose=True)
 
@@ -17,7 +17,7 @@ def get_args(dataset_name, split_name, temp_dir, sub_folder="audio"):
     kfold = False
     
     data_dir = path.join(data_base_dir, dataset_name, sub_folder)
-    if split_name == "kfold":
+    if "kfold" in split_name:
         kfold = True
     
     split_dir = path.join(split_base_dir, "{}-{}".format(dataset_name, split_name))

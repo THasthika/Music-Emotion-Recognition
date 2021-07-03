@@ -11,7 +11,7 @@ import torch.cuda
 
 import torchinfo
 
-from model import C1DConvStat as Model
+from model import AC1DConvStat as Model
 from kfold import CrossValidator
 from data import ModelDataset
 
@@ -65,7 +65,7 @@ def get_num_workers():
 
 def get_wandb_tags(args):
     return [
-        'model:C1DConvStat',
+        'model:AC1DConvStat',
         'dataset:{}'.format(args['dataset']),
         'version:1'
     ]
@@ -186,6 +186,7 @@ def main(in_args=None):
         '--no-wandb', action='store_true', default=False)
     subparser_train.add_argument('--kfold', action='store_true', default=False)
     subparser_train.add_argument('--kfold-k', type=int, default=5)
+    subparser_train.add_argument('--model-version', type=int, default=1)
 
     model_args = subparser_train.add_argument_group('Model Arguments')
     model_args.add_argument('--check', action='store_true', default=False)
