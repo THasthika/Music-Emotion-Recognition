@@ -5,3 +5,4 @@ lr: 0.001
 adaptive_layer_units: 2
 model_version: 1
 batch_size: 128
+n_fft: 1024
