@@ -11,9 +11,8 @@ import torchmetrics as tm
 from nnAudio import Spectrogram
 
 from metrics import BhattacharyyaDistance
-from activation import CustomELU
 
-class AC1DConvStat(pl.LightningModule):
+class C1DConvStat_V2(pl.LightningModule):
 
     LR = "lr"
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
@@ -52,8 +51,13 @@ class AC1DConvStat(pl.LightningModule):
         self.loss = F.l1_loss
         
         self.train_distance = BhattacharyyaDistance()
+        self.train_r2score = tm.R2Score(num_outputs=1)
+
         self.val_distance = BhattacharyyaDistance()
+        self.val_r2score = tm.R2Score(num_outputs=1)
+
         self.test_distance = BhattacharyyaDistance()
+        self.test_r2score = tm.R2Score(num_outputs=1)
     
     def __build_model(self):
 
@@ -62,31 +66,6 @@ class AC1DConvStat(pl.LightningModule):
         self.stft = Spectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
         self.mel_spec = Spectrogram.MelSpectrogram(sr=22050, n_fft=self.config[self.N_FFT], n_mels=self.config[self.N_MELS], trainable_mel=self.config[self.SPEC_TRAINABLE], trainable_STFT=self.config[self.SPEC_TRAINABLE])
         self.mfcc = Spectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
-
-        self.audio_feature_extractor = nn.Sequential(
-            nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
-            nn.BatchNorm1d(250),
-            nn.Dropout(),
-            nn.ReLU(),
-
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
-            nn.BatchNorm1d(250),
-            nn.Dropout(),
-            nn.ReLU(),
-
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
-            nn.BatchNorm1d(250),
-            nn.Dropout(),
-            nn.ReLU(),
-
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
-            nn.BatchNorm1d(250),
-            nn.Dropout(),
-            nn.ReLU(),
-
-            nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
-            nn.Dropout()
-        )
 
         self.stft_feature_extractor = nn.Sequential(
 
@@ -143,11 +122,8 @@ class AC1DConvStat(pl.LightningModule):
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
         )
 
-        out_channels = 250
-        input_size = (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
-
         out_channels = 500
-        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
+        input_size = (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
         out_channels = 100
         input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
@@ -171,12 +147,10 @@ class AC1DConvStat(pl.LightningModule):
 
         self.fc_std = nn.Sequential(
             nn.Linear(in_features=128, out_features=2),
-            CustomELU(alpha=1.0)
+            nn.ReLU()
         )
 
     def forward(self, x):
-
-        audio_x = self.audio_feature_extractor(x)
 
         stft_x = self.stft(x)
         stft_x = self.stft_feature_extractor(stft_x)
@@ -187,12 +161,11 @@ class AC1DConvStat(pl.LightningModule):
         mfcc_x = self.mfcc(x)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
 
-        audio_x = torch.flatten(audio_x, start_dim=1)
         stft_x = torch.flatten(stft_x, start_dim=1)
         mel_x = torch.flatten(mel_x, start_dim=1)
         mfcc_x = torch.flatten(mfcc_x, start_dim=1)
 
-        x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=1)
+        x = torch.cat((stft_x, mel_x, mfcc_x), dim=1)
 
         x = self.fc0(x)
 
@@ -215,9 +188,12 @@ class AC1DConvStat(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.train_distance(pred, y)
+        r2score = self.train_r2score(pred, y)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
         self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
+
+        self.log('train/r2score', r2score, on_step=False, on_epoch=True)
 
         return loss
 
@@ -227,20 +203,25 @@ class AC1DConvStat(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.val_distance(pred, y)
-        
+        r2score = self.val_r2score(pred, y)
+
         self.log("val/loss", loss, prog_bar=True)
         self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
-    def test_step(self, batch, batch_idx):
+        self.log('val/r2score', r2score, on_step=False, on_epoch=True)
 
+    def test_step(self, batch, batch_idx):
         x, y = batch
 
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.test_distance(pred, y)
+        r2score = self.val_r2score(pred, y)
 
         self.log("test/loss", loss)
         self.log('test/distance', distanceMeasure)
+
+        self.log('test/r2score', r2score, on_step=False, on_epoch=True)
 
     def train_dataloader(self):
         if self.test_ds is None: return None

@@ -13,7 +13,7 @@ from nnAudio import Spectrogram
 from metrics import BhattacharyyaDistance
 from activation import CustomELU
 
-class C1DConvStat(pl.LightningModule):
+class C1DConvStat_V1(pl.LightningModule):
 
     LR = "lr"
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
@@ -52,8 +52,13 @@ class C1DConvStat(pl.LightningModule):
         self.loss = F.l1_loss
         
         self.train_distance = BhattacharyyaDistance()
+        self.train_r2score = tm.R2Score(num_outputs=1)
+
         self.val_distance = BhattacharyyaDistance()
+        self.val_r2score = tm.R2Score(num_outputs=1)
+
         self.test_distance = BhattacharyyaDistance()
+        self.test_r2score = tm.R2Score(num_outputs=1)
     
     def __build_model(self):
 
@@ -184,9 +189,12 @@ class C1DConvStat(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.train_distance(pred, y)
+        r2score = self.train_r2score(pred, y)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
         self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
+
+        self.log('train/r2score', r2score, on_step=False, on_epoch=True)
 
         return loss
 
@@ -196,20 +204,25 @@ class C1DConvStat(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.val_distance(pred, y)
-        
+        r2score = self.val_r2score(pred, y)
+
         self.log("val/loss", loss, prog_bar=True)
         self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
-    def test_step(self, batch, batch_idx):
+        self.log('val/r2score', r2score, on_step=False, on_epoch=True)
 
+    def test_step(self, batch, batch_idx):
         x, y = batch
 
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.test_distance(pred, y)
+        r2score = self.val_r2score(pred, y)
 
         self.log("test/loss", loss)
         self.log('test/distance', distanceMeasure)
+
+        self.log('test/r2score', r2score, on_step=False, on_epoch=True)
 
     def train_dataloader(self):
         if self.test_ds is None: return None

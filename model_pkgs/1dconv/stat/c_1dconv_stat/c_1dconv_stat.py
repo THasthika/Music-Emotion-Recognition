@@ -11,7 +11,8 @@ import torch.cuda
 
 import torchinfo
 
-from model import C1DConvStat as Model
+from model_v1 import C1DConvStat_V1 as ModelV1
+from model_v2 import C1DConvStat_V2 as ModelV2
 from kfold import CrossValidator
 from data import ModelDataset
 
@@ -45,11 +46,21 @@ def make_datasets(args):
 def make_model(args, train_ds, test_ds, validation_ds=None):
     batch_size = args['batch_size']
     num_workers = args['num_workers']
+    model_version = args['model_version']
 
+    print("Using Model Version... {}".format(model_version))
 
-    args_k = [Model.LR, Model.N_FFT, Model.N_MELS, Model.N_MFCC, Model.SPEC_TRAINABLE, Model.ADAPTIVE_LAYER_UNITS]
+    if model_version == 1:
+        ModelCls = ModelV1
+        args_k = [ModelCls.LR, ModelCls.N_FFT, ModelCls.N_MELS, ModelCls.N_MFCC, ModelCls.SPEC_TRAINABLE, ModelCls.ADAPTIVE_LAYER_UNITS]
+    elif model_version == 2:
+        ModelCls = ModelV2
+        args_k = [ModelCls.LR, ModelCls.N_FFT, ModelCls.N_MELS, ModelCls.N_MFCC, ModelCls.SPEC_TRAINABLE, ModelCls.ADAPTIVE_LAYER_UNITS]
+    else:
+        raise ModuleNotFoundError("Model Not Found")
+
     model_config = {k: args[k] for k in args_k}
-    model = Model(batch_size=batch_size, num_workers=num_workers, train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
+    model = ModelCls(batch_size=batch_size, num_workers=num_workers, train_ds=train_ds, val_ds=validation_ds, test_ds=test_ds, **model_config)
     return (model, model_config)
 
 
@@ -85,10 +96,10 @@ def train_kfold(args):
         batch_size=args['batch_size'],
         num_workers=args['num_workers'],
         wandb_project_name="mer",
-        model_monitor=Model.MODEL_CHECKPOINT,
-        model_monitor_mode=Model.MODEL_CHECKPOINT_MODE,
-        early_stop_monitor=Model.EARLY_STOPPING,
-        early_stop_mode=Model.EARLY_STOPPING_MODE,
+        model_monitor=model.MODEL_CHECKPOINT,
+        model_monitor_mode=model.MODEL_CHECKPOINT_MODE,
+        early_stop_monitor=model.EARLY_STOPPING,
+        early_stop_mode=model.EARLY_STOPPING_MODE,
         use_wandb=(not args['no_wandb']),
         cv_dry_run=False,
         wandb_tags=get_wandb_tags(args),
@@ -144,13 +155,13 @@ def train(args):
         **model_config
     }
 
-    model_callback = ModelCheckpoint(monitor=Model.MODEL_CHECKPOINT, mode=Model.MODEL_CHECKPOINT_MODE)
+    model_callback = ModelCheckpoint(monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
     early_stop_callback = EarlyStopping(
-        monitor=Model.EARLY_STOPPING,
+        monitor=model.EARLY_STOPPING,
         min_delta=0.00,
         patience=10,
         verbose=True,
-        mode=Model.EARLY_STOPPING_MODE
+        mode=model.EARLY_STOPPING_MODE
     )
 
     logger = None

@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-# import torchmetrics as tm
+import torchmetrics as tm
 from metrics import BhattacharyyaDistance
 
 class A1DConvStat_V2(pl.LightningModule):
@@ -42,8 +42,13 @@ class A1DConvStat_V2(pl.LightningModule):
         self.loss = F.l1_loss
         
         self.train_distance = BhattacharyyaDistance()
+        self.train_r2score = tm.R2Score(num_outputs=1)
+
         self.val_distance = BhattacharyyaDistance()
+        self.val_r2score = tm.R2Score(num_outputs=1)
+
         self.test_distance = BhattacharyyaDistance()
+        self.test_r2score = tm.R2Score(num_outputs=1)
 
     def __build_model(self):
 
@@ -118,12 +123,12 @@ class A1DConvStat_V2(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.train_distance(pred, y)
+        r2score = self.val_r2score(pred, y)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
         self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
-        self.log('train/mean_loss', self.loss(pred[:, :2], y[:, :2]), on_step=False, on_epoch=True)
-        self.log('train/std_loss', self.loss(pred[:, 2:], y[:, 2:]), on_step=False, on_epoch=True)
+        self.log('train/r2score', r2score, on_step=False, on_epoch=True)
 
         return loss
 
@@ -133,13 +138,12 @@ class A1DConvStat_V2(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.val_distance(pred, y)
-        
+        r2score = self.val_r2score(pred, y)
+
         self.log("val/loss", loss, prog_bar=True)
         self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
-
-        self.log('val/mean_loss', self.loss(pred[:, :2], y[:, :2]), on_step=False, on_epoch=True)
-        self.log('val/std_loss', self.loss(pred[:, 2:], y[:, 2:]), on_step=False, on_epoch=True)
+        self.log('val/r2score', r2score, on_step=False, on_epoch=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
@@ -147,9 +151,12 @@ class A1DConvStat_V2(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.test_distance(pred, y)
+        r2score = self.val_r2score(pred, y)
 
         self.log("test/loss", loss)
         self.log('test/distance', distanceMeasure)
+
+        self.log('test/r2score', r2score, on_step=False, on_epoch=True)
 
     def train_dataloader(self):
         if self.test_ds is None: return None
