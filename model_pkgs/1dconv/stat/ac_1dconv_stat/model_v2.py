@@ -240,7 +240,7 @@ class AC1DConvStat_V2(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.test_distance(pred, y)
-        r2score = self.val_r2score(pred, y)
+        r2score = self.test_r2score(pred, y)
 
         self.log("test/loss", loss)
         self.log('test/distance', distanceMeasure)

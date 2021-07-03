@@ -218,12 +218,9 @@ class AC1DConvStat_V1(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.train_distance(pred, y)
-        r2score = self.train_r2score(pred, y)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
         self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
-
-        self.log('train/r2score', r2score, on_step=False, on_epoch=True)
 
         return loss
 
@@ -233,12 +230,9 @@ class AC1DConvStat_V1(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.val_distance(pred, y)
-        r2score = self.val_r2score(pred, y)
 
         self.log("val/loss", loss, prog_bar=True)
         self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
-
-        self.log('val/r2score', r2score, on_step=False, on_epoch=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
@@ -246,7 +240,7 @@ class AC1DConvStat_V1(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.test_distance(pred, y)
-        r2score = self.val_r2score(pred, y)
+        r2score = self.test_r2score(pred, y)
 
         self.log("test/loss", loss)
         self.log('test/distance', distanceMeasure)
