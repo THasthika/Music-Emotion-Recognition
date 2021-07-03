@@ -123,8 +123,8 @@ class A1DConvStat_V1(pl.LightningModule):
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
         self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
-        self.log('train/mean_loss', self.loss(pred[:, :2]), y[:, :2], on_step=False, on_epoch=True)
-        self.log('train/std_loss', self.loss(pred[:, 2:]), y[:, 2:], on_step=False, on_epoch=True)
+        self.log('train/mean_loss', self.loss(pred[:, :2], y[:, :2]), on_step=False, on_epoch=True)
+        self.log('train/std_loss', self.loss(pred[:, 2:], y[:, 2:]), on_step=False, on_epoch=True)
 
         return loss
 
@@ -139,8 +139,8 @@ class A1DConvStat_V1(pl.LightningModule):
         self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
 
-        self.log('val/mean_loss', self.loss(pred[:, :2]), y[:, :2], on_step=False, on_epoch=True)
-        self.log('val/std_loss', self.loss(pred[:, 2:]), y[:, 2:], on_step=False, on_epoch=True)
+        self.log('val/mean_loss', self.loss(pred[:, :2], y[:, :2]), on_step=False, on_epoch=True)
+        self.log('val/std_loss', self.loss(pred[:, 2:], y[:, 2:]), on_step=False, on_epoch=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
