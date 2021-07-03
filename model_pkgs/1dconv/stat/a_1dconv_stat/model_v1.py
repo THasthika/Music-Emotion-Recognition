@@ -43,13 +43,13 @@ class A1DConvStat_V1(pl.LightningModule):
         self.loss = F.l1_loss
         
         self.train_distance = BhattacharyyaDistance()
-        self.train_r2score = tm.R2Score(num_outputs=1)
+        self.train_r2score = tm.R2Score(num_outputs=4)
 
         self.val_distance = BhattacharyyaDistance()
-        self.val_r2score = tm.R2Score(num_outputs=1)
+        self.val_r2score = tm.R2Score(num_outputs=4)
 
         self.test_distance = BhattacharyyaDistance()
-        self.test_r2score = tm.R2Score(num_outputs=1)
+        self.test_r2score = tm.R2Score(num_outputs=4)
 
     def __build_model(self):
 
