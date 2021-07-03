@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from metrics import BhattacharyyaDistance
 from activation import CustomELU
 
-class A1DConvStat(pl.LightningModule):
+class A1DConvStat_V1(pl.LightningModule):
 
     LR = "lr"
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
@@ -123,6 +123,9 @@ class A1DConvStat(pl.LightningModule):
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
         self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
 
+        self.log('train/mean_loss', self.loss(pred[:, :2]), y[:, :2], on_step=False, on_epoch=True)
+        self.log('train/std_loss', self.loss(pred[:, 2:]), y[:, 2:], on_step=False, on_epoch=True)
+
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -134,6 +137,10 @@ class A1DConvStat(pl.LightningModule):
         
         self.log("val/loss", loss, prog_bar=True)
         self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
+
+
+        self.log('val/mean_loss', self.loss(pred[:, :2]), y[:, :2], on_step=False, on_epoch=True)
+        self.log('val/std_loss', self.loss(pred[:, 2:]), y[:, 2:], on_step=False, on_epoch=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
