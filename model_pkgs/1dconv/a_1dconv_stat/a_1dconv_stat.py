@@ -95,10 +95,10 @@ def train_kfold(args):
         batch_size=args['batch_size'],
         num_workers=args['num_workers'],
         wandb_project_name="mer",
-        model_monitor=Model.MODEL_CHECKPOINT,
-        model_monitor_mode=Model.MODEL_CHECKPOINT_MODE,
-        early_stop_monitor=Model.EARLY_STOPPING,
-        early_stop_mode=Model.EARLY_STOPPING_MODE,
+        model_monitor=model.MODEL_CHECKPOINT,
+        model_monitor_mode=model.MODEL_CHECKPOINT_MODE,
+        early_stop_monitor=model.EARLY_STOPPING,
+        early_stop_mode=model.EARLY_STOPPING_MODE,
         use_wandb=(not args['no_wandb']),
         cv_dry_run=False,
         wandb_tags=get_wandb_tags(args),
@@ -150,13 +150,13 @@ def train(args):
         **model_config
     }
 
-    model_callback = ModelCheckpoint(monitor=Model.MODEL_CHECKPOINT, mode=Model.MODEL_CHECKPOINT_MODE)
+    model_callback = ModelCheckpoint(monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
     early_stop_callback = EarlyStopping(
-        monitor=Model.EARLY_STOPPING,
+        monitor=model.EARLY_STOPPING,
         min_delta=0.00,
         patience=10,
         verbose=True,
-        mode=Model.EARLY_STOPPING_MODE
+        mode=model.EARLY_STOPPING_MODE
     )
 
     logger = None
