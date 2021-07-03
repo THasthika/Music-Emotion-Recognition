@@ -3,7 +3,8 @@ temp_folder: a_mer-taffc
 split: kfold
 stratify: true
 lr: 0.001
-adaptive_layer_units: 1
+adaptive_layer_units_0: 1
+adaptive_layer_units_1: 1
 model_version: 1
 batch_size: 128
 check: true
