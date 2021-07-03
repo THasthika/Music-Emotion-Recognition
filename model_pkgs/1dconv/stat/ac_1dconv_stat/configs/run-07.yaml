@@ -3,7 +3,6 @@ temp_folder: a_deam
 split: kfold
 lr: 0.001
 adaptive_layer_units: 1
-model_version: 1
+model_version: 2
 batch_size: 128
 n_fft: 1024
-spec_trainable: true

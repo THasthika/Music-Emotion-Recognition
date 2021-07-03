@@ -6,3 +6,4 @@ adaptive_layer_units: 2
 model_version: 2
 batch_size: 128
 n_fft: 1024
+spec_trainable: true
