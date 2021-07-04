@@ -1,12 +1,14 @@
 import torch
 import torchmetrics as tm
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
 def _get_distribution_mean(d: torch.Tensor):
-    return d[:,[0, 2]]
+    return d[:,[0, 1]]
 
 def _get_distribution_covariance(d: torch.Tensor, corr=0.0):
-    _d = d[:, [1, 3]]
-    ret = torch.zeros((len(d), 2, 2))
+    _d = d[:, [2, 3]]
+    ret = torch.zeros((len(d), 2, 2), device=device)
     for (i, x) in enumerate(map(lambda x: torch.diag(x), _d)):
         x[0][1] = x[1][0] = corr * x[0][0] * x[1][1]
         ret[i] = x
@@ -19,7 +21,6 @@ def _calculate_distance(preds: torch.Tensor, target: torch.Tensor):
 
     t_mean = _get_distribution_mean(target)
     t_corr = _get_distribution_covariance(target)
-
 
     sum_corr = (t_corr + p_corr) / 2
 
@@ -38,15 +39,15 @@ def _calculate_distance(preds: torch.Tensor, target: torch.Tensor):
     
     return _x + _t
 
-class DistributionDistanceMeasure(tm.Metric):
+class BhattacharyyaDistance(tm.Metric):
     def __init__(self, dist_sync_on_step=False):
         # call `self.add_state`for every internal state that is needed for the metrics computations
         # dist_reduce_fx indicates the function that should be used to reduce
         # state from multiple processes
         super().__init__(dist_sync_on_step=dist_sync_on_step)
 
-        self.add_state("distance", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("distance", default=torch.tensor(0, dtype=torch.float, device=device), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0, device=device), dist_reduce_fx="sum")
 
     def update(self, preds: torch.Tensor, target: torch.Tensor):
         # update metric states
