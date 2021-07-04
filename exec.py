@@ -89,9 +89,14 @@ def __load_data_class(run):
 
     run_s = run.split(".")
 
-    if __is_subset(["cat"], run_s):
+    if __is_subset(["stat"], run_s):
+        from data.stat import StatAudioDataset
+        return StatAudioDataset
+    elif __is_subset(["cat"], run_s):
         from data.cat import CatAudioDataset
         return CatAudioDataset
+
+    raise ModuleNotFoundError("Unknown DataClass")
 
 
 def __load_model_class(run, model_version):
