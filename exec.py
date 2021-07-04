@@ -190,6 +190,8 @@ def list_runs(subpath, print_file):
         runs_dir = path.join(WORKING_DIR, "runs")
     found = 0
     for (c_dir, _, files) in walk(runs_dir):
+        if "__pycache__" in c_dir:
+            continue
         files = list(filter(lambda x: x.endswith(".yaml"), files))
         if len(files) == 0:
             continue
@@ -215,6 +217,8 @@ def list_models(subpath):
         models_dir = path.join(WORKING_DIR, "models")
     found = 0
     for (c_dir, _, files) in walk(models_dir):
+        if "__pycache__" in c_dir:
+            continue
         files = list(filter(lambda x: x.startswith("model_v"), files))
         if len(files) == 0:
             continue
@@ -270,100 +274,103 @@ def check(run, check_data):
 
 
 @click.command("train")
-@click.argument("run", required=True)
+@click.argument("run", nargs=-1, required=True)
 @click.option("--wandb/--no-wandb", "use_wandb", default=True, help="Use WandB to log metrics")
 def train(run, use_wandb):
 
     run_dir = path.join(WORKING_DIR, "runs")
-    (rd, run_file) = __parse_run_location(run)
-    run_dir = path.join(run_dir, rd)
 
-    run_config = __load_yaml_file(path.join(run_dir, run_file))
+    for r in run:
 
-    batch_size = run_config['batch_size']
+        (rd, run_file) = __parse_run_location(r)
+        run_dir = path.join(run_dir, rd)
 
-    (ModelClass, model_info) = __load_model_class(
-        run, run_config['model']['version'])
-    DataClass = __load_data_class(run)
+        run_config = __load_yaml_file(path.join(run_dir, run_file))
 
-    data_args = __parse_data_args(run_config['data'])
-    (train_ds, test_ds, validation_ds) = __make_datasets(DataClass, **data_args)
-    print("Datasets Created...")
+        batch_size = run_config['batch_size']
 
-    model_params = run_config['model']['params']
+        (ModelClass, model_info) = __load_model_class(
+            r, run_config['model']['version'])
+        DataClass = __load_data_class(r)
 
-    additional_tags = run_config['tags'] if 'tags' in run_config else []
+        data_args = __parse_data_args(run_config['data'])
+        (train_ds, test_ds, validation_ds) = __make_datasets(DataClass, **data_args)
+        print("Datasets Created...")
 
-    config = {
-        **model_params
-    }
+        model_params = run_config['model']['params']
 
-    if __is_kfold(run_config['data']):
-        kfold_n = run_config['kfold_n'] if 'kfold_n' in run_config else 5
-        stratify = run_config['stratify'] if 'stratify' in run_config else True
+        additional_tags = run_config['tags'] if 'tags' in run_config else []
+
+        config = {
+            **model_params
+        }
+
+        if __is_kfold(run_config['data']):
+            kfold_n = run_config['kfold_n'] if 'kfold_n' in run_config else 5
+            stratify = run_config['stratify'] if 'stratify' in run_config else True
 
 
-        model = ModelClass(**model_params)
+            model = ModelClass(**model_params)
+            print("Model Created...")
+
+            cv = kfold.CrossValidator(
+                n_splits=kfold_n,
+                stratify=stratify,
+                batch_size=batch_size,
+                num_workers=__get_num_workers(),
+                wandb_project_name="mer",
+                model_monitor=model.MODEL_CHECKPOINT,
+                model_monitor_mode=model.MODEL_CHECKPOINT_MODE,
+                early_stop_monitor=model.EARLY_STOPPING,
+                early_stop_mode=model.EARLY_STOPPING_MODE,
+                use_wandb=use_wandb,
+                cv_dry_run=False,
+                wandb_tags=__get_wandb_tags(
+                    model_info['name'], model_info['version'], run_config['data']['dataset'], additional_tags),
+                config=config,
+                gpus=__get_gpu_count()
+            )
+
+            cv.fit(model, train_ds, test_ds)
+
+            return
+        
+        model = ModelClass(train_ds=train_ds, test_ds=test_ds, val_ds=validation_ds, **model_params)
         print("Model Created...")
 
-        cv = kfold.CrossValidator(
-            n_splits=kfold_n,
-            stratify=stratify,
-            batch_size=batch_size,
-            num_workers=__get_num_workers(),
-            wandb_project_name="mer",
-            model_monitor=model.MODEL_CHECKPOINT,
-            model_monitor_mode=model.MODEL_CHECKPOINT_MODE,
-            early_stop_monitor=model.EARLY_STOPPING,
-            early_stop_mode=model.EARLY_STOPPING_MODE,
-            use_wandb=use_wandb,
-            cv_dry_run=False,
-            wandb_tags=__get_wandb_tags(
-                model_info['name'], model_info['version'], run_config['data']['dataset'], additional_tags),
-            config=config,
-            gpus=__get_gpu_count()
+        model_callback = ModelCheckpoint(
+            monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
+        early_stop_callback = EarlyStopping(
+            monitor=model.EARLY_STOPPING,
+            min_delta=0.00,
+            patience=10,
+            verbose=True,
+            mode=model.EARLY_STOPPING_MODE
         )
 
-        cv.fit(model, train_ds, test_ds)
+        logger = None
+        if use_wandb:
+            logger = WandbLogger(
+                offline=False,
+                log_model=True,
+                project='mer',
+                job_type="train",
+                config=config,
+                tags=__get_wandb_tags(
+                    model_info['name'], model_info['version'], run_config['data']['dataset'], additional_tags)
+            )
 
-        return
-    
-    model = ModelClass(train_ds=train_ds, test_ds=test_ds, val_ds=validation_ds, **model_params)
-    print("Model Created...")
+        trainer = pl.Trainer(
+            logger=logger,
+            gpus=__get_gpu_count(),
+            callbacks=[model_callback, early_stop_callback])
 
-    model_callback = ModelCheckpoint(
-        monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
-    early_stop_callback = EarlyStopping(
-        monitor=model.EARLY_STOPPING,
-        min_delta=0.00,
-        patience=10,
-        verbose=True,
-        mode=model.EARLY_STOPPING_MODE
-    )
+        trainer.fit(model)
 
-    logger = None
-    if use_wandb:
-        logger = WandbLogger(
-            offline=False,
-            log_model=True,
-            project='mer',
-            job_type="train",
-            config=config,
-            tags=__get_wandb_tags(
-                model_info['name'], model_info['version'], run_config['data']['dataset'], additional_tags)
-        )
+        trainer.test(model)
 
-    trainer = pl.Trainer(
-        logger=logger,
-        gpus=__get_gpu_count(),
-        callbacks=[model_callback, early_stop_callback])
-
-    trainer.fit(model)
-
-    trainer.test(model)
-
-    if use_wandb:
-        wandb.finish()
+        if use_wandb:
+            wandb.finish()
 
 
 clist.add_command(list_runs)

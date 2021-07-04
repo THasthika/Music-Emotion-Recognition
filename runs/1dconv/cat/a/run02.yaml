@@ -1,0 +1,10 @@
+data:
+  dataset: mer-taffc
+  split: 60-20-20
+  temp_folder: a_mer-taffc
+model:
+  version: 2
+  params:
+    lr: 0.001
+    adaptive_layer_units: 1
+batch_size: 128

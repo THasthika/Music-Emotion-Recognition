@@ -1,0 +1,14 @@
+data:
+  dataset: deam
+  split: 60-20-20
+  temp_folder: a_deam
+model:
+  version: 1
+  params:
+    lr: 0.001
+    adaptive_layer_units: 2
+    n_fft: 1024
+    n_mels: 128
+    n_mfcc: 20
+    spec_trainable: true
+batch_size: 128
