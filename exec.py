@@ -291,8 +291,6 @@ def train(run, use_wandb):
     print("Datasets Created...")
 
     model_params = run_config['model']['params']
-    model = ModelClass(**model_params)
-    print("Model Created...")
 
     additional_tags = run_config['tags'] if 'tags' in run_config else []
 
@@ -303,6 +301,11 @@ def train(run, use_wandb):
     if __is_kfold(run_config['data']):
         kfold_n = run_config['kfold_n'] if 'kfold_n' in run_config else 5
         stratify = run_config['stratify'] if 'stratify' in run_config else True
+
+
+        model = ModelClass(**model_params)
+        print("Model Created...")
+
         cv = kfold.CrossValidator(
             n_splits=kfold_n,
             stratify=stratify,
@@ -324,6 +327,9 @@ def train(run, use_wandb):
         cv.fit(model, train_ds, test_ds)
 
         return
+    
+    model = ModelClass(train_ds=train_ds, test_ds=test_ds, validation_ds=validation_ds, **model_params)
+    print("Model Created...")
 
     model_callback = ModelCheckpoint(
         monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
