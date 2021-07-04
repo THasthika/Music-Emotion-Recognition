@@ -328,7 +328,7 @@ def train(run, use_wandb):
 
         return
     
-    model = ModelClass(train_ds=train_ds, test_ds=test_ds, validation_ds=validation_ds, **model_params)
+    model = ModelClass(train_ds=train_ds, test_ds=test_ds, val_ds=validation_ds, **model_params)
     print("Model Created...")
 
     model_callback = ModelCheckpoint(
