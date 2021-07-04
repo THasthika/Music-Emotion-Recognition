@@ -4,6 +4,7 @@ from os import path
 import string
 
 import pandas as pd
+import numpy as np
 
 from torch.utils.data import Dataset
 
