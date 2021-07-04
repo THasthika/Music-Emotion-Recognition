@@ -258,9 +258,7 @@ def check(run, check_data):
             if ds is None:
                 continue
             dl = DataLoader(ds, batch_size=2, num_workers=2, drop_last=True)
-            for (X, y) in dl:
-                print(X.shape)
-                print(y.shape)
+            for (X, _) in dl:
                 model(X)
                 break
         print("Check: forward passes ok!")
