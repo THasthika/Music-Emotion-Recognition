@@ -32,8 +32,8 @@ class StatAudioDataset(BaseChunkedDataset):
         return (x, sr)
 
     def get_label(self, info, args):
-        y = info[['static_valence_mean', 'static_arousal_mean',
-                  'static_valence_std', 'static_arousal_std']].to_numpy()
+        y = info[[STATIC_VALENCE_MEAN, STATIC_AROUSAL_MEAN,
+                  STATIC_VALENCE_STD, STATIC_AROUSAL_STD]].to_numpy()
         y = torch.tensor(list(y), dtype=torch.float)
         return y
 
