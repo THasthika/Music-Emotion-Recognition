@@ -3,5 +3,5 @@ shift
 
 for x in $@
 do
-    echo python ./exec.py train $pp.$x
+    python ./exec.py train $pp.$x
 done
