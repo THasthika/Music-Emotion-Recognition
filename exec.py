@@ -11,6 +11,8 @@ python exec.py train (run_location) -> train run
 
 """
 
+from pprint import pprint
+
 import data
 from os import path, walk
 import re
@@ -281,7 +283,11 @@ def check(run, check_data):
 @click.command("train")
 @click.argument("run", nargs=-1, required=True)
 @click.option("--wandb/--no-wandb", "use_wandb", default=True, help="Use WandB to log metrics")
-def train(run, use_wandb):
+@click.option("--batch-size", type=int, required=False)
+@click.option("--temp-folder", type=str, required=False)
+@click.option("--dataset", type=str, required=False)
+@click.option("--split", type=str, required=False)
+def train(run, use_wandb, batch_size, temp_folder, dataset, split):
 
     run_dir = path.join(WORKING_DIR, "runs")
 
@@ -291,6 +297,15 @@ def train(run, use_wandb):
         run_dir = path.join(run_dir, rd)
 
         run_config = __load_yaml_file(path.join(run_dir, run_file))
+
+        if not batch_size is None:
+            run_config['batch_size'] = batch_size
+        if not temp_folder is None:
+            run_config['data']['temp_folder'] = temp_folder
+        if not dataset is None:
+            run_config['data']['dataset'] = dataset
+        if not split is None:
+            run_config['data']['split'] = split
 
         batch_size = run_config['batch_size']
 
@@ -340,7 +355,7 @@ def train(run, use_wandb):
 
             return
         
-        model = ModelClass(train_ds=train_ds, test_ds=test_ds, val_ds=validation_ds, **model_params)
+        model = ModelClass(train_ds=train_ds, test_ds=test_ds, val_ds=validation_ds, batch_size=batch_size, **model_params)
         print("Model Created...")
 
         model_callback = ModelCheckpoint(
