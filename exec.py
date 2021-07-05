@@ -347,8 +347,8 @@ def train(run, use_wandb):
             monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
         early_stop_callback = EarlyStopping(
             monitor=model.EARLY_STOPPING,
-            min_delta=0.00,
-            patience=10,
+            min_delta=0.001,
+            patience=15,
             verbose=True,
             mode=model.EARLY_STOPPING_MODE
         )
