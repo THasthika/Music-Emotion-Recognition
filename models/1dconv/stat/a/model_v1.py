@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 import torchmetrics as tm
 from utils.metrics import BhattacharyyaDistance
 from utils.activation import CustomELU
+from utils.loss import rmse_loss
 
 class A1DConvStat_V1(pl.LightningModule):
 
@@ -40,7 +41,7 @@ class A1DConvStat_V1(pl.LightningModule):
         self.__build_model()
 
         ## loss
-        self.loss = F.l1_loss
+        self.loss = rmse_loss
         
         self.train_distance = BhattacharyyaDistance()
 
