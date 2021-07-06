@@ -6,8 +6,8 @@ model:
   version: 1
   params:
     lr: 0.001
-    adaptive_layer_units_0: 1
-    adaptive_layer_units_1: 1
+    adaptive_layer_units_0: 2
+    adaptive_layer_units_1: 2
     n_fft: 1024
     n_mels: 128
     n_mfcc: 20
