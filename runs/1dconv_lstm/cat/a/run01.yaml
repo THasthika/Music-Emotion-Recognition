@@ -6,4 +6,6 @@ model:
   version: 1
   params:
     lr: 0.001
+    hidden_size: 250
+    num_layers: 1
 batch_size: 128
