@@ -4,8 +4,8 @@ data:
   temp_folder: a_deam
   sub_folder: audio
 model:
-  version: 1
+  version: 3
   params:
-    lr: 0.01
+    lr: 0.001
     adaptive_layer_units: 1
 batch_size: 128
