@@ -48,6 +48,10 @@ class A1DConvStat_V1(pl.LightningModule):
         self.val_distance = BhattacharyyaDistance()
 
         self.test_distance = BhattacharyyaDistance()
+
+        self.test_arousal_r2 = tm.R2Score(num_outputs=1)
+        self.test_valence_r2 = tm.R2Score(num_outputs=1)
+
         self.test_r2score = tm.R2Score(num_outputs=4)
 
     def __build_model(self):
@@ -135,8 +139,14 @@ class A1DConvStat_V1(pl.LightningModule):
         loss = self.loss(pred, y)
         distanceMeasure = self.val_distance(pred, y)
 
+        arousal_rmse = self.loss(pred[:, 1], y[:, 1])
+        valence_rmse = self.loss(pred[:, 0], y[:, 0])
+
         self.log("val/loss", loss, prog_bar=True)
         self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
+
+        self.log("val/arousal_rmse", arousal_rmse, on_step=False, on_epoch=True)
+        self.log("val/valence_rmse", valence_rmse, on_step=False, on_epoch=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
@@ -144,12 +154,23 @@ class A1DConvStat_V1(pl.LightningModule):
         pred = self(x)
         loss = self.loss(pred, y)
         distanceMeasure = self.test_distance(pred, y)
+
         r2score = self.test_r2score(pred, y)
+        arousal_r2score = self.test_arousal_r2(pred[:, 1], y[:, 1])
+        valence_r2score = self.test_valence_r2(pred[:, 0], y[:, 0])
+
+        arousal_rmse = self.loss(pred[:, 1], y[:, 1])
+        valence_rmse = self.loss(pred[:, 0], y[:, 0])
 
         self.log("test/loss", loss)
         self.log('test/distance', distanceMeasure)
 
         self.log('test/r2score', r2score, on_step=False, on_epoch=True)
+        self.log('test/arousal_r2score', arousal_r2score, on_step=False, on_epoch=True)
+        self.log('test/valence_r2score', valence_r2score, on_step=False, on_epoch=True)
+
+        self.log("test/arousal_rmse", arousal_rmse, on_step=False, on_epoch=True)
+        self.log("test/valence_rmse", valence_rmse, on_step=False, on_epoch=True)
 
     def train_dataloader(self):
         if self.test_ds is None: return None
