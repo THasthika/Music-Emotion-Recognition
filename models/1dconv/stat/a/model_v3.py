@@ -129,7 +129,7 @@ class A1DConvStat_V3(pl.LightningModule):
         x, y = batch
 
         pred = self(x)
-        loss = self.loss(pred, y)
+        loss = self.loss(pred, y[:, [0, 1]])
 
         r2score = self.test_r2score(pred, y[:, [0, 1]])
         arousal_r2score = self.test_arousal_r2(pred[:, 1], y[:, 1])
