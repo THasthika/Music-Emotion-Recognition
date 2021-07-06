@@ -1,0 +1,21 @@
+data:
+  dataset: mer-taffc
+  split: 60-20-20
+  temp_folder: a_mer-taffc
+model:
+  version: 1
+  params:
+    lr: 0.001
+    audio_hidden_size: 250
+    audio_num_layers: 1
+    stft_hidden_size: 500
+    stft_num_layers: 1
+    mel_spec_hidden_size: 100
+    mel_spec_num_layers: 1
+    mfcc_hidden_size: 32
+    mfcc_num_layers: 1
+    n_fft: 1024
+    n_mels: 128
+    n_mfcc: 20
+    spec_trainable: true
+batch_size: 128
