@@ -9,7 +9,7 @@ from nnAudio import Spectrogram
 import torchmetrics as tm
 from utils.loss import rmse_loss
 
-class C2DConvStat_V1(pl.LightningModule):
+class C2DConvStat_V2(pl.LightningModule):
 
     LR = "lr"
     ADAPTIVE_LAYER_UNITS_0 = "adaptive_layer_units_0"

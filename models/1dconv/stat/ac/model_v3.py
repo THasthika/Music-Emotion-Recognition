@@ -13,7 +13,7 @@ from nnAudio import Spectrogram
 from utils.loss import rmse_loss
 
 
-class AC1DConvStat_V2(pl.LightningModule):
+class AC1DConvStat_V3(pl.LightningModule):
 
     LR = "lr"
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
