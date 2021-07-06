@@ -18,8 +18,10 @@ class StatAudioDataset(BaseChunkedDataset):
         self.frame_count = int(self.sr * self.chunk_duration)
 
     def get_audio(self, info, args):
+        print(self.audio_extension)
         audio_file = path.join(self.data_dir, "{}.{}".format(
             info[SONG_ID], self.audio_extension))
+        print(audio_file)
         meta_data = torchaudio.info(audio_file)
         sr = meta_data.sample_rate
 
