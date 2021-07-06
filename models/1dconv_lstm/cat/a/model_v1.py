@@ -94,7 +94,6 @@ class A1DConvLSTMCat_V1(pl.LightningModule):
     def forward(self, x):
         x = self.feature_extractor(x)
         x = torch.permute(x, (0, 2, 1))
-        print(x.shape)
         (out, _) = self.lstm(x)
         x = out[:, -1, :]
         x = self.classifier(x)
