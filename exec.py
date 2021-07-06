@@ -158,7 +158,7 @@ def __parse_data_args(data_config):
     return ret
 
 
-def __make_datasets(DataClass, data_folder, train_meta, validation_meta=None, test_meta=None, temp_folder=None, force_compute=False, sr=22050, duration=5.0, overlap=2.5, ext=".mp3"):
+def __make_datasets(DataClass, data_folder, train_meta, validation_meta=None, test_meta=None, temp_folder=None, force_compute=False, sr=22050, duration=5.0, overlap=2.5, ext="mp3"):
     train_ds = DataClass(train_meta, data_folder, temp_folder=temp_folder, chunk_duration=duration,
                          overlap=overlap, force_compute=force_compute, sr=sr, audio_extension=ext)
     test_ds = DataClass(test_meta, data_folder, temp_folder=temp_folder, chunk_duration=duration,
