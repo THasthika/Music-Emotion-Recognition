@@ -37,8 +37,6 @@ class BaseModel(pl.LightningModule):
 
         self.config = model_config
 
-        print(self.config)
-
     def configure_optimizers(self):
         optimizer = None
         if self.OPTIMIZER in self.config:
