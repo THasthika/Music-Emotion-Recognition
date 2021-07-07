@@ -430,6 +430,71 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
     if use_wandb:
         wandb.finish()
 
+@click.command("sweep")
+@click.argument("run", required=True)
+@click.option("--batch-size", type=int, required=False)
+def sweep(run, batch_size):
+
+    run_dir = path.join(WORKING_DIR, "runs")
+
+    (rd, run_file) = __parse_run_location(run)
+    run_dir = path.join(run_dir, rd)
+
+    run_config = __load_yaml_file(path.join(run_dir, run_file))
+    if not batch_size is None:
+        run_config['batch_size'] = batch_size
+
+    (ModelClass, model_info) = __load_model_class(run, run_config['model']['version'])
+    DataClass = __load_data_class(run)
+
+    data_args = __parse_data_args(run_config['data'])
+    (train_ds, test_ds, validation_ds) = __make_datasets(DataClass, **data_args)
+    print("Datasets Created...")
+
+    default_model_params = run_config['model']['params']
+    batch_size = run_config['batch_size']
+
+    # Pass your defaults to wandb.init
+    wandb_exp = wandb.init(config=default_model_params)
+
+    # Access all hyperparameter values through wandb.config
+    config = wandb.config
+
+    model = ModelClass(train_ds=train_ds, test_ds=test_ds, val_ds=validation_ds, batch_size=batch_size, **config)
+    print("Model Created...")
+
+    additional_tags = run_config['tags'] if 'tags' in run_config else []
+
+    model_callback = ModelCheckpoint(
+        monitor=model.MODEL_CHECKPOINT, mode=model.MODEL_CHECKPOINT_MODE)
+    early_stop_callback = EarlyStopping(
+        monitor=model.EARLY_STOPPING,
+        min_delta=0.001,
+        patience=15,
+        verbose=True,
+        mode=model.EARLY_STOPPING_MODE
+    )
+
+    logger = WandbLogger(
+        experiment=wandb_exp,
+        offline=False,
+        log_model=True,
+        job_type="train",
+        config=config,
+        tags=__get_wandb_tags(
+            model_info['name'], model_info['version'], run_config['data']['dataset'], additional_tags)
+    )
+
+    trainer = pl.Trainer(
+        logger=logger,
+        gpus=__get_gpu_count(),
+        callbacks=[model_callback, early_stop_callback])
+
+    trainer.fit(model)
+
+    trainer.test(model)
+
+
 
 clist.add_command(list_runs)
 clist.add_command(list_models)
@@ -437,6 +502,7 @@ clist.add_command(list_models)
 cli.add_command(clist)
 cli.add_command(check)
 cli.add_command(train)
+cli.add_command(sweep)
 
 if __name__ == "__main__":
     cli()
