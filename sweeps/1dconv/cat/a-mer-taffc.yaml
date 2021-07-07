@@ -27,4 +27,6 @@ command:
   - ${program}
   - train
   - 1dconv.cat.a
+  - --dataset mer-taffc
+  - --temp_folder a_mer-taffc
   - ${args}
