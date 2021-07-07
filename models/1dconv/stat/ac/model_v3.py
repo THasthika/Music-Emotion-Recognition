@@ -163,8 +163,16 @@ class AC1DConvStat_V3(pl.LightningModule):
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
             nn.BatchNorm1d(128),
-            nn.ReLU(),
+            nn.ReLU()
+        )
+
+        self.fc_mean = nn.Sequential(
             nn.Linear(in_features=128, out_features=2)
+        )
+
+        self.fc_std = nn.Sequential(
+            nn.Linear(in_features=128, out_features=2),
+            nn.Softplus()
         )
 
     def forward(self, x):
@@ -188,8 +196,13 @@ class AC1DConvStat_V3(pl.LightningModule):
         x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=1)
 
         x = self.fc(x)
-        
+
+
+        x_mean = self.fc_mean(x)
+        x_std = self.fc_std(x)
+        x = torch.cat((x_mean, x_std), dim=1)
         return x
+        
 
     def predict(self, x):
         x = self.forward(x)
@@ -203,7 +216,7 @@ class AC1DConvStat_V3(pl.LightningModule):
         x, y = batch
 
         pred = self(x)
-        loss = self.loss(pred, y[:, [0, 1]])
+        loss = self.loss(pred, y)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
 
@@ -213,12 +226,18 @@ class AC1DConvStat_V3(pl.LightningModule):
         x, y = batch
 
         pred = self(x)
-        loss = self.loss(pred, y[:, [0, 1]])
+        loss = self.loss(pred, y)
+
+        arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
+        valence_std_rmse = self.loss(pred[:, 2], y[:, 2])
 
         arousal_rmse = self.loss(pred[:, 1], y[:, 1])
         valence_rmse = self.loss(pred[:, 0], y[:, 0])
 
         self.log("val/loss", loss, prog_bar=True)
+
+        self.log('val/arousal_std_rmse', arousal_std_rmse, on_step=False, on_epoch=True)
+        self.log('val/valence_std_rmse', valence_std_rmse, on_step=False, on_epoch=True)
 
         self.log("val/arousal_rmse", arousal_rmse, on_step=False, on_epoch=True)
         self.log("val/valence_rmse", valence_rmse, on_step=False, on_epoch=True)
@@ -227,23 +246,31 @@ class AC1DConvStat_V3(pl.LightningModule):
         x, y = batch
 
         pred = self(x)
-        loss = self.loss(pred, y[:, [0, 1]])
+        loss = self.loss(pred, y)
 
-        r2score = self.test_r2score(pred, y[:, [0, 1]])
-        arousal_r2score = self.test_arousal_r2(pred[:, 1], y[:, 1])
-        valence_r2score = self.test_valence_r2(pred[:, 0], y[:, 0])
+        arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
+        valence_std_rmse = self.loss(pred[:, 2], y[:, 2])
 
         arousal_rmse = self.loss(pred[:, 1], y[:, 1])
         valence_rmse = self.loss(pred[:, 0], y[:, 0])
 
+        mean_r2score = self.test_r2score(pred[:, [0, 1]], y[:, [0, 1]])
+
+        arousal_r2score = self.test_arousal_r2(pred[:, 1], y[:, 1])
+        valence_r2score = self.test_valence_r2(pred[:, 0], y[:, 0])
+
         self.log("test/loss", loss)
 
-        self.log('test/r2score', r2score, on_step=False, on_epoch=True)
+        self.log('test/mean_r2score', mean_r2score, on_step=False, on_epoch=True)
+
         self.log('test/arousal_r2score', arousal_r2score, on_step=False, on_epoch=True)
         self.log('test/valence_r2score', valence_r2score, on_step=False, on_epoch=True)
 
         self.log("test/arousal_rmse", arousal_rmse, on_step=False, on_epoch=True)
         self.log("test/valence_rmse", valence_rmse, on_step=False, on_epoch=True)
+
+        self.log('val/arousal_std_rmse', arousal_std_rmse, on_step=False, on_epoch=True)
+        self.log('val/valence_std_rmse', valence_std_rmse, on_step=False, on_epoch=True)
 
     def train_dataloader(self):
         if self.test_ds is None: return None

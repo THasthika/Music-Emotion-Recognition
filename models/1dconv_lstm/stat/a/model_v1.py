@@ -88,6 +88,15 @@ class A1DConvLSTMStat_V1(pl.LightningModule):
             nn.Linear(in_features=128, out_features=2)
         )
 
+        self.fc_mean = nn.Sequential(
+            nn.Linear(in_features=128, out_features=2)
+        )
+
+        self.fc_std = nn.Sequential(
+            nn.Linear(in_features=128, out_features=2),
+            nn.Softplus()
+        )
+
     def forward(self, x):
         x = self.feature_extractor(x)
         x = x.permute((0, 2, 1))
