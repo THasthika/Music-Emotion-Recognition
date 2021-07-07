@@ -14,8 +14,6 @@ class A2DConvStat_V1(BaseStatModel):
     ADAPTIVE_LAYER_UNITS_0 = "adaptive_layer_units_0"
     ADAPTIVE_LAYER_UNITS_1 = "adaptive_layer_units_1"
 
-    STD_ACTIVATION = "std_activation"
-
     def __init__(self,
                 batch_size=32,
                 num_workers=4,
@@ -91,20 +89,9 @@ class A2DConvStat_V1(BaseStatModel):
             nn.Linear(in_features=128, out_features=2)
         )
 
-        stdActivation = None
-        if self.config[self.STD_ACTIVATION] == "custom":
-            stdActivation = CustomELU(alpha=1.0)
-        elif self.config[self.STD_ACTIVATION] == "relu":
-            stdActivation = nn.ReLU()
-        elif self.config[self.STD_ACTIVATION] == "softplus":
-            stdActivation = nn.Softplus()
-
-        if stdActivation is None:
-            raise Exception("Activation Type Unknown!")
-
         self.fc_std = nn.Sequential(
             nn.Linear(in_features=128, out_features=2),
-            stdActivation
+            self._get_std_activation()
         )
 
     def forward(self, x):

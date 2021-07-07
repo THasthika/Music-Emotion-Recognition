@@ -2,8 +2,10 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
 
+import torch.nn as nn
 import torch.nn.functional as F
 import torchmetrics as tm
+from utils.activation import CustomELU
 
 from utils.loss import rmse_loss
 class BaseModel(pl.LightningModule):
@@ -135,6 +137,8 @@ class BaseCatModel(BaseModel):
 
 class BaseStatModel(BaseModel):
 
+    STD_ACTIVATION = "std_activation"
+
     def __init__(self,
                 batch_size=32,
                 num_workers=4,
@@ -153,6 +157,21 @@ class BaseStatModel(BaseModel):
         self.test_valence_std_r2 = tm.R2Score(num_outputs=1)
 
         self.test_mean_r2score = tm.R2Score(num_outputs=2)
+
+    def _get_std_activation(self):
+        stdActivation = None
+        if self.config[self.STD_ACTIVATION] == "custom":
+            print("Model: StdActivation uses CustomELU")
+            stdActivation = CustomELU(alpha=1.0)
+        elif self.config[self.STD_ACTIVATION] == "relu":
+            print("Model: StdActivation uses ReLU")
+            stdActivation = nn.ReLU()
+        elif self.config[self.STD_ACTIVATION] == "softplus":
+            print("Model: StdActivation uses Softplus")
+            stdActivation = nn.Softplus()
+        if stdActivation is None:
+            raise Exception("Activation Type Unknown!")
+        return stdActivation
     
     def predict(self, x):
         return self.forward(x)
