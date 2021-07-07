@@ -43,8 +43,8 @@ class BaseModel(pl.LightningModule):
             o = self.config[self.OPTIMIZER]
             if o == "sgd":
                 optimizer = torch.optim.SGD(self.parameters(), lr=self.config[self.LR], momentum=self.config[self.MOMENTUM], weight_decay=self.config[self.WEIGHT_DECAY])
-        else:
-            optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR], weight_decay=self.config[self.WEIGHT_DECAY])
+            elif o == "adam":
+                optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR], weight_decay=self.config[self.WEIGHT_DECAY])
         if optimizer is None:
             raise ModuleNotFoundError(f"Optimizer named {o} was not found!")
         return optimizer
