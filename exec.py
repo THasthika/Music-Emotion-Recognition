@@ -430,7 +430,10 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
     if use_wandb:
         wandb.finish()
 
-@click.command("sweep")
+@click.command("sweep", context_settings=dict(
+    ignore_unknown_options=True,
+    allow_extra_args=True,
+))
 @click.argument("run", required=True)
 @click.option("--batch-size", type=int, required=False)
 def sweep(run, batch_size):
