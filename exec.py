@@ -346,7 +346,7 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
 
     (ModelClass, model_info) = __load_model_class(
         run, run_config['model']['version'])
-    DataClass = __load_data_class(r)
+    DataClass = __load_data_class(run)
 
     data_args = __parse_data_args(run_config['data'])
     (train_ds, test_ds, validation_ds) = __make_datasets(DataClass, **data_args)
