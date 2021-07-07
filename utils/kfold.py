@@ -163,13 +163,13 @@ class CrossValidator:
                     name="{}-fold-{}".format(self.run_name, fold_idx)
                 )
 
+            
             model_callback = ModelCheckpoint(
-                monitor=self.model_monitor,
-                mode=self.model_monitor_mode
-            )
+                monitor=self.model_monitor, mode=self.model_monitor_mode)
+                
             early_stop_callback = EarlyStopping(
                 monitor=self.early_stop_monitor,
-                min_delta=0.00,
+                min_delta=0.001,
                 patience=10,
                 verbose=True,
                 mode=self.early_stop_mode

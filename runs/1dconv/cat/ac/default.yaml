@@ -7,6 +7,10 @@ model:
   version: 1
   params:
     lr: 0.001
+    optimizer: "adam"
+    weight_decay: 0.001
+    momentum: 0
+    dropout: 0.5
     adaptive_layer_units: 1
     n_fft: 1024
     n_mels: 128

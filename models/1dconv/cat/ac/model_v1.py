@@ -6,8 +6,8 @@ from torch.utils.data import DataLoader
 import torchmetrics as tm
 from nnAudio import Spectrogram
 
-from models.base import BaseModel
-class AC1DConvCat_V1(BaseModel):
+from models.base import BaseCatModel
+class AC1DConvCat_V1(BaseCatModel):
 
     
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
@@ -26,20 +26,6 @@ class AC1DConvCat_V1(BaseModel):
         super().__init__(batch_size, num_workers, train_ds, val_ds, test_ds, **model_config)
 
         self.__build_model()
-
-        ## metrics
-        self.train_acc = tm.Accuracy(top_k=3)
-
-        self.val_acc = tm.Accuracy(top_k=3)
-        self.val_f1_class = tm.F1(num_classes=4, average='none')
-        self.val_f1_global = tm.F1(num_classes=4)
-
-        self.test_acc = tm.Accuracy(top_k=3)
-        self.test_f1_class = tm.F1(num_classes=4, average='none')
-        self.test_f1_global = tm.F1(num_classes=4)
-
-        ## loss
-        self.loss = F.cross_entropy
     
     def __build_model(self):
 
@@ -52,22 +38,22 @@ class AC1DConvCat_V1(BaseModel):
         self.audio_feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
             nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
             nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
             nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
             nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
@@ -144,6 +130,7 @@ class AC1DConvCat_V1(BaseModel):
         self.fc = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
             nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),
             nn.Linear(in_features=128, out_features=4)

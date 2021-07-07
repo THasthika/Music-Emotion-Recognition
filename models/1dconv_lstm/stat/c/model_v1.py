@@ -1,20 +1,10 @@
-import numpy as np
-import pytorch_lightning as pl
-
+from models.base import BaseStatModel
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-
-import torchmetrics as tm
 from nnAudio import Spectrogram
+from utils.activation import CustomELU
 
-from utils.loss import rmse_loss
-
-class C1DConvLSTMStat_V1(pl.LightningModule):
-
-    LR = "lr"
-    OPTIMIZER = "optimizer"
+class C1DConvLSTMStat_V1(BaseStatModel):
 
     STFT_HIDDEN_SIZE = "stft_hidden_size"
     STFT_NUM_LAYERS = "stft_num_layers"
@@ -30,10 +20,7 @@ class C1DConvLSTMStat_V1(pl.LightningModule):
     N_MFCC = "n_mfcc"
     SPEC_TRAINABLE = "spec_trainable"
 
-    EARLY_STOPPING = "val/loss"
-    EARLY_STOPPING_MODE = "min"
-    MODEL_CHECKPOINT = "val/loss"
-    MODEL_CHECKPOINT_MODE = "min"
+    STD_ACTIVATION = "std_activation"
 
     def __init__(self,
                 batch_size=32,
@@ -42,26 +29,9 @@ class C1DConvLSTMStat_V1(pl.LightningModule):
                 val_ds=None,
                 test_ds=None,
                 **model_config):
-        super().__init__()
-
-        self.batch_size = batch_size
-        self.num_workers = num_workers
-
-        self.train_ds = train_ds
-        self.val_ds = val_ds
-        self.test_ds = test_ds
-
-        self.config = model_config
+        super().__init__(batch_size, num_workers, train_ds, val_ds, test_ds, **model_config)
 
         self.__build_model()
-
-        ## loss
-        self.loss = rmse_loss
-        
-        self.test_arousal_r2 = tm.R2Score(num_outputs=1)
-        self.test_valence_r2 = tm.R2Score(num_outputs=1)
-
-        self.test_r2score = tm.R2Score(num_outputs=2)
     
     def __build_model(self):
 
@@ -140,7 +110,7 @@ class C1DConvLSTMStat_V1(pl.LightningModule):
 
         self.fc = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU()
@@ -150,9 +120,20 @@ class C1DConvLSTMStat_V1(pl.LightningModule):
             nn.Linear(in_features=128, out_features=2)
         )
 
+        stdActivation = None
+        if self.config[self.STD_ACTIVATION] == "custom":
+            stdActivation = CustomELU(alpha=1.0)
+        elif self.config[self.STD_ACTIVATION] == "relu":
+            stdActivation = nn.ReLU()
+        elif self.config[self.STD_ACTIVATION] == "softplus":
+            stdActivation = nn.Softplus()
+
+        if stdActivation is None:
+            raise Exception("Activation Type Unknown!")
+
         self.fc_std = nn.Sequential(
             nn.Linear(in_features=128, out_features=2),
-            nn.Softplus()
+            stdActivation
         )
 
     def forward(self, x):
@@ -186,88 +167,3 @@ class C1DConvLSTMStat_V1(pl.LightningModule):
         x_std = self.fc_std(x)
         x = torch.cat((x_mean, x_std), dim=1)
         return x
-
-    def predict(self, x):
-        return self.forward(x)
-
-    def configure_optimizers(self):
-        if self.OPTIMIZER in self.config:
-            o = self.config[self.OPTIMIZER]
-            if o == "sgd":
-                optimizer = torch.optim.SGD(self.parameters(), lr=self.config[self.LR])
-        else:
-            optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR])
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR])
-        return optimizer
-
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-
-        pred = self(x)
-        loss = self.loss(pred, y)
-
-        self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, y = batch
-
-        pred = self(x)
-        loss = self.loss(pred, y)
-
-        arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
-        valence_std_rmse = self.loss(pred[:, 2], y[:, 2])
-
-        arousal_rmse = self.loss(pred[:, 1], y[:, 1])
-        valence_rmse = self.loss(pred[:, 0], y[:, 0])
-
-        self.log("val/loss", loss, prog_bar=True)
-
-        self.log('val/arousal_std_rmse', arousal_std_rmse, on_step=False, on_epoch=True)
-        self.log('val/valence_std_rmse', valence_std_rmse, on_step=False, on_epoch=True)
-
-        self.log("val/arousal_rmse", arousal_rmse, on_step=False, on_epoch=True)
-        self.log("val/valence_rmse", valence_rmse, on_step=False, on_epoch=True)
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-
-        pred = self(x)
-        loss = self.loss(pred, y)
-
-        arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
-        valence_std_rmse = self.loss(pred[:, 2], y[:, 2])
-
-        arousal_rmse = self.loss(pred[:, 1], y[:, 1])
-        valence_rmse = self.loss(pred[:, 0], y[:, 0])
-
-        mean_r2score = self.test_r2score(pred[:, [0, 1]], y[:, [0, 1]])
-
-        arousal_r2score = self.test_arousal_r2(pred[:, 1], y[:, 1])
-        valence_r2score = self.test_valence_r2(pred[:, 0], y[:, 0])
-
-        self.log("test/loss", loss)
-
-        self.log('test/mean_r2score', mean_r2score, on_step=False, on_epoch=True)
-
-        self.log('test/arousal_r2score', arousal_r2score, on_step=False, on_epoch=True)
-        self.log('test/valence_r2score', valence_r2score, on_step=False, on_epoch=True)
-
-        self.log("test/arousal_rmse", arousal_rmse, on_step=False, on_epoch=True)
-        self.log("test/valence_rmse", valence_rmse, on_step=False, on_epoch=True)
-
-        self.log('val/arousal_std_rmse', arousal_std_rmse, on_step=False, on_epoch=True)
-        self.log('val/valence_std_rmse', valence_std_rmse, on_step=False, on_epoch=True)
-
-    def train_dataloader(self):
-        if self.test_ds is None: return None
-        return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
-
-    def val_dataloader(self):
-        if self.val_ds is None: return None
-        return DataLoader(self.val_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
-
-    def test_dataloader(self):
-        if self.test_ds is None: return None
-        return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)

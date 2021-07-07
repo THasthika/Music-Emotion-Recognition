@@ -6,6 +6,11 @@ model:
   version: 1
   params:
     lr: 0.001
+    optimizer: "adam"
+    weight_decay: 0.001
+    momentum: 0
+    dropout: 0.5
+    std_activation: "relu"
     adaptive_layer_units_0: 1
     adaptive_layer_units_1: 1
     n_fft: 1024

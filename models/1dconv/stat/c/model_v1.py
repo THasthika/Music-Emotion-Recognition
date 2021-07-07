@@ -1,32 +1,19 @@
-import numpy as np
-import pytorch_lightning as pl
+from models.base import BaseStatModel
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-
-import torchmetrics as tm
-
 from nnAudio import Spectrogram
-
-from utils.metrics import BhattacharyyaDistance
 from utils.activation import CustomELU
 
-class C1DConvStat_V1(pl.LightningModule):
+class C1DConvStat_V1(BaseStatModel):
 
-    LR = "lr"
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
-
     N_FFT = "n_fft"
     N_MELS = "n_mels"
     N_MFCC = "n_mfcc"
     SPEC_TRAINABLE = "spec_trainable"
 
-    EARLY_STOPPING = "val/loss"
-    EARLY_STOPPING_MODE = "min"
-    MODEL_CHECKPOINT = "val/loss"
-    MODEL_CHECKPOINT_MODE = "min"
+    STD_ACTIVATION = "std_activation"
 
     def __init__(self,
                 batch_size=32,
@@ -35,28 +22,10 @@ class C1DConvStat_V1(pl.LightningModule):
                 val_ds=None,
                 test_ds=None,
                 **model_config):
-        super().__init__()
-
-        self.batch_size = batch_size
-        self.num_workers = num_workers
-
-        self.train_ds = train_ds
-        self.val_ds = val_ds
-        self.test_ds = test_ds
-
-        self.config = model_config
+        super().__init__(batch_size, num_workers, train_ds, val_ds, test_ds, **model_config)
 
         self.__build_model()
 
-        ## loss
-        self.loss = F.l1_loss
-        
-        self.train_distance = BhattacharyyaDistance()
-
-        self.val_distance = BhattacharyyaDistance()
-
-        self.test_distance = BhattacharyyaDistance()
-        self.test_r2score = tm.R2Score(num_outputs=4)
     
     def __build_model(self):
 
@@ -132,7 +101,7 @@ class C1DConvStat_V1(pl.LightningModule):
 
         self.fc0 = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.BatchNorm1d(num_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
@@ -144,9 +113,20 @@ class C1DConvStat_V1(pl.LightningModule):
             nn.Linear(in_features=128, out_features=2)
         )
 
+        stdActivation = None
+        if self.config[self.STD_ACTIVATION] == "custom":
+            stdActivation = CustomELU(alpha=1.0)
+        elif self.config[self.STD_ACTIVATION] == "relu":
+            stdActivation = nn.ReLU()
+        elif self.config[self.STD_ACTIVATION] == "softplus":
+            stdActivation = nn.Softplus()
+
+        if stdActivation is None:
+            raise Exception("Activation Type Unknown!")
+
         self.fc_std = nn.Sequential(
             nn.Linear(in_features=128, out_features=2),
-            CustomELU(alpha=1.0)
+            stdActivation
         )
 
     def forward(self, x):
@@ -172,59 +152,3 @@ class C1DConvStat_V1(pl.LightningModule):
         x_std = self.fc_std(x)
         x = torch.cat((x_mean, x_std), dim=1)
         return x
-
-    def predict(self, x):
-        x = self.forward(x)
-        return x
-
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR])
-        return optimizer
-
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-
-        pred = self(x)
-        loss = self.loss(pred, y)
-        distanceMeasure = self.train_distance(pred, y)
-
-        self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-        self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
-
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, y = batch
-
-        pred = self(x)
-        loss = self.loss(pred, y)
-        distanceMeasure = self.val_distance(pred, y)
-
-        self.log("val/loss", loss, prog_bar=True)
-        self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
-
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-
-        pred = self(x)
-        loss = self.loss(pred, y)
-        distanceMeasure = self.test_distance(pred, y)
-        r2score = self.test_r2score(pred, y)
-
-        self.log("test/loss", loss)
-        self.log('test/distance', distanceMeasure)
-
-        self.log('test/r2score', r2score, on_step=False, on_epoch=True)
-
-    def train_dataloader(self):
-        if self.test_ds is None: return None
-        return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
-
-    def val_dataloader(self):
-        if self.val_ds is None: return None
-        return DataLoader(self.val_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
-
-    def test_dataloader(self):
-        if self.test_ds is None: return None
-        return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)

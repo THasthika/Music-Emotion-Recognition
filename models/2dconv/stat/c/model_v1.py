@@ -1,3 +1,4 @@
+from models.base import BaseStatModel
 import pytorch_lightning as pl
 
 import torch
@@ -7,11 +8,10 @@ from torch.utils.data import DataLoader
 
 from nnAudio import Spectrogram
 import torchmetrics as tm
-from utils.metrics import BhattacharyyaDistance
+from utils.activation import CustomELU
 
-class C2DConvStat_V1(pl.LightningModule):
+class C2DConvStat_V1(BaseStatModel):
 
-    LR = "lr"
     ADAPTIVE_LAYER_UNITS_0 = "adaptive_layer_units_0"
     ADAPTIVE_LAYER_UNITS_1 = "adaptive_layer_units_1"
     N_FFT = "n_fft"
@@ -19,10 +19,7 @@ class C2DConvStat_V1(pl.LightningModule):
     N_MFCC = "n_mfcc"
     SPEC_TRAINABLE = "spec_trainable"
 
-    EARLY_STOPPING = "val/loss"
-    EARLY_STOPPING_MODE = "min"
-    MODEL_CHECKPOINT = "val/loss"
-    MODEL_CHECKPOINT_MODE = "min"
+    STD_ACTIVATION = "std_activation"
 
     def __init__(self,
                 batch_size=32,
@@ -31,28 +28,9 @@ class C2DConvStat_V1(pl.LightningModule):
                 val_ds=None,
                 test_ds=None,
                 **model_config):
-        super().__init__()
-
-        self.batch_size = batch_size
-        self.num_workers = num_workers
-
-        self.train_ds = train_ds
-        self.val_ds = val_ds
-        self.test_ds = test_ds
-
-        self.config = model_config
+        super().__init__(batch_size, num_workers, train_ds, val_ds, test_ds, **model_config)
 
         self.__build_model()
-
-        ## loss
-        self.loss = F.l1_loss
-        
-        self.train_distance = BhattacharyyaDistance()
-
-        self.val_distance = BhattacharyyaDistance()
-
-        self.test_distance = BhattacharyyaDistance()
-        self.test_r2score = tm.R2Score(num_outputs=4)
     
     def __build_model(self):
 
@@ -87,13 +65,13 @@ class C2DConvStat_V1(pl.LightningModule):
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(2, 2)),
             nn.BatchNorm2d(num_features=256),
-            nn.Dropout2d(),
+            nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
             
             nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(2, 2)),
             nn.BatchNorm2d(num_features=256),
-            nn.Dropout2d(),
+            nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.AdaptiveAvgPool2d(output_size=(
@@ -125,13 +103,13 @@ class C2DConvStat_V1(pl.LightningModule):
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(2, 2)),
             nn.BatchNorm2d(num_features=128),
-            nn.Dropout2d(),
+            nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(2, 2)),
             nn.BatchNorm2d(num_features=256),
-            nn.Dropout2d(),
+            nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
             
             nn.AdaptiveAvgPool2d(output_size=(
@@ -153,12 +131,12 @@ class C2DConvStat_V1(pl.LightningModule):
             nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(2, 4)),
             nn.BatchNorm2d(num_features=32),
-            nn.Dropout2d(),
+            nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
             nn.BatchNorm2d(num_features=64),
-            nn.Dropout2d(),
+            nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.AdaptiveAvgPool2d(output_size=(
@@ -172,7 +150,7 @@ class C2DConvStat_V1(pl.LightningModule):
 
         self.fc0 = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU()
@@ -182,9 +160,20 @@ class C2DConvStat_V1(pl.LightningModule):
             nn.Linear(in_features=128, out_features=2)
         )
 
+        stdActivation = None
+        if self.config[self.STD_ACTIVATION] == "custom":
+            stdActivation = CustomELU(alpha=1.0)
+        elif self.config[self.STD_ACTIVATION] == "relu":
+            stdActivation = nn.ReLU()
+        elif self.config[self.STD_ACTIVATION] == "softplus":
+            stdActivation = nn.Softplus()
+
+        if stdActivation is None:
+            raise Exception("Activation Type Unknown!")
+
         self.fc_std = nn.Sequential(
             nn.Linear(in_features=128, out_features=2),
-            nn.ReLU()
+            stdActivation
         )
 
     def forward(self, x):

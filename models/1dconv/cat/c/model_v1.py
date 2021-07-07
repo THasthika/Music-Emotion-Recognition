@@ -9,8 +9,8 @@ from torch.utils.data import DataLoader
 import torchmetrics as tm
 from nnAudio import Spectrogram
 
-from models.base import BaseModel
-class C1DConvCat_V1(BaseModel):
+from models.base import BaseCatModel
+class C1DConvCat_V1(BaseCatModel):
 
 
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
@@ -143,50 +143,3 @@ class C1DConvCat_V1(BaseModel):
 
         x = self.fc(x)
         return x
-
-    def predict(self, x):
-        x = self.forward(x)
-        return F.softmax(x, dim=1)
-
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-
-        y_logit = self(x)
-        loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
-
-        self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-        self.log('train/acc', self.train_acc(pred, y), prog_bar=True, on_step=False, on_epoch=True)
-
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, y = batch
-
-        y_logit = self(x)
-        loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
-        
-        self.log("val/loss", loss, prog_bar=True)
-        self.log("val/acc", self.val_acc(pred, y), prog_bar=True)
-
-        self.log("val/f1_global", self.val_f1_global(pred, y), on_step=False, on_epoch=True)
-
-        f1_scores = self.val_f1_class(pred, y)
-        for (i, x) in enumerate(torch.flatten(f1_scores)):
-            self.log("val/f1_class_{}".format(i), x, on_step=False, on_epoch=True)
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-
-        y_logit = self(x)
-        loss = self.loss(y_logit, y)
-        pred = F.softmax(y_logit, dim=1)
-
-        self.log("test/loss", loss)
-        self.log("test/acc", self.test_acc(pred, y))
-        self.log("test/f1_global", self.test_f1_global(pred, y))
-
-        f1_scores = self.test_f1_class(pred, y)
-        for (i, x) in enumerate(torch.flatten(f1_scores)):
-            self.log("test/f1_class_{}".format(i), x)

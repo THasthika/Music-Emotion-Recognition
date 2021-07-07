@@ -401,7 +401,7 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
     early_stop_callback = EarlyStopping(
         monitor=model.EARLY_STOPPING,
         min_delta=0.001,
-        patience=15,
+        patience=10,
         verbose=True,
         mode=model.EARLY_STOPPING_MODE
     )
@@ -436,7 +436,11 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
 ))
 @click.argument("run", required=True)
 @click.option("--batch-size", type=int, required=False)
-def sweep(run, batch_size):
+@click.option("--dataset", type=str, required=False)
+@click.option("--split", type=str, required=False)
+@click.option("--temp-folder", type=str, required=False)
+@click.option("--model-version", type=int, required=False)
+def sweep(run, batch_size, dataset, split, temp_folder, model_version):
 
     run_dir = path.join(WORKING_DIR, "runs")
 
@@ -444,15 +448,26 @@ def sweep(run, batch_size):
     run_dir = path.join(run_dir, rd)
 
     run_config = __load_yaml_file(path.join(run_dir, run_file))
+
     if not batch_size is None:
         run_config['batch_size'] = batch_size
+    if not temp_folder is None:
+        run_config['data']['temp_folder'] = temp_folder
+    if not dataset is None:
+        run_config['data']['dataset'] = dataset
+    if not split is None:
+        run_config['data']['split'] = split
+    if not model_version is None:
+        run_config['model']['version'] = model_version
 
     (ModelClass, model_info) = __load_model_class(run, run_config['model']['version'])
     DataClass = __load_data_class(run)
 
     data_args = __parse_data_args(run_config['data'])
     (train_ds, test_ds, validation_ds) = __make_datasets(DataClass, **data_args)
-    print("Datasets Created...")
+    print(f"Datasets {run_config['data']['dataset']} Created...")
+    print(f"Using Temp Folder - {run_config['data']['temp_folder']}")
+    print(f"Split name - {run_config['data']['split']}")
 
     default_model_params = run_config['model']['params']
     batch_size = run_config['batch_size']
