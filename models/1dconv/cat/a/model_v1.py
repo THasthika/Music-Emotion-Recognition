@@ -26,49 +26,49 @@ class A1DConvCat_V1(BaseCatModel):
         self.feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
             nn.BatchNorm1d(250),
-            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.Dropout(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
             nn.MaxPool1d(kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
-            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.Dropout(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
             nn.MaxPool1d(kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
-            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.Dropout(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
             nn.MaxPool1d(kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
-            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.Dropout(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
             nn.MaxPool1d(kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
-            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.Dropout(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
             nn.MaxPool1d(kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
-            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.Dropout(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
             nn.MaxPool1d(kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
-            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.Dropout(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
             nn.MaxPool1d(kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
-            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.Dropout(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
@@ -77,7 +77,7 @@ class A1DConvCat_V1(BaseCatModel):
 
         self.fc = nn.Sequential(
             nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS]*250, out_features=512),
-            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.Dropout(self.config[self.DROPOUT]),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),
