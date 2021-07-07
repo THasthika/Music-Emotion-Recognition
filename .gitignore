@@ -10,8 +10,8 @@ model_saves/
 __pycache__
 /wandb/
 pretrain_weights/
-config.yaml
-default.yaml
+/config.yaml
+/default.yaml
 execs/*.temp.yaml
 run_list
 checkpoints/

@@ -1,0 +1,15 @@
+data:
+  dataset: mer-taffc
+  split: 60-20-20
+  temp_folder: a_mer-taffc
+  sub_folder: audio
+model:
+  version: 1
+  params:
+    lr: 0.001
+    adaptive_layer_units: 1
+    n_fft: 1024
+    n_mels: 128
+    n_mfcc: 20
+    spec_trainable: true
+batch_size: 128
