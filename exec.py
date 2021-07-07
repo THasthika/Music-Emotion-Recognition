@@ -385,17 +385,12 @@ def train(run, use_wandb, batch_size, temp_folder, dataset, split):
             gpus=__get_gpu_count(),
             callbacks=[model_callback, early_stop_callback])
 
-        try:
-            trainer.tuner._run(model)
-        except Exception as e:
-            print(e)
+        trainer.fit(model)
 
-        # trainer.fit(model)
+        trainer.test(model)
 
-        # trainer.test(model)
-
-        # if use_wandb:
-        #     wandb.finish()
+        if use_wandb:
+            wandb.finish()
 
 
 clist.add_command(list_runs)
