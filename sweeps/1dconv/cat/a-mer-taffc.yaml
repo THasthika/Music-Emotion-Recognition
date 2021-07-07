@@ -25,7 +25,7 @@ command:
   - ${env}
   - ${interpreter}
   - ${program}
-  - train
+  - sweep
   - 1dconv.cat.a
   - --dataset mer-taffc
   - --temp_folder a_mer-taffc
