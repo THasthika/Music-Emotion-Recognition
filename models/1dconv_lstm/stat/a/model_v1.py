@@ -12,6 +12,8 @@ class A1DConvLSTMStat_V1(pl.LightningModule):
 
     LR = "lr"
     OPTIMIZER = "optimizer"
+    MOMENTUM = "momentum"
+    WEIGHT_DECAY = "weight_decay"
 
     HIDDEN_SIZE = "hidden_size"
     NUM_LAYERS = "num_layers"
@@ -116,10 +118,9 @@ class A1DConvLSTMStat_V1(pl.LightningModule):
         if self.OPTIMIZER in self.config:
             o = self.config[self.OPTIMIZER]
             if o == "sgd":
-                optimizer = torch.optim.SGD(self.parameters(), lr=self.config[self.LR])
+                optimizer = torch.optim.SGD(self.parameters(), lr=self.config[self.LR], momentum=self.config[self.MOMENTUM], weight_decay=self.config[self.WEIGHT_DECAY])
         else:
-            optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR])
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR])
+            optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR], weight_decay=self.config[self.WEIGHT_DECAY])
         return optimizer
 
     def training_step(self, batch, batch_idx):

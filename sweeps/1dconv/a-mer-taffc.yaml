@@ -1,0 +1,23 @@
+program: train.py
+method: random
+metric:
+  goal: minimize
+  name: val/loss
+parameters:
+  lr:
+    values: [0.001, 0.005, 0.01]
+  dropout:
+    values: [0.15, 0.2, 0.25, 0.3, 0.4, 0.5]
+  adaptive_layer_units:
+    values: [1, 2, 4, 8, 16]
+  decay:
+    values: [1e-5, 1e-6, 1e-7]
+  momentum:
+    values: [0.8, 0.9, 0.95]
+  epochs:
+    value: 27
+early_terminate:
+  type: hyperband
+  s: 2
+  eta: 3
+  max_iter: 27

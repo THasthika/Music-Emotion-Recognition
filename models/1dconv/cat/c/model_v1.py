@@ -9,20 +9,15 @@ from torch.utils.data import DataLoader
 import torchmetrics as tm
 from nnAudio import Spectrogram
 
-class C1DConvCat_V1(pl.LightningModule):
+from models.base import BaseModel
+class C1DConvCat_V1(BaseModel):
 
-    LR = "lr"
+
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
-
     N_FFT = "n_fft"
     N_MELS = "n_mels"
     N_MFCC = "n_mfcc"
     SPEC_TRAINABLE = "spec_trainable"
-
-    EARLY_STOPPING = "val/loss"
-    EARLY_STOPPING_MODE = "min"
-    MODEL_CHECKPOINT = "val/loss"
-    MODEL_CHECKPOINT_MODE = "min"
 
     def __init__(self,
                 batch_size=32,
@@ -31,16 +26,7 @@ class C1DConvCat_V1(pl.LightningModule):
                 val_ds=None,
                 test_ds=None,
                 **model_config):
-        super().__init__()
-
-        self.batch_size = batch_size
-        self.num_workers = num_workers
-
-        self.train_ds = train_ds
-        self.val_ds = val_ds
-        self.test_ds = test_ds
-
-        self.config = model_config
+        super().__init__(batch_size, num_workers, train_ds, val_ds, test_ds, **model_config)
 
         self.__build_model()
 
@@ -130,7 +116,7 @@ class C1DConvCat_V1(pl.LightningModule):
         out_channels = 16
         input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
-        self.classifier = nn.Sequential(
+        self.fc = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
@@ -155,16 +141,12 @@ class C1DConvCat_V1(pl.LightningModule):
 
         x = torch.cat((stft_x, mel_x, mfcc_x), dim=1)
 
-        x = self.classifier(x)
+        x = self.fc(x)
         return x
 
     def predict(self, x):
         x = self.forward(x)
         return F.softmax(x, dim=1)
-
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR])
-        return optimizer
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -208,15 +190,3 @@ class C1DConvCat_V1(pl.LightningModule):
         f1_scores = self.test_f1_class(pred, y)
         for (i, x) in enumerate(torch.flatten(f1_scores)):
             self.log("test/f1_class_{}".format(i), x)
-
-    def train_dataloader(self):
-        if self.test_ds is None: return None
-        return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
-
-    def val_dataloader(self):
-        if self.val_ds is None: return None
-        return DataLoader(self.val_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
-
-    def test_dataloader(self):
-        if self.test_ds is None: return None
-        return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)

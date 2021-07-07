@@ -109,7 +109,9 @@ def __load_data_class(run):
 
 def __load_model_class(run, model_version):
 
-    runp = run.split(".")[:-1]
+    runp = run.split(".")
+    if len(runp) > 3:
+        runp = runp[:-1]
 
     model_file = "model_v{}.py".format(model_version)
     run_path = path.join(WORKING_DIR, "models", path.join(*runp), model_file)
@@ -266,12 +268,16 @@ def list_models(subpath):
 @click.command("check")
 @click.argument("run")
 @click.option("--data/--no-data", "check_data", default=True, help="Load dataset and run forward pass.")
-def check(run, check_data):
+@click.option("--model-version", type=int, required=False)
+def check(run, check_data, model_version):
     run_dir = path.join(WORKING_DIR, "runs")
     (rd, run_file) = __parse_run_location(run)
     run_dir = path.join(run_dir, rd)
 
     run_config = __load_yaml_file(path.join(run_dir, run_file))
+    if not model_version is None:
+        run_config['model']['version'] = model_version
+        
     (ModelClass, _) = __load_model_class(run, run_config['model']['version'])
 
     model_params = run_config['model']['params']
