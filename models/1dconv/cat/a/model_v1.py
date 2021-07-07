@@ -1,8 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-
-import torchmetrics as tm
 
 from models.base import BaseCatModel
 
@@ -62,4 +59,3 @@ class A1DConvCat_V1(BaseCatModel):
         x = torch.flatten(x, start_dim=1)
         x = self.fc(x)
         return x
-        
