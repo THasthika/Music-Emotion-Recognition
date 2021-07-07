@@ -1,4 +1,4 @@
-name: A-1DConv-Cat-Mer-Taffc
+name: C-1DConv-Cat-Mer-Taffc
 project: mer
 program: exec.py
 method: random
@@ -16,8 +16,26 @@ parameters:
     values: [0.8, 0.9, 0.95]
   optimizer:
     values: ["adam", "sgd"]
-  adaptive_layer_units:
-    values: [1, 2, 4, 8, 16]
+  n_fft:
+    value: 1024
+  n_mels:
+    value: 128
+  n_mfcc:
+    value: 20
+  spec_trainable:
+    values: [true, false]
+  stft_hidden_size:
+    values: [250, 500]
+  stft_num_layers:
+    values: [1, 2, 4]
+  mel_spec_hidden_size:
+    values: [100, 150]
+  mel_spec_num_layers:
+    values: [1, 2, 4]
+  mfcc_hidden_size:
+    values: [16, 32]
+  mfcc_num_layers:
+    values: [1, 2, 4]
 early_terminate:
   type: hyperband
   min_iter: 3
@@ -26,7 +44,7 @@ command:
   - ${interpreter}
   - ${program}
   - sweep
-  - 1dconv.cat.a
+  - 1dconv_lstm.cat.c
   - --dataset
   - mer-taffc
   - --temp_folder

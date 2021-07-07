@@ -1,8 +1,11 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader
+
+import torchmetrics as tm
 
 from models.base import BaseCatModel
-
 class A1DConvCat_V1(BaseCatModel):
 
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
@@ -23,31 +26,58 @@ class A1DConvCat_V1(BaseCatModel):
         self.feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
             nn.BatchNorm1d(250),
-            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Dropout(nn.config[self.DROPOUT]),
             nn.ReLU(),
 
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.MaxPool1d(kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
-            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Dropout(nn.config[self.DROPOUT]),
             nn.ReLU(),
 
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.MaxPool1d(kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
-            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Dropout(nn.config[self.DROPOUT]),
             nn.ReLU(),
 
-            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.MaxPool1d(kernel_size=3, stride=1),
             nn.BatchNorm1d(250),
-            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.MaxPool1d(kernel_size=3, stride=1),
+            nn.BatchNorm1d(250),
+            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.MaxPool1d(kernel_size=3, stride=1),
+            nn.BatchNorm1d(250),
+            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.MaxPool1d(kernel_size=3, stride=1),
+            nn.BatchNorm1d(250),
+            nn.Dropout(nn.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=250, out_channels=250, kernel_size=7, stride=1),
+            nn.MaxPool1d(kernel_size=3, stride=1),
+            nn.BatchNorm1d(250),
+            nn.Dropout(nn.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
-            nn.Dropout(p=self.config[self.DROPOUT])
+            nn.Dropout()
         )
 
         self.fc = nn.Sequential(
             nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS]*250, out_features=512),
-            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Dropout(nn.config[self.DROPOUT]),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),

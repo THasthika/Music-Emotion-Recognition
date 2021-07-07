@@ -1,4 +1,4 @@
-name: A-1DConv-Cat-Mer-Taffc
+name: A-1DConvLSTM-Stat-DEAM
 project: mer
 program: exec.py
 method: random
@@ -16,8 +16,12 @@ parameters:
     values: [0.8, 0.9, 0.95]
   optimizer:
     values: ["adam", "sgd"]
-  adaptive_layer_units:
-    values: [1, 2, 4, 8, 16]
+  std_activation:
+    values: ["custom", "relu", "softplus"]
+  hidden_size:
+    values: [250, 300]
+  num_layers:
+    values: [1, 2, 4]
 early_terminate:
   type: hyperband
   min_iter: 3
@@ -26,9 +30,9 @@ command:
   - ${interpreter}
   - ${program}
   - sweep
-  - 1dconv.cat.a
+  - 1dconv_lstm.stat.a
   - --dataset
-  - mer-taffc
+  - deam
   - --temp_folder
-  - a_mer-taffc
+  - a_deam
   - ${args}
