@@ -344,6 +344,8 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
     
     model_args_additional = parse_model_args(ctx.args)
 
+    print(model_args_additional)
+
     (ModelClass, model_info) = __load_model_class(
         run, run_config['model']['version'])
     DataClass = __load_data_class(run)
