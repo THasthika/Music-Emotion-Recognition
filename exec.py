@@ -352,8 +352,8 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
     (train_ds, test_ds, validation_ds) = __make_datasets(DataClass, **data_args)
     print("Datasets Created...")
 
-    model_params = run_config['model']['params']
     model_params = {
+        **run_config['model']['params'],
         **model_args_additional
     }
 
