@@ -26,26 +26,26 @@ class A1DConvCat_V1(BaseCatModel):
         self.feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
             nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
             nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
             nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv1d(in_channels=250, out_channels=250, kernel_size=13, stride=5),
             nn.BatchNorm1d(250),
-            nn.Dropout(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
-            nn.Dropout()
+            nn.Dropout(p=self.config[self.DROPOUT])
         )
 
         self.fc = nn.Sequential(
@@ -62,3 +62,4 @@ class A1DConvCat_V1(BaseCatModel):
         x = torch.flatten(x, start_dim=1)
         x = self.fc(x)
         return x
+        

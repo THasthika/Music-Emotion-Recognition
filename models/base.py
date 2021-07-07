@@ -11,6 +11,7 @@ class BaseModel(pl.LightningModule):
     OPTIMIZER = "optimizer"
     MOMENTUM = "momentum"
     WEIGHT_DECAY = "weight_decay"
+    DROPOUT = "dropout"
 
     EARLY_STOPPING = "val/loss"
     EARLY_STOPPING_MODE = "min"
