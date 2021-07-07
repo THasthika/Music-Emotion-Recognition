@@ -1,4 +1,6 @@
-program: train.py
+name: 1DConv-Cat-A-Mer-Taffc
+project: mer
+program: exec.py
 method: random
 metric:
   goal: minimize
@@ -14,3 +16,15 @@ parameters:
     values: [1e-5, 1e-6, 1e-7]
   momentum:
     values: [0.8, 0.9, 0.95]
+  optimizer:
+    values: ["adam", "sgd"]
+early_terminate:
+  type: hyperband
+  min_iter: 3
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - train
+  - 1dconv.cat.a
+  - ${args}
