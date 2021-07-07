@@ -191,10 +191,10 @@ class AC1DConvLSTMStat_V1(pl.LightningModule):
         mfcc_x = self.mfcc(x)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
 
-        audio_x = torch.permute(audio_x, (0, 2, 1))
-        stft_x = torch.permute(stft_x, (0, 2, 1))
-        mel_x = torch.permute(mel_x, (0, 2, 1))
-        mfcc_x = torch.permute(mfcc_x, (0, 2, 1))
+        audio_x = audio_x.permute((0, 2, 1))
+        stft_x = stft_x.permute((0, 2, 1))
+        mel_x = mel_x.permute((0, 2, 1))
+        mfcc_x = mfcc_x.permute((0, 2, 1))
 
         (out, _) = self.audio_lstm(audio_x)
         audio_x = out[:, -1, :]
