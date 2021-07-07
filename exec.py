@@ -182,16 +182,25 @@ def parse_model_args(args):
     for (i, arg) in enumerate(args):
         if arg.startswith("--"):
             n = arg[2:].replace("-", "_")
-            # parse parameter
-            if len(args) > i+1 and not args[i+1].startswith("--"):
-                v = args[i+1]
+            a = n.split("=")
+            if len(a) == 1:
+                # parse parameter
+                if len(args) > i+1 and not args[i+1].startswith("--"):
+                    v = args[i+1]
+                    try:
+                        v = int(v)
+                    except:
+                        pass
+                    ret[n] = v
+                else:
+                    ret[n] = True
+            elif len(a) == 2:
+                v = a[1]
                 try:
                     v = int(v)
                 except:
                     pass
-                ret[n] = v
-            else:
-                ret[n] = True
+                ret[a[0]] = v
     return ret
 
 
