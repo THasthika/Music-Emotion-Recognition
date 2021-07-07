@@ -48,6 +48,8 @@ class A1DConvCat_V1(BaseCatModel):
             nn.Dropout()
         )
 
+        print(self.config)
+
         self.fc = nn.Sequential(
             nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS]*250, out_features=512),
             nn.Dropout(),
