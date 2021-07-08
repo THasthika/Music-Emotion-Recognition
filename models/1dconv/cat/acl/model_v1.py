@@ -67,7 +67,17 @@ class ACL1DConvCat_V1(BaseCatModel):
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
-            nn.Dropout()
+        )
+
+        self.audio_fc = nn.Sequential(
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS] * 250, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
         )
 
         self.stft_feature_extractor = nn.Sequential(
@@ -90,6 +100,17 @@ class ACL1DConvCat_V1(BaseCatModel):
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
         )
 
+        self.stft_fc = nn.Sequential(
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS] * 500, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
+        )
+
         self.mel_spec_feature_extractor = nn.Sequential(
 
             nn.Conv1d(in_channels=self.config[self.N_MELS], out_channels=100, kernel_size=3, stride=1),
@@ -103,6 +124,17 @@ class ACL1DConvCat_V1(BaseCatModel):
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
+        )
+
+        self.mel_spec_fc = nn.Sequential(
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS] * 100, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
         )
 
         self.mfcc_feature_extractor = nn.Sequential(
@@ -125,6 +157,17 @@ class ACL1DConvCat_V1(BaseCatModel):
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
         )
 
+        self.mfcc_fc = nn.Sequential(
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS] * 16, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
+        )
+
         self.cqt_feature_extractor = nn.Sequential(
 
             nn.Conv1d(in_channels=self.config[self.N_CQT], out_channels=100, kernel_size=3, stride=1),
@@ -143,27 +186,29 @@ class ACL1DConvCat_V1(BaseCatModel):
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
+        )
 
+        self.cqt_fc = nn.Sequential(
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS] * 100, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
         )
 
         self.lyrics_extractor = nn.LSTM(input_size=768, hidden_size=250, num_layers=1)
+        self.lyrics_fc = nn.Sequential(
+            nn.Linear(in_features=250, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
+        )
 
-        out_channels = 250
-        input_size = (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
-
-        out_channels = 500
-        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
-
-        out_channels = 100
-        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
-
-        out_channels = 16
-        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
-
-        out_channels = 100
-        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
-
-        input_size += 250
+        input_size = 64 * 6
 
         self.fc = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
@@ -179,18 +224,28 @@ class ACL1DConvCat_V1(BaseCatModel):
         (audio_x, lyrics_x) = x
 
         raw_x = self.audio_feature_extractor(audio_x)
+        raw_x = torch.flatten(raw_x, start_dim=1)
+        raw_x = self.audio_fc(raw_x)
 
         stft_x = self.stft(audio_x)
         stft_x = self.stft_feature_extractor(stft_x)
+        stft_x = torch.flatten(stft_x, start_dim=1)
+        stft_x = self.stft_fc(stft_x)
 
         mel_x = self.mel_spec(audio_x)
         mel_x = self.mel_spec_feature_extractor(mel_x)
+        mel_x = torch.flatten(mel_x, start_dim=1)
+        mel_x = self.mel_spec_fc(mel_x)
 
         mfcc_x = self.mfcc(audio_x)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
+        mfcc_x = torch.flatten(mfcc_x, start_dim=1)
+        mfcc_x = self.mfcc_fc(mfcc_x)
 
         cqt_x = self.cqt(audio_x)
         cqt_x = self.cqt_feature_extractor(cqt_x)
+        cqt_x = torch.flatten(cqt_x, start_dim=1)
+        cqt_x = self.cqt_fc(cqt_x)
 
         lyrics_x = self.bert_tokenizer(lyrics_x, padding=True, truncation=False, return_tensors="pt", return_token_type_ids=False, return_attention_mask=False)['input_ids']
         lyrics_x = lyrics_x.to(device)
@@ -199,13 +254,8 @@ class ACL1DConvCat_V1(BaseCatModel):
         lyrics_x = lyrics_x[0]
         (lyrics_x, _) = self.lyrics_extractor(lyrics_x)
         lyrics_x = lyrics_x[:, -1, :]
-
-        raw_x = torch.flatten(raw_x, start_dim=1)
-        stft_x = torch.flatten(stft_x, start_dim=1)
-        mel_x = torch.flatten(mel_x, start_dim=1)
-        mfcc_x = torch.flatten(mfcc_x, start_dim=1)
-        cqt_x = torch.flatten(cqt_x, start_dim=1)
         lyrics_x = torch.flatten(lyrics_x, start_dim=1)
+        lyrics_x = self.lyrics_fc(lyrics_x)
 
         x = torch.cat((raw_x, stft_x, mel_x, mfcc_x, cqt_x, lyrics_x), dim=1)
 
