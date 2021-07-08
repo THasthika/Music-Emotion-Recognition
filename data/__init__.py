@@ -4,7 +4,7 @@ import torchaudio
 SONG_ID = 'song_id'
 START_TIME = 'start_time'
 END_TIME = 'end_time'
-CLIP_START_TIME = 'clip_start_time'
+SONG_START_TIME = 'song_start_time'
 DURATION = 'duration'
 
 QUADRANT = 'quadrant'

@@ -1,4 +1,4 @@
-from models.base import BaseStatModel
+from models import BaseStatModel
 import torch
 import torch.nn as nn
 from nnAudio import Spectrogram

@@ -97,10 +97,19 @@ def __load_data_class(run):
 
     run_s = run.split(".")
 
+    if __is_subset(["stat", "acl"], run_s):
+        from data.stat_multi import StatAudioLyricDataset
+        return StatAudioLyricDataset
+    
+    if __is_subset(["cat", "acl"], run_s):
+        from data.cat_multi import CatAudioLyricDataset
+        return CatAudioLyricDataset
+
     if __is_subset(["stat"], run_s):
         from data.stat import StatAudioDataset
         return StatAudioDataset
-    elif __is_subset(["cat"], run_s):
+    
+    if __is_subset(["cat"], run_s):
         from data.cat import CatAudioDataset
         return CatAudioDataset
 

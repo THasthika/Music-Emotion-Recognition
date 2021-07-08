@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 import torchmetrics as tm
 from nnAudio import Spectrogram
 
-from models.base import BaseCatModel
+from models import BaseCatModel
 class C1DConvCat_V1(BaseCatModel):
 
 

@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 
 import torchmetrics as tm
 
-from models.base import BaseCatModel
+from models import BaseCatModel
 class A1DConvCat_V1(BaseCatModel):
 
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"

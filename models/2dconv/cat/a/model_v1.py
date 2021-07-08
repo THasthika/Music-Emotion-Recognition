@@ -1,4 +1,4 @@
-from models.base import BaseCatModel
+from models import BaseCatModel
 
 import torch
 import torch.nn as nn

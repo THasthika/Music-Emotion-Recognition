@@ -1,8 +1,7 @@
-from models.base import BaseStatModel
+from models import BaseStatModel
 
 import torch
 import torch.nn as nn
-from utils.activation import CustomELU
 
 class A1DConvStat_V1(BaseStatModel):
 

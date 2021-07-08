@@ -1,12 +1,10 @@
-from models.base import BaseStatModel
+from models import BaseStatModel
 
 import torch
 import torch.nn as nn
 
 
 from nnAudio import Spectrogram
-
-from utils.activation import CustomELU
 
 class AC1DConvStat_V1(BaseStatModel):
 

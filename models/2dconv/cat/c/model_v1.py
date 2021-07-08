@@ -1,4 +1,4 @@
-from models.base import BaseCatModel
+from models import BaseCatModel
 import pytorch_lightning as pl
 
 import torch

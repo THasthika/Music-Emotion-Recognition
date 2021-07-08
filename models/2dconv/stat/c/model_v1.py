@@ -1,4 +1,4 @@
-from models.base import BaseStatModel
+from models import BaseStatModel
 import pytorch_lightning as pl
 
 import torch
