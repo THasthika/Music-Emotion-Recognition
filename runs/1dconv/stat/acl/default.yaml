@@ -4,7 +4,7 @@ data:
   temp_folder: a_deam
   sub_folder: audio
 model:
-  version: 2
+  version: 1
   params:
     lr: 0.001
     optimizer: "adam"

@@ -3,10 +3,13 @@ from models import BaseStatModel
 import torch
 import torch.nn as nn
 
+from transformers import BertTokenizer, BertModel
 
 from nnAudio import Spectrogram
 
-class AC1DConvStat_V2(BaseStatModel):
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+class ACL1DConvStat_V1(BaseStatModel):
 
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
     N_FFT = "n_fft"
@@ -27,6 +30,12 @@ class AC1DConvStat_V2(BaseStatModel):
         self.__build_model()
     
     def __build_model(self):
+
+        self.bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.bert_model = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=True)
+        self.bert_model = self.bert_model.to(device)
+        for param in self.bert_model.parameters():
+            param.requires_grad = False
 
         f_bins = (self.config[self.N_FFT] // 2) + 1
 
@@ -212,31 +221,43 @@ class AC1DConvStat_V2(BaseStatModel):
 
     def forward(self, x):
 
-        audio_x = self.audio_feature_extractor(x)
-        audio_x = torch.flatten(audio_x, start_dim=1)
-        audio_x = self.audio_fc(audio_x)
+        (audio_x, lyrics_x) = x
 
-        stft_x = self.stft(x)
+        raw_x = self.audio_feature_extractor(audio_x)
+        raw_x = torch.flatten(raw_x, start_dim=1)
+        raw_x = self.audio_fc(raw_x)
+
+        stft_x = self.stft(audio_x)
         stft_x = self.stft_feature_extractor(stft_x)
         stft_x = torch.flatten(stft_x, start_dim=1)
         stft_x = self.stft_fc(stft_x)
 
-        mel_x = self.mel_spec(x)
+        mel_x = self.mel_spec(audio_x)
         mel_x = self.mel_spec_feature_extractor(mel_x)
         mel_x = torch.flatten(mel_x, start_dim=1)
         mel_x = self.mel_spec_fc(mel_x)
 
-        mfcc_x = self.mfcc(x)
+        mfcc_x = self.mfcc(audio_x)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
         mfcc_x = torch.flatten(mfcc_x, start_dim=1)
         mfcc_x = self.mfcc_fc(mfcc_x)
 
-        cqt_x = self.cqt(x)
+        cqt_x = self.cqt(audio_x)
         cqt_x = self.cqt_feature_extractor(cqt_x)
         cqt_x = torch.flatten(cqt_x, start_dim=1)
         cqt_x = self.cqt_fc(cqt_x)
 
-        x = torch.cat((audio_x, stft_x, mel_x, mfcc_x, cqt_x), dim=1)
+        lyrics_x = self.bert_tokenizer(lyrics_x, padding=True, truncation=False, return_tensors="pt", return_token_type_ids=False, return_attention_mask=False)['input_ids']
+        lyrics_x = lyrics_x.to(device)
+        with torch.no_grad():
+            lyrics_x = self.bert_model(lyrics_x)
+        lyrics_x = lyrics_x[0]
+        (lyrics_x, _) = self.lyrics_extractor(lyrics_x)
+        lyrics_x = lyrics_x[:, -1, :]
+        lyrics_x = torch.flatten(lyrics_x, start_dim=1)
+        lyrics_x = self.lyrics_fc(lyrics_x)
+
+        x = torch.cat((raw_x, stft_x, mel_x, mfcc_x, cqt_x, lyrics_x), dim=1)
 
         x = self.fc0(x)
 
