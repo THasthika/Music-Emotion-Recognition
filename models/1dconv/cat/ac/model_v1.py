@@ -57,7 +57,6 @@ class AC1DConvCat_V1(BaseCatModel):
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
-            nn.Dropout()
         )
 
         self.stft_feature_extractor = nn.Sequential(

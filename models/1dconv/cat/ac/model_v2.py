@@ -59,7 +59,17 @@ class AC1DConvCat_V2(BaseCatModel):
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS]),
-            nn.Dropout()
+        )
+
+        self.audio_fc = nn.Sequential(
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS] * 250, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
         )
 
         self.stft_feature_extractor = nn.Sequential(
@@ -82,6 +92,17 @@ class AC1DConvCat_V2(BaseCatModel):
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
         )
 
+        self.stft_fc = nn.Sequential(
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS] * 500, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
+        )
+
         self.mel_spec_feature_extractor = nn.Sequential(
 
             nn.Conv1d(in_channels=self.config[self.N_MELS], out_channels=100, kernel_size=3, stride=1),
@@ -95,6 +116,17 @@ class AC1DConvCat_V2(BaseCatModel):
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
+        )
+
+        self.mel_spec_fc = nn.Sequential(
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS] * 100, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
         )
 
         self.mfcc_feature_extractor = nn.Sequential(
@@ -117,6 +149,17 @@ class AC1DConvCat_V2(BaseCatModel):
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
         )
 
+        self.mfcc_fc = nn.Sequential(
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS] * 16, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
+        )
+
         self.cqt_feature_extractor = nn.Sequential(
 
             nn.Conv1d(in_channels=self.config[self.N_CQT], out_channels=100, kernel_size=3, stride=1),
@@ -135,23 +178,20 @@ class AC1DConvCat_V2(BaseCatModel):
             nn.ReLU(),
 
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
-
         )
 
-        out_channels = 250
-        input_size = (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
+        self.cqt_fc = nn.Sequential(
+            nn.Linear(in_features=self.config[self.ADAPTIVE_LAYER_UNITS] * 100, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=512, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
+        )
 
-        out_channels = 500
-        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
-
-        out_channels = 100
-        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
-
-        out_channels = 16
-        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
-
-        out_channels = 100
-        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
+        input_size = 64 * 5
 
         self.fc = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
