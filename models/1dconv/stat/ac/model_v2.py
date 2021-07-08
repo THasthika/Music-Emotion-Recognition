@@ -1,19 +1,18 @@
+from models.base import BaseStatModel
+
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
 
-import torchmetrics as tm
+
 from nnAudio import Spectrogram
 
-from models.base import BaseCatModel
-class AC1DConvCat_V1(BaseCatModel):
+class AC1DConvStat_V2(BaseStatModel):
 
-    
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
     N_FFT = "n_fft"
     N_MELS = "n_mels"
     N_MFCC = "n_mfcc"
+    N_CQT = "n_cqt"
     SPEC_TRAINABLE = "spec_trainable"
 
     def __init__(self,
@@ -34,6 +33,7 @@ class AC1DConvCat_V1(BaseCatModel):
         self.stft = Spectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
         self.mel_spec = Spectrogram.MelSpectrogram(sr=22050, n_fft=self.config[self.N_FFT], n_mels=self.config[self.N_MELS], trainable_mel=self.config[self.SPEC_TRAINABLE], trainable_STFT=self.config[self.SPEC_TRAINABLE])
         self.mfcc = Spectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
+        self.cqt = Spectrogram.CQT2010v2(sr=22050, hop_length=512, fmin=32.7, fmax=None, n_bins=self.config[self.N_CQT], filter_scale=1, bins_per_octave=12, norm=True, basis_norm=1, window='hann', pad_mode='reflect', earlydownsample=True, trainable=self.config[self.SPEC_TRAINABLE], output_format='Magnitude')
 
         self.audio_feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
@@ -115,6 +115,27 @@ class AC1DConvCat_V1(BaseCatModel):
             nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
         )
 
+        self.cqt_feature_extractor = nn.Sequential(
+
+            nn.Conv1d(in_channels=self.config[self.N_CQT], out_channels=100, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=100),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=100, out_channels=100, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=100),
+            nn.ReLU(),
+
+            nn.Conv1d(in_channels=100, out_channels=100, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=100),
+            nn.ReLU(),
+
+            nn.AdaptiveAvgPool1d(output_size=self.config[self.ADAPTIVE_LAYER_UNITS])
+
+        )
+
         out_channels = 250
         input_size = (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
@@ -127,13 +148,26 @@ class AC1DConvCat_V1(BaseCatModel):
         out_channels = 16
         input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
 
-        self.fc = nn.Sequential(
+        out_channels = 100
+        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS] * out_channels)
+
+        self.fc0 = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
-            nn.ReLU(),
             nn.Dropout(p=self.config[self.DROPOUT]),
-            nn.Linear(in_features=512, out_features=128),
+            nn.BatchNorm1d(num_features=512),
             nn.ReLU(),
-            nn.Linear(in_features=128, out_features=4)
+            nn.Linear(in_features=512, out_features=128),
+            nn.BatchNorm1d(128),
+            nn.ReLU()
+        )
+
+        self.fc_mean = nn.Sequential(
+            nn.Linear(in_features=128, out_features=2)
+        )
+        
+        self.fc_std = nn.Sequential(
+            nn.Linear(in_features=128, out_features=2),
+            self._get_std_activation()
         )
 
     def forward(self, x):
@@ -149,12 +183,20 @@ class AC1DConvCat_V1(BaseCatModel):
         mfcc_x = self.mfcc(x)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
 
+        cqt_x = self.cqt(x)
+        cqt_x = self.cqt_feature_extractor(cqt_x)
+
         audio_x = torch.flatten(audio_x, start_dim=1)
         stft_x = torch.flatten(stft_x, start_dim=1)
         mel_x = torch.flatten(mel_x, start_dim=1)
         mfcc_x = torch.flatten(mfcc_x, start_dim=1)
+        cqt_x = torch.flatten(cqt_x, start_dim=1)
 
-        x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=1)
+        x = torch.cat((audio_x, stft_x, mel_x, mfcc_x, cqt_x), dim=1)
 
-        x = self.fc(x)
+        x = self.fc0(x)
+
+        x_mean = self.fc_mean(x)
+        x_std = self.fc_std(x)
+        x = torch.cat((x_mean, x_std), dim=1)
         return x
