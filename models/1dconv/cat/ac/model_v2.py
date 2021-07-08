@@ -205,24 +205,28 @@ class AC1DConvCat_V2(BaseCatModel):
     def forward(self, x):
 
         audio_x = self.audio_feature_extractor(x)
+        audio_x = torch.flatten(audio_x, start_dim=1)
+        audio_x = self.audio_fc(audio_x)
 
         stft_x = self.stft(x)
         stft_x = self.stft_feature_extractor(stft_x)
+        stft_x = torch.flatten(stft_x, start_dim=1)
+        stft_x = self.stft_fc(stft_x)
 
         mel_x = self.mel_spec(x)
         mel_x = self.mel_spec_feature_extractor(mel_x)
+        mel_x = torch.flatten(mel_x, start_dim=1)
+        mel_x = self.mel_spec_fc(mel_x)
 
         mfcc_x = self.mfcc(x)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
+        mfcc_x = torch.flatten(mfcc_x, start_dim=1)
+        mfcc_x = self.mfcc_fc(mfcc_x)
 
         cqt_x = self.cqt(x)
         cqt_x = self.cqt_feature_extractor(cqt_x)
-
-        audio_x = torch.flatten(audio_x, start_dim=1)
-        stft_x = torch.flatten(stft_x, start_dim=1)
-        mel_x = torch.flatten(mel_x, start_dim=1)
-        mfcc_x = torch.flatten(mfcc_x, start_dim=1)
         cqt_x = torch.flatten(cqt_x, start_dim=1)
+        cqt_x = self.cqt_fc(cqt_x)
 
         x = torch.cat((audio_x, stft_x, mel_x, mfcc_x, cqt_x), dim=1)
 
