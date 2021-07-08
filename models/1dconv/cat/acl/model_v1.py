@@ -10,7 +10,7 @@ from models import BaseCatModel
 
 from transformers import BertTokenizer, BertModel
 
-device = "gpu" if torch.cuda.is_available() else "cpu"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 class ACL1DConvCat_V1(BaseCatModel):
     
