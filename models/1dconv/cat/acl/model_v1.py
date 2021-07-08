@@ -10,8 +10,9 @@ from models import BaseCatModel
 
 from transformers import BertTokenizer, BertModel
 
-class ACL1DConvCat_V1(BaseCatModel):
+device = "gpu" if torch.cuda.is_available() else "cpu"
 
+class ACL1DConvCat_V1(BaseCatModel):
     
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
     N_FFT = "n_fft"
@@ -35,6 +36,7 @@ class ACL1DConvCat_V1(BaseCatModel):
 
         self.bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.bert_model = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=True)
+        self.bert_model = self.bert_model.to(device)
 
         f_bins = (self.config[self.N_FFT] // 2) + 1
 
@@ -191,6 +193,7 @@ class ACL1DConvCat_V1(BaseCatModel):
         cqt_x = self.cqt_feature_extractor(cqt_x)
 
         lyrics_x = self.bert_tokenizer(lyrics_x, padding=True, truncation=False, return_tensors="pt", return_token_type_ids=False, return_attention_mask=False)['input_ids']
+        lyrics_x = lyrics_x.to(device)
         with torch.no_grad():
             lyrics_x = self.bert_model(lyrics_x)
         lyrics_x = lyrics_x[0]
