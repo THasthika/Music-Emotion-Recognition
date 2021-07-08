@@ -25,7 +25,7 @@ parameters:
   n_mfcc:
     value: 20
   n_cqt:
-    values: 84
+    value: 84
   spec_trainable:
     values: [true, false]
   adaptive_layer_units:
