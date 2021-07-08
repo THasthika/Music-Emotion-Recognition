@@ -42,3 +42,6 @@ pip install coolname
 
 # librosa
 pip install librosa
+
+pip install contractions
+pip install bcolz
