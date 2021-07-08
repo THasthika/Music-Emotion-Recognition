@@ -15,5 +15,6 @@ model:
     n_fft: 1024
     n_mels: 128
     n_mfcc: 20
+    n_cqt: 84
     spec_trainable: true
 batch_size: 128
