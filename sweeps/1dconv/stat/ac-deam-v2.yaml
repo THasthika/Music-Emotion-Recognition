@@ -43,5 +43,4 @@ command:
   - deam
   - --temp_folder
   - a_deam
-  - --auto-batch-size
   - ${args}
