@@ -198,7 +198,16 @@ class ACL1DConvStat_V1(BaseStatModel):
             nn.ReLU()
         )
 
-        input_size = 64 * 5
+        self.lyrics_extractor = nn.LSTM(input_size=768, hidden_size=250, num_layers=1)
+        self.lyrics_fc = nn.Sequential(
+            nn.Linear(in_features=250, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.Linear(in_features=128, out_features=64),
+            nn.ReLU()
+        )
+
+        input_size = 64 * 6
 
         self.fc0 = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
