@@ -458,7 +458,8 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
 @click.option("--split", type=str, required=False)
 @click.option("--temp-folder", type=str, required=False)
 @click.option("--model-version", type=int, required=False)
-def sweep(run, batch_size, dataset, split, temp_folder, model_version):
+@click.option("--auto-batch-size/--no-auto-batch-size", default=False)
+def sweep(run, batch_size, dataset, split, temp_folder, model_version, auto_batch_size):
 
     run_dir = path.join(WORKING_DIR, "runs")
 
@@ -524,7 +525,11 @@ def sweep(run, batch_size, dataset, split, temp_folder, model_version):
     trainer = pl.Trainer(
         logger=logger,
         gpus=__get_gpu_count(),
-        callbacks=[model_callback, early_stop_callback])
+        callbacks=[model_callback, early_stop_callback],
+        auto_scale_batch_size=auto_batch_size)
+
+    if auto_batch_size:
+        trainer.tune(model)
 
     trainer.fit(model)
 
