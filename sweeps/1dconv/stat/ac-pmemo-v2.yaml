@@ -44,4 +44,5 @@ command:
   - pmemo
   - --temp_folder
   - a_pmemo
+  - --auto-batch-size
   - ${args}
