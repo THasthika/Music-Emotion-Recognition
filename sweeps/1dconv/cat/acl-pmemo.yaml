@@ -1,4 +1,4 @@
-name: AC-1DConv-Cat-Mer-Taffc-V2
+name: ACL-1DConv-Cat-PMEmo
 project: mer
 program: exec.py
 method: random
@@ -28,14 +28,17 @@ parameters:
     values: [true, false]
   adaptive_layer_units:
     values: [1, 2, 4, 8, 16]
+early_terminate:
+  type: hyperband
+  min_iter: 3
 command:
   - ${env}
   - ${interpreter}
   - ${program}
   - sweep
-  - 1dconv.cat.ac.v02
+  - 1dconv.cat.acl
   - --dataset
-  - mer-taffc
+  - pmemo
   - --temp_folder
-  - a_mer-taffc
+  - al_pmemo
   - ${args}

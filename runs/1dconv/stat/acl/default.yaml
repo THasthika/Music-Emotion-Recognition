@@ -1,7 +1,7 @@
 data:
-  dataset: deam
+  dataset: pmemo
   split: 60-20-20
-  temp_folder: a_deam
+  temp_folder: al_pmemo
   sub_folder: audio
 model:
   version: 1
