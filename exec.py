@@ -480,6 +480,8 @@ def sweep(run, batch_size, dataset, split, temp_folder, model_version, auto_batc
     if not model_version is None:
         run_config['model']['version'] = model_version
 
+    print("INFO: batch_size={}".format(run_config['batch_size']))
+
     (ModelClass, model_info) = __load_model_class(run, run_config['model']['version'])
     DataClass = __load_data_class(run)
 
