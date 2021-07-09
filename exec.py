@@ -11,6 +11,7 @@ python exec.py train (run_location) -> train run
 
 """
 
+import os
 from pprint import pprint
 
 from torch.autograd.grad_mode import F
@@ -453,7 +454,7 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
     allow_extra_args=True,
 ))
 @click.argument("run", required=True)
-@click.option("--batch-size", type=int, required=False)
+@click.option("--batch-size", type=int, required=False, default=lambda: os.environ.get("BATCH_SIZE", None))
 @click.option("--dataset", type=str, required=False)
 @click.option("--split", type=str, required=False)
 @click.option("--temp-folder", type=str, required=False)
