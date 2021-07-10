@@ -240,7 +240,7 @@ class H1DConvCat_V1(BaseCatModel):
 
         self.stft_nn = nn.ModuleList(stft_nn)
 
-        input_size = 64 * 3
+        input_size = 64 * 2
 
         self.fc = nn.Sequential(
 
