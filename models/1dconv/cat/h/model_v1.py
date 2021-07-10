@@ -139,58 +139,58 @@ class H1DConvCat_V1(BaseCatModel):
 
         stft_nn.append(stft_nn_0)
 
-        stft_nn_1 = nn.Sequential(
-            Spectrogram.STFT(n_fft=2048, fmax=9000, trainable=False, output_format="Magnitude"),
+        # stft_nn_1 = nn.Sequential(
+        #     Spectrogram.STFT(n_fft=2048, fmax=9000, trainable=False, output_format="Magnitude"),
 
-            Unsqueeze(1),
+        #     Unsqueeze(1),
 
-            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(7, 3), stride=(2, 1)),
-            nn.ReLU(),
+        #     nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(7, 3), stride=(2, 1)),
+        #     nn.ReLU(),
             
-            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(7, 3), stride=(2, 1)),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.ReLU(),
+        #     nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(7, 3), stride=(2, 1)),
+        #     nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
+        #     nn.ReLU(),
 
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(7, 3), stride=(1, 1)),
-            nn.ReLU(),
+        #     nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(7, 3), stride=(1, 1)),
+        #     nn.ReLU(),
             
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(7, 3), stride=(1, 1)),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.ReLU(),
+        #     nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(7, 3), stride=(1, 1)),
+        #     nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
+        #     nn.ReLU(),
 
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(7, 3), stride=(1, 1)),
-            nn.ReLU(),
+        #     nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(7, 3), stride=(1, 1)),
+        #     nn.ReLU(),
             
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(5, 3), stride=(1, 1)),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.ReLU(),
+        #     nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(5, 3), stride=(1, 1)),
+        #     nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
+        #     nn.ReLU(),
 
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.ReLU(),
+        #     nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+        #     nn.ReLU(),
             
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.ReLU(),
+        #     nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+        #     nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
+        #     nn.ReLU(),
 
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.ReLU(),
+        #     nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+        #     nn.ReLU(),
             
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.ReLU(),
+        #     nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+        #     nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
+        #     nn.ReLU(),
 
-            nn.Flatten(start_dim=1),
+        #     nn.Flatten(start_dim=1),
 
-            nn.Linear(in_features=128, out_features=64),
-            nn.Dropout(p=self.config[self.DROPOUT]),
-            nn.ReLU(),
+        #     nn.Linear(in_features=128, out_features=64),
+        #     nn.Dropout(p=self.config[self.DROPOUT]),
+        #     nn.ReLU(),
 
-            nn.Linear(in_features=64, out_features=64),
-            nn.Dropout(p=self.config[self.DROPOUT]),
-            nn.ReLU(),
-        )
+        #     nn.Linear(in_features=64, out_features=64),
+        #     nn.Dropout(p=self.config[self.DROPOUT]),
+        #     nn.ReLU(),
+        # )
 
-        stft_nn.append(stft_nn_1)
+        # stft_nn.append(stft_nn_1)
 
         # stft_nn_2 = nn.Sequential(
         #     Spectrogram.STFT(n_fft=4096, fmax=9000, trainable=False, output_format="Magnitude"),
