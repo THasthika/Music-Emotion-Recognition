@@ -7,7 +7,7 @@ model:
   params:
     lr: 0.001
     optimizer: "adam"
-    weight_decay: 1e-5
+    weight_decay: 0.000001
     momentum: 0.95
     dropout: 0.5
 batch_size: 128
