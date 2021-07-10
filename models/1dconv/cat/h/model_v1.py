@@ -1,4 +1,5 @@
 import torch
+from torch.functional import stft
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -6,6 +7,8 @@ from torch.utils.data import DataLoader
 from collections import OrderedDict
 
 import torchmetrics as tm
+
+from nnAudio import Spectrogram
 
 from models import BaseCatModel
 from utils.layer import Unsqueeze
@@ -73,93 +76,93 @@ class H1DConvCat_V1(BaseCatModel):
 
     def __build_model(self):
 
-        self.feature_extractor_0 = nn.Sequential(
-            self.__make_1d_block(in_channels=1, out_channels=423, kernel_size=512, stride=128, dropout=self.config[self.DROPOUT]),
-            self.__make_1d_block(in_channels=423, out_channels=423, kernel_size=7, stride=2, dropout=self.config[self.DROPOUT]),
+        stft_nn = []
+
+        stft_nn_0 = nn.Sequential(
+            Spectrogram.STFT(n_fft=1024, fmax=9000, trainable=False, output_format="Magnitude"),
             Unsqueeze(1),
-            self.__make_2d_block(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
-            self.__make_2d_block(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+            self.__make_2d_block(in_channels=1, out_channels=16, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=16, out_channels=32, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+            self.__make_2d_block(in_channels=32, out_channels=64, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=64, out_channels=128, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+            self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+            self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
             self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
             self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
             self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=128, out_channels=256, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
-            self.__make_2d_block(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
-            self.__make_2d_block(in_channels=256, out_channels=512, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2))
+            self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+
+            nn.Flatten(start_dim=1),
+
+            # ## Linear Sub Layer
+            self.__make_linear(in_features=128, out_features=64, dropout=self.config[self.DROPOUT]),
+            self.__make_linear(in_features=64, out_features=64, dropout=self.config[self.DROPOUT])
         )
 
-        self.fc0 = nn.Sequential(
-            self.__make_linear(in_features=512, out_features=256, dropout=self.config[self.DROPOUT]),
-            self.__make_linear(in_features=256, out_features=128, dropout=self.config[self.DROPOUT]),
-            self.__make_linear(in_features=128, out_features=64, dropout=self.config[self.DROPOUT])
-        )
+        stft_nn.append(stft_nn_0)
 
-        self.feature_extractor_1 = nn.Sequential(
-            self.__make_1d_block(in_channels=1, out_channels=425, kernel_size=1024, stride=256, dropout=self.config[self.DROPOUT]),
+        stft_nn_1 = nn.Sequential(
+            Spectrogram.STFT(n_fft=2048, fmax=9000, trainable=False, output_format="Magnitude"),
             Unsqueeze(1),
-            self.__make_2d_block(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
-            self.__make_2d_block(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+
+            ## 2dconv layers
+            self.__make_2d_block(in_channels=1, out_channels=16, kernel_size=(7, 3), stride=(2, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=16, out_channels=32, kernel_size=(7, 3), stride=(2, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+            self.__make_2d_block(in_channels=32, out_channels=64, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=64, out_channels=128, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+            self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(5, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
             self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
             self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
             self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=128, out_channels=256, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
-            self.__make_2d_block(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
-            self.__make_2d_block(in_channels=256, out_channels=512, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+            self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+
+            nn.Flatten(start_dim=1),
+
+            ## Linear Sub Layer
+            self.__make_linear(in_features=128, out_features=64, dropout=self.config[self.DROPOUT]),
+            self.__make_linear(in_features=64, out_features=64, dropout=self.config[self.DROPOUT])
         )
 
-        self.fc1 = nn.Sequential(
-            self.__make_linear(in_features=512, out_features=256, dropout=self.config[self.DROPOUT]),
-            self.__make_linear(in_features=256, out_features=128, dropout=self.config[self.DROPOUT]),
-            self.__make_linear(in_features=128, out_features=64, dropout=self.config[self.DROPOUT])
-        )
+        stft_nn.append(stft_nn_1)
 
-        self.feature_extractor_2 = nn.Sequential(
-            self.__make_1d_block(in_channels=1, out_channels=35, kernel_size=11025, stride=2756, dropout=self.config[self.DROPOUT]),
+        stft_nn_2 = nn.Sequential(
+            Spectrogram.STFT(n_fft=4096, fmax=9000, trainable=False, output_format="Magnitude"),
             Unsqueeze(1),
-            self.__make_2d_block(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
-            self.__make_2d_block(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
-            self.__make_2d_block(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+            self.__make_2d_block(in_channels=1, out_channels=16, kernel_size=(7, 3), stride=(3, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=16, out_channels=32, kernel_size=(7, 3), stride=(3, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+            self.__make_2d_block(in_channels=32, out_channels=64, kernel_size=(7, 3), stride=(2, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=64, out_channels=128, kernel_size=(7, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
             self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
             self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool=None),
+            self.__make_2d_block(in_channels=128, out_channels=128, kernel_size=(5, 5), stride=(1, 1), dropout=self.config[self.DROPOUT], max_pool_stride=(2, 2)),
+
+            nn.Flatten(start_dim=1),
+
+            ## Linear Sub Layer
+            self.__make_linear(in_features=128, out_features=64, dropout=self.config[self.DROPOUT]),
+            self.__make_linear(in_features=64, out_features=64, dropout=self.config[self.DROPOUT])
         )
 
-        self.fc2 = nn.Sequential(
-            self.__make_linear(in_features=128, out_features=128, dropout=self.config[self.DROPOUT]),
-            self.__make_linear(in_features=128, out_features=128, dropout=self.config[self.DROPOUT]),
-            self.__make_linear(in_features=128, out_features=64, dropout=self.config[self.DROPOUT])
-        )
+        stft_nn.append(stft_nn_2)
+
+        self.stft_nn = nn.ModuleList(stft_nn)
 
         input_size = 64 * 3
 
         self.fc = nn.Sequential(
             self.__make_linear(in_features=input_size, out_features=128, dropout=self.config[self.DROPOUT]),
+            self.__make_linear(in_features=128, out_features=128, dropout=self.config[self.DROPOUT]),
             self.__make_linear(in_features=128, out_features=64, dropout=self.config[self.DROPOUT]),
             self.__make_linear(in_features=64, out_features=4, dropout=None, batch_normalize=False, activation=None)
         )
 
     def forward(self, x):
-
-        x0 = self.feature_extractor_0(x)
-        x1 = self.feature_extractor_1(x)
-        x2 = self.feature_extractor_2(x)
-
-        x0 = torch.flatten(x0, start_dim=1)
-        x1 = torch.flatten(x1, start_dim=1)
-        x2 = torch.flatten(x2, start_dim=1)
-
-        x0 = self.fc0(x0)
-        x1 = self.fc1(x1)
-        x2 = self.fc2(x2)
-
-        x = torch.cat((x0, x1, x2), dim=1)
-
+        stft_x = list(map(lambda net: net(x), self.stft_nn))
+        x = torch.cat(stft_x, dim=1)
+        print(x.shape)
         x = self.fc(x)
         return x
