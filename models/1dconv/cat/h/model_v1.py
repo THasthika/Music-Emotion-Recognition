@@ -163,6 +163,5 @@ class H1DConvCat_V1(BaseCatModel):
     def forward(self, x):
         stft_x = list(map(lambda net: net(x), self.stft_nn))
         x = torch.cat(stft_x, dim=1)
-        print(x.shape)
         x = self.fc(x)
         return x
