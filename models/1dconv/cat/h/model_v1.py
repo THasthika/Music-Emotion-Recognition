@@ -84,28 +84,28 @@ class H1DConvCat_V1(BaseCatModel):
             
             Unsqueeze(1),
 
-            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(7, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(13, 5), stride=(2, 2)),
             nn.ReLU(),
             
-            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(7, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(13, 5), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
             nn.ReLU(),
             
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(7, 3), stride=(1, 1)),
             nn.ReLU(),
             
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(7, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(7, 5), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(7, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(7, 5), stride=(1, 1)),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(7, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(7, 5), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(7, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(6, 5), stride=(1, 1)),
             nn.ReLU(),
 
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
@@ -115,16 +115,7 @@ class H1DConvCat_V1(BaseCatModel):
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(4, 4), stride=(1, 1)),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 1)),
-            nn.ReLU(),
+            nn.AdaptiveAvgPool2d(output_size=(1, 1)),
 
             nn.Flatten(start_dim=1),
 
