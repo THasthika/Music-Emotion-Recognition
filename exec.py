@@ -338,8 +338,9 @@ def check(run, check_data, model_version):
 @click.option("--model-version", type=int, required=False)
 @click.option("--dataset", type=str, required=False)
 @click.option("--split", type=str, required=False)
+@click.option("--auto-batch-size/--no-auto-batch-size", default=False)
 @click.pass_context
-def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_version, dataset, split):
+def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_version, dataset, split, auto_batch_size):
 
     run_dir = path.join(WORKING_DIR, "runs")
 
@@ -440,7 +441,11 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
     trainer = pl.Trainer(
         logger=logger,
         gpus=__get_gpu_count(),
-        callbacks=[model_callback, early_stop_callback])
+        callbacks=[model_callback, early_stop_callback],
+        auto_scale_batch_size=auto_batch_size)
+
+    if auto_batch_size:
+        trainer.tune(model)
 
     trainer.fit(model)
 
