@@ -124,3 +124,6 @@ class BaseChunkedDataset(BaseDataset):
         (meta_index, frame) = self.frames[index]
         info = self.meta.iloc[meta_index]
         return (info, frame)
+
+class BaseChunkedLyricsDataset(BaseChunkedDataset):
+    

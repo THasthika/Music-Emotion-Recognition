@@ -11,10 +11,4 @@ model:
     weight_decay: 0.001
     momentum: 0
     dropout: 0.5
-    adaptive_layer_units: 1
-    n_fft: 1024
-    n_mels: 128
-    n_mfcc: 20
-    n_cqt: 84
-    spec_trainable: true
 batch_size: 128
