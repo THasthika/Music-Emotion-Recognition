@@ -55,4 +55,6 @@ command:
   - deam
   - --temp_folder
   - a_deam
+  - --batch-size
+  - 16
   - ${args}
