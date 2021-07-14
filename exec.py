@@ -36,6 +36,7 @@ import torchinfo
 import wandb
 from utils import kfold
 
+WORKING_DIR = path.dirname(__file__)
 
 def __load_yaml_file(file_path):
     return yaml.load(open(file_path, mode="r"), Loader=yaml.FullLoader)
@@ -45,6 +46,9 @@ def __load_default_config():
     config = __load_yaml_file(path.join(WORKING_DIR, "config.yaml"))
     return config
 
+BASE_CONFIG = __load_default_config()
+DATA_DIR = BASE_CONFIG['data_dir']
+TEMP_DIR = BASE_CONFIG['temp_dir']
 
 def __get_model_info(fp):
     _cn = list(filter(lambda x: x.startswith("class"),
@@ -94,7 +98,19 @@ def __is_subset(p, q):
     return set(p).issubset(q)
 
 
-def __load_data_class(run):
+def __load_data_class(run, data_class):
+
+    if not data_class is None:
+        (pkg, clsName) = data_class.split(".")[:2]
+        pkg_path = "data.{}".format(pkg)
+
+        print("Loading Data Class {} from {}".format(clsName, pkg_path))
+
+        modelMod = __import__(pkg_path, fromlist=[clsName])
+        DataClass = getattr(modelMod, clsName)
+        
+        return DataClass
+
 
     run_s = run.split(".")
 
@@ -148,6 +164,7 @@ def __parse_data_args(data_config):
     dataset_name = data_config['dataset']
     split_name = data_config['split']
     sub_folder = data_config['sub_folder'] if 'sub_folder' in data_config else None
+    data_class = data_config['class'] if 'class' in data_config else None
     data_params = data_config['params'] if 'params' in data_config else {}
 
     temp_folder = path.join(TEMP_DIR, data_config['temp_folder'])
@@ -173,7 +190,7 @@ def __parse_data_args(data_config):
         **data_params
     )
 
-    return ret
+    return (ret, data_class)
 
 
 def __make_datasets(DataClass, data_folder, train_meta, validation_meta=None, test_meta=None, temp_folder=None, force_compute=False, sr=22050, duration=5.0, overlap=2.5, ext="mp3"):
@@ -212,12 +229,6 @@ def parse_model_args(args):
                     pass
                 ret[a[0]] = v
     return ret
-
-
-WORKING_DIR = path.dirname(__file__)
-BASE_CONFIG = __load_default_config()
-DATA_DIR = BASE_CONFIG['data_dir']
-TEMP_DIR = BASE_CONFIG['temp_dir']
 
 
 @click.group()
@@ -304,13 +315,13 @@ def check(run, check_data, model_version):
     model = ModelClass(**model_params)
     print("Model Created...")
 
-    data_args = __parse_data_args(run_config['data'])
+    (data_args, data_class) = __parse_data_args(run_config['data'])
     print("DataClass Args:")
     print("Data Folder: {}".format(data_args['data_folder']))
     print("Temp Folder: {}".format(data_args['temp_folder']))
 
     if check_data:
-        DataClass = __load_data_class(run)
+        DataClass = __load_data_class(run, data_class)
 
         dss = __make_datasets(DataClass, **data_args)
         for ds in dss:

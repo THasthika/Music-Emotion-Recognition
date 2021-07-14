@@ -2,6 +2,8 @@ data:
   dataset: deam
   split: 60-20-20
   temp_folder: a_deam
+  sub_folder: audio
+  class: stat.StatAudioExtractedDataset
 model:
   version: 2
   params:
