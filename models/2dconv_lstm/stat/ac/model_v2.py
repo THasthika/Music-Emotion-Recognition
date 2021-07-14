@@ -43,12 +43,6 @@ class AC2DConvLSTMStat_V1(BaseStatModel):
     
     def __build_model(self):
 
-        f_bins = (self.config[self.N_FFT] // 2) + 1
-
-        self.stft = Spectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
-        self.mel_spec = Spectrogram.MelSpectrogram(sr=22050, n_fft=self.config[self.N_FFT], n_mels=self.config[self.N_MELS], trainable_mel=self.config[self.SPEC_TRAINABLE], trainable_STFT=self.config[self.SPEC_TRAINABLE])
-        self.mfcc = Spectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
-
         self.audio_feature_extractor = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
             nn.BatchNorm1d(250),
@@ -270,42 +264,49 @@ class AC2DConvLSTMStat_V1(BaseStatModel):
 
     def forward(self, x):
 
-        audio_x = self.audio_feature_extractor(x)
-        audio_x = magic_combine(audio_x, 1, 3)
+        (audio_x, stft_x, mel_x, mfcc_x) = x
 
-        stft_x = self.stft(x)
-        stft_x = self.stft_feature_extractor(stft_x)
-        stft_x = magic_combine(stft_x, 1, 3)
+        print(audio_x.shape)
+        print(stft_x.shape)
+        print(mel_x.shape)
+        print(mfcc_x.shape)
 
-        mel_x = self.mel_spec(x)
-        mel_x = self.mel_spec_feature_extractor(mel_x)
-        mel_x = magic_combine(mel_x, 1, 3)
+        # audio_x = self.audio_feature_extractor(x)
+        # audio_x = magic_combine(audio_x, 1, 3)
 
-        mfcc_x = self.mfcc(x)
-        mfcc_x = self.mfcc_feature_extractor(mfcc_x)
-        mfcc_x = magic_combine(mfcc_x, 1, 3)
+        # stft_x = self.stft(x)
+        # stft_x = self.stft_feature_extractor(stft_x)
+        # stft_x = magic_combine(stft_x, 1, 3)
 
-        audio_x = audio_x.permute((0, 2, 1))
-        stft_x = stft_x.permute((0, 2, 1))
-        mel_x = mel_x.permute((0, 2, 1))
-        mfcc_x = mfcc_x.permute((0, 2, 1))
+        # mel_x = self.mel_spec(x)
+        # mel_x = self.mel_spec_feature_extractor(mel_x)
+        # mel_x = magic_combine(mel_x, 1, 3)
 
-        (out, _) = self.audio_lstm(audio_x)
-        audio_x = out[:, -1, :]
+        # mfcc_x = self.mfcc(x)
+        # mfcc_x = self.mfcc_feature_extractor(mfcc_x)
+        # mfcc_x = magic_combine(mfcc_x, 1, 3)
 
-        (out, _) = self.stft_lstm(stft_x)
-        stft_x = out[:, -1, :]
+        # audio_x = audio_x.permute((0, 2, 1))
+        # stft_x = stft_x.permute((0, 2, 1))
+        # mel_x = mel_x.permute((0, 2, 1))
+        # mfcc_x = mfcc_x.permute((0, 2, 1))
 
-        (out, _) = self.mel_spec_lstm(mel_x)
-        mel_x = out[:, -1, :]
+        # (out, _) = self.audio_lstm(audio_x)
+        # audio_x = out[:, -1, :]
 
-        (out, _) = self.mfcc_lstm(mfcc_x)
-        mfcc_x = out[:, -1, :]
+        # (out, _) = self.stft_lstm(stft_x)
+        # stft_x = out[:, -1, :]
 
-        x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=1)
+        # (out, _) = self.mel_spec_lstm(mel_x)
+        # mel_x = out[:, -1, :]
 
-        x = self.fc(x)
-        x_mean = self.fc_mean(x)
-        x_std = self.fc_std(x)
-        x = torch.cat((x_mean, x_std), dim=1)
+        # (out, _) = self.mfcc_lstm(mfcc_x)
+        # mfcc_x = out[:, -1, :]
+
+        # x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=1)
+
+        # x = self.fc(x)
+        # x_mean = self.fc_mean(x)
+        # x_std = self.fc_std(x)
+        # x = torch.cat((x_mean, x_std), dim=1)
         return x

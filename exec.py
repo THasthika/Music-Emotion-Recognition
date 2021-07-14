@@ -298,8 +298,9 @@ def list_models(subpath):
 @click.command("check")
 @click.argument("run")
 @click.option("--data/--no-data", "check_data", default=True, help="Load dataset and run forward pass.")
+@click.option("--summary/--no-summary", "check_summary", default=True, help="To check summary of the model.")
 @click.option("--model-version", type=int, required=False)
-def check(run, check_data, model_version):
+def check(run, check_data, check_summary, model_version):
     run_dir = path.join(WORKING_DIR, "runs")
     (rd, run_file) = __parse_run_location(run)
     run_dir = path.join(run_dir, rd)
@@ -333,10 +334,11 @@ def check(run, check_data, model_version):
                 break
         print("Check: forward passes ok!")
 
-    sr = data_args['sr'] if 'sr' in data_args else 22050
-    duration = data_args['duration'] if 'duration' in data_args else 5.0
+    if check_summary:
+        sr = data_args['sr'] if 'sr' in data_args else 22050
+        duration = data_args['duration'] if 'duration' in data_args else 5.0
 
-    print(torchinfo.summary(model, input_size=(2, 1, int(sr * duration))))
+        print(torchinfo.summary(model, input_size=(2, 1, int(sr * duration))))
 
 @click.command("train", context_settings=dict(
     ignore_unknown_options=True,
@@ -377,9 +379,10 @@ def train(ctx: click.Context, run, use_wandb, batch_size, temp_folder, model_ver
 
     (ModelClass, model_info) = __load_model_class(
         run, run_config['model']['version'])
-    DataClass = __load_data_class(run)
 
-    data_args = __parse_data_args(run_config['data'])
+    (data_args, data_class) = __parse_data_args(run_config['data'])
+    DataClass = __load_data_class(run, data_class)
+
     (train_ds, test_ds, validation_ds) = __make_datasets(DataClass, **data_args)
     print("Datasets Created...")
 
@@ -499,9 +502,10 @@ def sweep(run, batch_size, dataset, split, temp_folder, model_version, auto_batc
     print("INFO: batch_size={}".format(run_config['batch_size']))
 
     (ModelClass, model_info) = __load_model_class(run, run_config['model']['version'])
-    DataClass = __load_data_class(run)
 
-    data_args = __parse_data_args(run_config['data'])
+    (data_args, data_class) = __parse_data_args(run_config['data'])
+    DataClass = __load_data_class(run, data_class)
+
     (train_ds, test_ds, validation_ds) = __make_datasets(DataClass, **data_args)
     print(f"Datasets {run_config['data']['dataset']} Created...")
     print(f"Using Temp Folder - {run_config['data']['temp_folder']}")
