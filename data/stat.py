@@ -100,5 +100,5 @@ class StatAudioExtractedDataset(BaseChunkedDataset):
         ## mfcc
         mfcc_x = torch.tensor(self.get_mfcc(mel_spec_x), dtype=torch.float)
 
-        return (audio_x, mel_spec_x, mfcc_x)
+        return (audio_x, stft_x, mel_spec_x, mfcc_x)
 
