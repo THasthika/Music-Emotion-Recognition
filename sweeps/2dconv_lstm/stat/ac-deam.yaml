@@ -27,15 +27,15 @@ parameters:
   spec_trainable:
     values: [true, false]
   audio_hidden_size:
-    values: [250, 300]
+    values: [32, 64, 128]
   audio_num_layers:
     values: [1, 2, 4]
   stft_hidden_size:
-    values: [250, 500]
+    values: [32, 64, 128]
   stft_num_layers:
     values: [1, 2, 4]
   mel_spec_hidden_size:
-    values: [100, 150]
+    values: [32, 64, 128]
   mel_spec_num_layers:
     values: [1, 2, 4]
   mfcc_hidden_size:
