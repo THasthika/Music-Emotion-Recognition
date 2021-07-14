@@ -267,15 +267,18 @@ class AC2DConvLSTMStat_V2(BaseStatModel):
         (audio_x, stft_x, mel_x, mfcc_x) = x
 
         audio_x = self.audio_feature_extractor(audio_x)
-        audio_x = magic_combine(audio_x, 1, 3)
-
         stft_x = self.stft_feature_extractor(stft_x)
-        stft_x = magic_combine(stft_x, 1, 3)
-
         mel_x = self.mel_spec_feature_extractor(mel_x)
-        mel_x = magic_combine(mel_x, 1, 3)
-
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
+
+        print(audio_x.shape)
+        print(stft_x.shape)
+        print(mel_x.shape)
+        print(mfcc_x.shape)
+
+        audio_x = magic_combine(audio_x, 1, 3)
+        stft_x = magic_combine(stft_x, 1, 3)
+        mel_x = magic_combine(mel_x, 1, 3)
         mfcc_x = magic_combine(mfcc_x, 1, 3)
 
         print(audio_x.shape)
