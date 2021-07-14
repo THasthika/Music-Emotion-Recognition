@@ -262,14 +262,12 @@ class AC2DConvLSTMStat_V2(BaseStatModel):
             self._get_std_activation()
         )
 
-    def forward(self, x):
+    def forward(self, x, stft_x=None, mel_x=None, mfcc_x=None):
 
-        (audio_x, stft_x, mel_x, mfcc_x) = x
-
-        print(audio_x.shape)
-        print(stft_x.shape)
-        print(mel_x.shape)
-        print(mfcc_x.shape)
+        if stft_x is None or mel_x is None or mfcc_x is None:
+            (audio_x, stft_x, mel_x, mfcc_x) = x
+        else:
+            audio_x = x
 
         audio_x = self.audio_feature_extractor(audio_x)
         stft_x = self.stft_feature_extractor(stft_x)

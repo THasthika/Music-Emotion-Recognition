@@ -321,6 +321,11 @@ def check(run, check_data, check_summary, model_version):
     print("Data Folder: {}".format(data_args['data_folder']))
     print("Temp Folder: {}".format(data_args['temp_folder']))
 
+    # [2, 1, 110250])
+    # torch.Size([2, 513, 431])
+    # torch.Size([2, 128, 431])
+    # torch.Size([2, 20, 431]
+
     if check_data:
         DataClass = __load_data_class(run, data_class)
 
@@ -338,7 +343,12 @@ def check(run, check_data, check_summary, model_version):
         sr = data_args['sr'] if 'sr' in data_args else 22050
         duration = data_args['duration'] if 'duration' in data_args else 5.0
 
-        print(torchinfo.summary(model, input_size=(2, 1, int(sr * duration))))
+        print(torchinfo.summary(model, input_size=[
+            (2, 1, 110250),
+            (2, 513, 431),
+            (2, 128, 431),
+            (2, 20, 431)
+        ]))
 
 @click.command("train", context_settings=dict(
     ignore_unknown_options=True,
