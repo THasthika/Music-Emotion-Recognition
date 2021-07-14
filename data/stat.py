@@ -92,8 +92,7 @@ class StatAudioExtractedDataset(BaseChunkedDataset):
         audio_x = preprocess_audio(self.frame_count, audio_x, sr, self.sr)
 
         ## stft
-        audio_t = audio_x.numpy()
-        print(audio_t.shape)
+        audio_t = torch.squeeze(audio_x, 0).numpy()
         stft_x = torch.tensor(self.get_stft(audio_t, n_fft=1024), dtype=torch.float)
 
         ## mel_spec
