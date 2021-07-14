@@ -76,11 +76,10 @@ class StatAudioExtractedDataset(BaseChunkedDataset):
 
     def get_mel_spec(self, stft):
         D = np.abs(stft)**2
-        print(D)
-        librosa.feature.melspectrogram(S=D, sr=self.sr)
+        return librosa.feature.melspectrogram(S=D, sr=self.sr)
 
     def get_mfcc(self, mel_spec):
-        librosa.feature.mfcc(S=librosa.power_to_db(mel_spec))
+        return librosa.feature.mfcc(S=librosa.power_to_db(mel_spec))
 
     def get_label(self, info, args):
         y = info[[STATIC_VALENCE_MEAN, STATIC_AROUSAL_MEAN,
