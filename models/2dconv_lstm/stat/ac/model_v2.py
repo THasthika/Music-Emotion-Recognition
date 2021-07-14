@@ -11,7 +11,7 @@ from utils.activation import CustomELU
 from utils.layer import Unsqueeze
 
 
-class AC2DConvLSTMStat_V1(BaseStatModel):
+class AC2DConvLSTMStat_V2(BaseStatModel):
 
     AUDIO_HIDDEN_SIZE = "audio_hidden_size"
     AUDIO_NUM_LAYERS = "audio_num_layers"
