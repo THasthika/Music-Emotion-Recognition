@@ -343,12 +343,7 @@ def check(run, check_data, check_summary, model_version):
         sr = data_args['sr'] if 'sr' in data_args else 22050
         duration = data_args['duration'] if 'duration' in data_args else 5.0
 
-        print(torchinfo.summary(model, input_size=[
-            (2, 1, 110250),
-            (2, 513, 431),
-            (2, 128, 431),
-            (2, 20, 431)
-        ]))
+        print(torchinfo.summary(model, input_size=model.get_check_size()))
 
 @click.command("train", context_settings=dict(
     ignore_unknown_options=True,

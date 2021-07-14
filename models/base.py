@@ -58,3 +58,6 @@ class BaseModel(pl.LightningModule):
     def test_dataloader(self):
         if self.test_ds is None: return None
         return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
+    
+    def get_check_size(self):
+        return (2, 1, 22050 * 30)

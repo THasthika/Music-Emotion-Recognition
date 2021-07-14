@@ -303,3 +303,11 @@ class AC2DConvLSTMStat_V2(BaseStatModel):
         x_std = self.fc_std(x)
         x = torch.cat((x_mean, x_std), dim=1)
         return x
+
+    def get_check_size(self):
+        return [
+            (2, 1, 110250),
+            (2, 513, 431),
+            (2, 128, 431),
+            (2, 20, 431)
+        ]
