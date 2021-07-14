@@ -25,7 +25,7 @@ parameters:
   n_mfcc:
     value: 20
   spec_trainable:
-    value: false
+    value: [true, false]
   audio_hidden_size:
     values: [32, 64, 128]
   audio_num_layers:
