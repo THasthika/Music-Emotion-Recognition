@@ -316,17 +316,13 @@ def check(run, check_data, check_summary, model_version):
     model = ModelClass(**model_params)
     print("Model Created...")
 
-    (data_args, data_class) = __parse_data_args(run_config['data'])
-    print("DataClass Args:")
-    print("Data Folder: {}".format(data_args['data_folder']))
-    print("Temp Folder: {}".format(data_args['temp_folder']))
-
-    # [2, 1, 110250])
-    # torch.Size([2, 513, 431])
-    # torch.Size([2, 128, 431])
-    # torch.Size([2, 20, 431]
-
     if check_data:
+        
+        (data_args, data_class) = __parse_data_args(run_config['data'])
+        print("DataClass Args:")
+        print("Data Folder: {}".format(data_args['data_folder']))
+        print("Temp Folder: {}".format(data_args['temp_folder']))
+
         DataClass = __load_data_class(run, data_class)
 
         dss = __make_datasets(DataClass, **data_args)
@@ -340,9 +336,6 @@ def check(run, check_data, check_summary, model_version):
         print("Check: forward passes ok!")
 
     if check_summary:
-        sr = data_args['sr'] if 'sr' in data_args else 22050
-        duration = data_args['duration'] if 'duration' in data_args else 5.0
-
         print(torchinfo.summary(model, input_size=model.get_check_size()))
 
 @click.command("train", context_settings=dict(
