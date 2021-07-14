@@ -271,42 +271,42 @@ class AC2DConvLSTMStat_V2(BaseStatModel):
         mel_x = self.mel_spec_feature_extractor(mel_x)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
 
-        print(audio_x.shape)
-        print(stft_x.shape)
-        print(mel_x.shape)
-        print(mfcc_x.shape)
+        # print(audio_x.shape)
+        # print(stft_x.shape)
+        # print(mel_x.shape)
+        # print(mfcc_x.shape)
 
         audio_x = magic_combine(audio_x, 1, 3)
         stft_x = magic_combine(stft_x, 1, 3)
         mel_x = magic_combine(mel_x, 1, 3)
         mfcc_x = magic_combine(mfcc_x, 1, 3)
 
-        print(audio_x.shape)
-        print(stft_x.shape)
-        print(mel_x.shape)
-        print(mfcc_x.shape)
+        # print(audio_x.shape)
+        # print(stft_x.shape)
+        # print(mel_x.shape)
+        # print(mfcc_x.shape)
 
-        # audio_x = audio_x.permute((0, 2, 1))
-        # stft_x = stft_x.permute((0, 2, 1))
-        # mel_x = mel_x.permute((0, 2, 1))
-        # mfcc_x = mfcc_x.permute((0, 2, 1))
+        audio_x = audio_x.permute((0, 2, 1))
+        stft_x = stft_x.permute((0, 2, 1))
+        mel_x = mel_x.permute((0, 2, 1))
+        mfcc_x = mfcc_x.permute((0, 2, 1))
 
-        # (out, _) = self.audio_lstm(audio_x)
-        # audio_x = out[:, -1, :]
+        (out, _) = self.audio_lstm(audio_x)
+        audio_x = out[:, -1, :]
 
-        # (out, _) = self.stft_lstm(stft_x)
-        # stft_x = out[:, -1, :]
+        (out, _) = self.stft_lstm(stft_x)
+        stft_x = out[:, -1, :]
 
-        # (out, _) = self.mel_spec_lstm(mel_x)
-        # mel_x = out[:, -1, :]
+        (out, _) = self.mel_spec_lstm(mel_x)
+        mel_x = out[:, -1, :]
 
-        # (out, _) = self.mfcc_lstm(mfcc_x)
-        # mfcc_x = out[:, -1, :]
+        (out, _) = self.mfcc_lstm(mfcc_x)
+        mfcc_x = out[:, -1, :]
 
-        # x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=1)
+        x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=1)
 
-        # x = self.fc(x)
-        # x_mean = self.fc_mean(x)
-        # x_std = self.fc_std(x)
-        # x = torch.cat((x_mean, x_std), dim=1)
+        x = self.fc(x)
+        x_mean = self.fc_mean(x)
+        x_std = self.fc_std(x)
+        x = torch.cat((x_mean, x_std), dim=1)
         return x
