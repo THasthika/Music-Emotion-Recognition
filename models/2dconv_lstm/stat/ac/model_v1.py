@@ -65,7 +65,7 @@ class AC2DConvLSTMStat_V1(BaseStatModel):
 
             nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
             nn.BatchNorm2d(32),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 1)),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 2)),
             nn.Dropout2d(self.config[self.DROPOUT]),
             nn.ReLU(),
 
@@ -105,7 +105,7 @@ class AC2DConvLSTMStat_V1(BaseStatModel):
 
             nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
             nn.BatchNorm2d(16),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
             nn.Dropout2d(self.config[self.DROPOUT]),
             nn.ReLU(),
 
@@ -145,7 +145,7 @@ class AC2DConvLSTMStat_V1(BaseStatModel):
 
             nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
             nn.BatchNorm2d(16),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
             nn.Dropout2d(self.config[self.DROPOUT]),
             nn.ReLU(),
 
