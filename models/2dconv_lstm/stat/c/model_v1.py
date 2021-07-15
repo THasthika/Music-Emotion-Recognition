@@ -11,10 +11,7 @@ from utils.activation import CustomELU
 from utils.layer import Unsqueeze
 
 
-class AC2DConvLSTMStat_V2(BaseStatModel):
-
-    AUDIO_HIDDEN_SIZE = "audio_hidden_size"
-    AUDIO_NUM_LAYERS = "audio_num_layers"
+class C2DConvLSTMStat_V1(BaseStatModel):
 
     STFT_HIDDEN_SIZE = "stft_hidden_size"
     STFT_NUM_LAYERS = "stft_num_layers"
@@ -43,99 +40,36 @@ class AC2DConvLSTMStat_V2(BaseStatModel):
     
     def __build_model(self):
 
-        self.audio_feature_extractor = nn.Sequential(
-            nn.Conv1d(in_channels=1, out_channels=250, kernel_size=1024, stride=256),
-            nn.BatchNorm1d(250),
-            nn.Dropout(self.config[self.DROPOUT]),
-            nn.ReLU(),
+        f_bins = (self.config[self.N_FFT] // 2) + 1
 
-            Unsqueeze(1),
-
-            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(16),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(32),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(64),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU()
-        )
-
-        self.audio_lstm = nn.LSTM(
-            input_size=128 * 4,
-            hidden_size=self.config[self.AUDIO_HIDDEN_SIZE],
-            num_layers=self.config[self.AUDIO_NUM_LAYERS]
-        )
+        self.stft = Spectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
+        self.mel_spec = Spectrogram.MelSpectrogram(sr=22050, n_fft=self.config[self.N_FFT], n_mels=self.config[self.N_MELS], trainable_mel=self.config[self.SPEC_TRAINABLE], trainable_STFT=self.config[self.SPEC_TRAINABLE])
+        self.mfcc = Spectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
 
         self.stft_feature_extractor = nn.Sequential(
             Unsqueeze(1),
 
             nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
             nn.BatchNorm2d(16),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 1)),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
             nn.Dropout2d(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
             nn.BatchNorm2d(32),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
             nn.Dropout2d(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
             nn.BatchNorm2d(64),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
             nn.Dropout2d(self.config[self.DROPOUT]),
             nn.ReLU(),
 
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
             nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
             nn.Dropout2d(self.config[self.DROPOUT]),
             nn.ReLU(),
 
@@ -150,6 +84,69 @@ class AC2DConvLSTMStat_V2(BaseStatModel):
             nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
             nn.Dropout2d(self.config[self.DROPOUT]),
             nn.ReLU()
+        )
+
+        self.mel_spec_feature_extractor = nn.Sequential(
+            Unsqueeze(1),
+
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(16),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
+            nn.Dropout2d(self.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(32),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
+            nn.Dropout2d(self.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(64),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
+            nn.Dropout2d(self.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(128),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
+            nn.Dropout2d(self.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(128),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
+            nn.Dropout2d(self.config[self.DROPOUT]),
+            nn.ReLU()
+        )
+
+        self.mfcc_feature_extractor = nn.Sequential(
+            Unsqueeze(1),
+
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(16),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 2)),
+            nn.Dropout2d(self.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(32),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 2)),
+            nn.Dropout2d(self.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(64),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 2)),
+            nn.Dropout2d(self.config[self.DROPOUT]),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(128),
+            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
+            nn.Dropout2d(self.config[self.DROPOUT]),
+            nn.ReLU(),
+
         )
 
         self.stft_lstm = nn.LSTM(
@@ -158,90 +155,19 @@ class AC2DConvLSTMStat_V2(BaseStatModel):
             num_layers=self.config[self.STFT_NUM_LAYERS]
         )
 
-        self.mel_spec_feature_extractor = nn.Sequential(
-            Unsqueeze(1),
-
-            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(16),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(32),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(64),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU()
-        )
-
-
         self.mel_spec_lstm = nn.LSTM(
-            input_size=128 * 4,
+            input_size=128 * 1,
             hidden_size=self.config[self.MEL_SPEC_HIDDEN_SIZE],
             num_layers=self.config[self.MEL_SPEC_NUM_LAYERS]
         )
 
-        self.mfcc_feature_extractor = nn.Sequential(
-            Unsqueeze(1),
-
-            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(16),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(32),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(64),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 1)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 2)),
-            nn.Dropout2d(self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-        )
-
         self.mfcc_lstm = nn.LSTM(
-            input_size=128 * 4,
+            input_size=128 * 2,
             hidden_size=self.config[self.MFCC_HIDDEN_SIZE],
             num_layers=self.config[self.MFCC_NUM_LAYERS]
         )
 
-        input_size = self.config[self.AUDIO_HIDDEN_SIZE]
-        input_size += self.config[self.STFT_HIDDEN_SIZE]
+        input_size = self.config[self.STFT_HIDDEN_SIZE]
         input_size += self.config[self.MEL_SPEC_HIDDEN_SIZE]
         input_size += self.config[self.MFCC_HIDDEN_SIZE]
 
@@ -262,30 +188,24 @@ class AC2DConvLSTMStat_V2(BaseStatModel):
             self._get_std_activation()
         )
 
-    def forward(self, x, stft_x=None, mel_x=None, mfcc_x=None):
+    def forward(self, x):
 
-        if stft_x is None or mel_x is None or mfcc_x is None:
-            (audio_x, stft_x, mel_x, mfcc_x) = x
-        else:
-            audio_x = x
-
-        audio_x = self.audio_feature_extractor(audio_x)
+        stft_x = self.stft(x)
         stft_x = self.stft_feature_extractor(stft_x)
+
+        mel_x = self.mel_spec(x)
         mel_x = self.mel_spec_feature_extractor(mel_x)
+
+        mfcc_x = self.mfcc(x)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
 
-        audio_x = magic_combine(audio_x, 1, 3)
         stft_x = magic_combine(stft_x, 1, 3)
         mel_x = magic_combine(mel_x, 1, 3)
         mfcc_x = magic_combine(mfcc_x, 1, 3)
 
-        audio_x = audio_x.permute((0, 2, 1))
         stft_x = stft_x.permute((0, 2, 1))
         mel_x = mel_x.permute((0, 2, 1))
         mfcc_x = mfcc_x.permute((0, 2, 1))
-
-        (out, _) = self.audio_lstm(audio_x)
-        audio_x = out[:, -1, :]
 
         (out, _) = self.stft_lstm(stft_x)
         stft_x = out[:, -1, :]
@@ -296,18 +216,10 @@ class AC2DConvLSTMStat_V2(BaseStatModel):
         (out, _) = self.mfcc_lstm(mfcc_x)
         mfcc_x = out[:, -1, :]
 
-        x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=1)
+        x = torch.cat((stft_x, mel_x, mfcc_x), dim=1)
 
         x = self.fc(x)
         x_mean = self.fc_mean(x)
         x_std = self.fc_std(x)
         x = torch.cat((x_mean, x_std), dim=1)
         return x
-
-    def get_check_size(self):
-        return [
-            (2, 1, 110250),
-            (2, 513, 431),
-            (2, 128, 431),
-            (2, 20, 431)
-        ]

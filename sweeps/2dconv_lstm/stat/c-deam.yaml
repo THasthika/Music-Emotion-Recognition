@@ -1,4 +1,4 @@
-name: AC-2DConvLSTM-Stat-DEAM-V2
+name: AC-2DConvLSTM-Stat-DEAM
 project: mer
 program: exec.py
 method: random
@@ -26,10 +26,6 @@ parameters:
     value: 20
   spec_trainable:
     values: [true, false]
-  audio_hidden_size:
-    values: [32, 64, 128]
-  audio_num_layers:
-    values: [1, 2, 4]
   stft_hidden_size:
     values: [32, 64, 128]
   stft_num_layers:
@@ -56,5 +52,5 @@ command:
   - --temp_folder
   - a_deam
   - --batch-size
-  - 16
+  - 32
   - ${args}
