@@ -57,9 +57,9 @@ class AC2DConvCat_V2(BaseCatModel):
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=64, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(2, 2)),
-            nn.BatchNorm2d(num_features=256),
+            nn.BatchNorm2d(num_features=128),
             nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
@@ -77,9 +77,9 @@ class AC2DConvCat_V2(BaseCatModel):
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=64, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(2, 2)),
-            nn.BatchNorm2d(num_features=256),
+            nn.BatchNorm2d(num_features=128),
             nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
@@ -97,9 +97,9 @@ class AC2DConvCat_V2(BaseCatModel):
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=64, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(2, 2)),
-            nn.BatchNorm2d(num_features=256),
+            nn.BatchNorm2d(num_features=128),
             nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
@@ -115,9 +115,9 @@ class AC2DConvCat_V2(BaseCatModel):
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=64, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(1, 2)),
-            nn.BatchNorm2d(num_features=256),
+            nn.BatchNorm2d(num_features=128),
             nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
@@ -125,27 +125,27 @@ class AC2DConvCat_V2(BaseCatModel):
         )
 
         self.mid_extractor = nn.Sequential(
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(num_features=256),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(num_features=128),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(3, 3)),
-            nn.BatchNorm2d(num_features=256),
+            nn.BatchNorm2d(num_features=128),
             nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
-            nn.BatchNorm2d(num_features=256),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.BatchNorm2d(num_features=128),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
             nn.MaxPool2d(kernel_size=(3, 3)),
-            nn.BatchNorm2d(num_features=256),
+            nn.BatchNorm2d(num_features=128),
             nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=(3, 3), stride=(1, 1)),
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
 
@@ -153,13 +153,7 @@ class AC2DConvCat_V2(BaseCatModel):
             nn.MaxPool2d(kernel_size=(3, 3)),
             nn.BatchNorm2d(num_features=512),
             nn.Dropout2d(p=self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            # nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=(5, 3), stride=(2, 1)),
-            # nn.MaxPool2d(kernel_size=(2, 2)),
-            # nn.BatchNorm2d(num_features=1024),
-            # nn.Dropout2d(p=self.config[self.DROPOUT]),
-            # nn.ReLU()
+            nn.ReLU()
         )
 
         self.fc = nn.Sequential(
