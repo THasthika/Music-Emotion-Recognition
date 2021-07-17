@@ -11,9 +11,7 @@ from nnAudio import Spectrogram
 import torchmetrics as tm
 
 class AC2DConvCat_V2(BaseCatModel):
-
-    ADAPTIVE_LAYER_UNITS_0 = "adaptive_layer_units_0"
-    ADAPTIVE_LAYER_UNITS_1 = "adaptive_layer_units_1"
+    
     N_FFT = "n_fft"
     N_MELS = "n_mels"
     N_MFCC = "n_mfcc"

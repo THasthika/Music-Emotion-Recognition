@@ -24,10 +24,6 @@ parameters:
     value: 20
   spec_trainable:
     values: [true, false]
-  adaptive_layer_units_0:
-    values: [1, 2, 4, 8, 16]
-  adaptive_layer_units_1:
-    values: [1, 2, 4, 8, 16]
 early_terminate:
   type: hyperband
   min_iter: 3
