@@ -60,4 +60,4 @@ class BaseModel(pl.LightningModule):
         return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
     
     def get_check_size(self):
-        return (2, 1, 22050 * 30)
+        return (2, 1, 22050 * 5)
