@@ -210,6 +210,11 @@ class AC2DConvCat_V2(BaseCatModel):
         mfcc_x = torch.unsqueeze(mfcc_x, dim=1)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
 
+        print(audio_x.shape)
+        print(stft_x.shape)
+        print(mel_x.shape)
+        print(mfcc_x.shape)
+
         x = torch.cat((audio_x, stft_x, mel_x, mfcc_x), dim=2)
 
         x = self.mid_extractor(x)
