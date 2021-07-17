@@ -1,3 +1,4 @@
+from re import M
 from models import BaseCatModel
 import pytorch_lightning as pl
 
@@ -124,30 +125,19 @@ class AC2DConvCat_V2(BaseCatModel):
         )
 
         self.mid_extractor = nn.Sequential(
-            nn.Conv2d(in_channels=256, out_channels=512, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(5, 5), stride=(2, 2)),
             nn.MaxPool2d(kernel_size=(2, 2)),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1)),
-            nn.MaxPool2d(kernel_size=(2, 2)),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=256, out_channels=512, kernel_size=(5, 5), stride=(2, 2)),
             nn.MaxPool2d(kernel_size=(2, 2)),
             nn.BatchNorm2d(num_features=512),
             nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=(5, 3), stride=(2, 1)),
             nn.MaxPool2d(kernel_size=(2, 2)),
-            nn.BatchNorm2d(num_features=512),
-            nn.Dropout2d(p=self.config[self.DROPOUT]),
-            nn.ReLU(),
-
-            nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=(3, 3), stride=(1, 1)),
-            nn.MaxPool2d(kernel_size=(3, 2)),
             nn.BatchNorm2d(num_features=1024),
             nn.Dropout2d(p=self.config[self.DROPOUT]),
             nn.ReLU()
@@ -160,6 +150,8 @@ class AC2DConvCat_V2(BaseCatModel):
             nn.Dropout(p=self.config[self.DROPOUT]),
             nn.Linear(in_features=512, out_features=128),
             nn.ReLU(),
+            nn.BatchNorm1d(num_features=128),
+            nn.Dropout(p=self.config[self.DROPOUT]),
             nn.Linear(in_features=128, out_features=4)
         )
 
