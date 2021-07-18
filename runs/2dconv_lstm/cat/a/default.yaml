@@ -1,0 +1,16 @@
+data:
+  dataset: mer-taffc
+  split: 60-20-20
+  temp_folder: a_mer-taffc
+model:
+  version: 1
+  params:
+    lr: 0.001
+    optimizer: "adam"
+    weight_decay: 0.001
+    momentum: 0
+    dropout: 0.5
+    std_activation: "relu"
+    hidden_size: 250
+    num_layers: 1
+batch_size: 128
