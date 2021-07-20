@@ -1,0 +1,22 @@
+data:
+  dataset: mer-taffc
+  sub_folder: audio
+  split: 60-20-20
+  temp_folder: a_mer-taffc_10
+  params:
+    duration: 10
+    overlap: 5
+model:
+  version: 1
+  params:
+    lr: 0.001
+    optimizer: "adam"
+    weight_decay: 0.000001
+    momentum: 0.95
+    dropout: 0.5
+    adaptive_layer_units: 1
+    n_fft: 1024
+    n_mels: 128
+    n_mfcc: 20
+    spec_trainable: true
+batch_size: 128
