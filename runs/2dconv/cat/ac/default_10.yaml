@@ -1,5 +1,6 @@
 data:
   dataset: mer-taffc
+  sub_folder: audio
   split: 60-20-20
   temp_folder: a_mer-taffc_10
   params:
