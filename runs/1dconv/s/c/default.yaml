@@ -2,6 +2,7 @@ data:
   dataset: deam
   split: 60-20-20
   temp_folder: a_deam_s
+  sub_folder: audio
 model:
   version: 1
   params:
