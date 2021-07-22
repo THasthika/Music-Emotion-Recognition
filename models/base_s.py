@@ -109,6 +109,9 @@ class BaseSModel(BaseModel):
         print(x_quad.shape)
         print(quad.shape)
 
+        print(x_quad)
+        print(quad)
+
         self.log("val/loss", loss, prog_bar=True)
 
         self.log("val/acc", self.val_acc(x_quad, quad), on_step=False, on_epoch=True)
