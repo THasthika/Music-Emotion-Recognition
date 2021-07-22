@@ -2,11 +2,14 @@ from models.base import BaseModel
 
 from models.base import BaseModel
 import torch
+import torch.cuda
 import torchmetrics as tm
 import torch.nn as nn
 
 from utils.activation import CustomELU
 from utils.loss import rmse_loss
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 """
 Train on static regression, also calculate the quadrant accuracy
@@ -50,7 +53,7 @@ class BaseSModel(BaseModel):
         q2 = (valence_mean < 0) & (arousal_mean < 0)
         q3 = (valence_mean >= 0) & (arousal_mean < 0)
 
-        ret = torch.zeros((result.shape[0], 1), dtype=torch.int)
+        ret = torch.zeros((result.shape[0], 1), dtype=torch.int, device=device)
         ret[q0] = 0
         ret[q1] = 1
         ret[q2] = 2
