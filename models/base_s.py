@@ -104,7 +104,7 @@ class BaseSModel(BaseModel):
         valence_mean_rmse = self.loss(pred[:, 0], y[:, 0])
 
         x_quad = self._get_quadrant(pred)
-        quad = y[:, 4].view(dtype=torch.int).view(size=(y.shape[0], 1))
+        quad = y[:, 4].int().view(size=(y.shape[0], 1))
 
         print(x_quad.shape)
         print(quad.shape)
