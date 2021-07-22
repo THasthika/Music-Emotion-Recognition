@@ -100,41 +100,41 @@ def __is_subset(p, q):
 
 def __load_data_class(run, data_class):
 
+    run_s = run.split(".")
+
+    DataClass = None
     if not data_class is None:
         (pkg, clsName) = data_class.split(".")[:2]
         pkg_path = "data.{}".format(pkg)
 
-        print("Loading Data Class {} from {}".format(clsName, pkg_path))
-
         modelMod = __import__(pkg_path, fromlist=[clsName])
         DataClass = getattr(modelMod, clsName)
-        
-        return DataClass
-
-
-    run_s = run.split(".")
-
-    if __is_subset(["s"], run_s):
+    elif __is_subset(["s"], run_s):
         from data.s import SAudioDataset
-        return SAudioDataset
+        DataClass = SAudioDataset
 
-    if __is_subset(["stat", "acl"], run_s):
+    elif __is_subset(["stat", "acl"], run_s):
         from data.stat_multi import StatAudioLyricDataset
-        return StatAudioLyricDataset
+        DataClass = StatAudioLyricDataset
     
-    if __is_subset(["cat", "acl"], run_s):
+    elif __is_subset(["cat", "acl"], run_s):
         from data.cat_multi import CatAudioLyricDataset
-        return CatAudioLyricDataset
+        DataClass = CatAudioLyricDataset
 
-    if __is_subset(["stat"], run_s):
+    elif __is_subset(["stat"], run_s):
         from data.stat import StatAudioDataset
-        return StatAudioDataset
+        DataClass = StatAudioDataset
     
-    if __is_subset(["cat"], run_s):
+    elif __is_subset(["cat"], run_s):
         from data.cat import CatAudioDataset
-        return CatAudioDataset
+        DataClass = CatAudioDataset
 
-    raise ModuleNotFoundError("Unknown DataClass")
+    if DataClass is None:
+        raise ModuleNotFoundError("Unknown DataClass")
+    
+    print("Loading DataClass {}".format(DataClass))
+
+    return DataClass
 
 
 def __load_model_class(run, model_version):
