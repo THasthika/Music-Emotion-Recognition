@@ -35,7 +35,7 @@ class BaseSModel(BaseModel):
         self.test_mean_r2score = tm.R2Score(num_outputs=2)
 
         ## metrics
-        self.train_acc = tm.Accuracy(top_k=3)
+        self.train_acc = tm.Accuracy()
 
         self.val_acc = tm.Accuracy(top_k=3)
         self.val_f1_class = tm.F1(num_classes=4, average='none')
