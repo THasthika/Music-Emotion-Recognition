@@ -37,13 +37,9 @@ class BaseSModel(BaseModel):
         ## metrics
         self.train_acc = tm.Accuracy()
 
-        self.val_acc = tm.Accuracy(top_k=3)
-        self.val_f1_class = tm.F1(num_classes=4, average='none')
-        self.val_f1_global = tm.F1(num_classes=4)
+        self.val_acc = tm.Accuracy()
 
-        self.test_acc = tm.Accuracy(top_k=3)
-        self.test_f1_class = tm.F1(num_classes=4, average='none')
-        self.test_f1_global = tm.F1(num_classes=4)
+        self.test_acc = tm.Accuracy()
 
     def _get_quadrant(self, result: torch.Tensor):
         valence_mean = result[:, 0]
@@ -87,6 +83,11 @@ class BaseSModel(BaseModel):
         loss = self.loss(pred, y[:, 0:4])
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
+
+        x_quad = self._get_quadrant(pred)
+        quad = y[:, 4:5].view(dtype=torch.int)
+
+        self.log("train/acc", self.train_acc(x_quad, quad), on_step=False, on_epoch=True)
 
         return loss
 
@@ -139,11 +140,11 @@ class BaseSModel(BaseModel):
         valence_std_r2score = self.test_valence_std_r2(pred[:, 2], y[:, 2])
 
         x_quad = self._get_quadrant(pred)
-        quad = y[:, 4]
+        quad = y[:, 4:5].view(dtype=torch.int)
 
         self.log("test/loss", loss)
 
-        self.log("val/acc", self.val_acc(x_quad, quad), on_step=False, on_epoch=True)
+        self.log("test/acc", self.test_acc(x_quad, quad), on_step=False, on_epoch=True)
 
         self.log('test/mean_r2score', mean_r2score, on_step=False, on_epoch=True)
 
