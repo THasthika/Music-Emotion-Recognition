@@ -94,6 +94,9 @@ class BaseSModel(BaseModel):
     def validation_step(self, batch, batch_idx):
         x, y = batch
 
+        print(y.shape)
+        print(y)
+
         pred = self(x)
         loss = self.loss(pred, y[:, 0:4])
 
@@ -106,11 +109,11 @@ class BaseSModel(BaseModel):
         x_quad = self._get_quadrant(pred)
         quad = y[:, 4:5].view(dtype=torch.int)
 
-        print(x_quad.shape)
-        print(quad.shape)
+        # print(x_quad.shape)
+        # print(quad.shape)
 
-        print(x_quad)
-        print(quad)
+        # print(x_quad)
+        # print(quad)
 
         self.log("val/loss", loss, prog_bar=True)
 
