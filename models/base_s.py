@@ -88,7 +88,7 @@ class BaseSModel(BaseModel):
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
 
         x_quad = self._get_quadrant(pred)
-        quad = y[:, 4:5].view(dtype=torch.int)
+        quad = y[:, 4].int().view(size=(y.shape[0], 1))
 
         self.log("train/acc", self.train_acc(x_quad, quad), on_step=False, on_epoch=True)
 
@@ -140,7 +140,7 @@ class BaseSModel(BaseModel):
         valence_std_r2score = self.test_valence_std_r2(pred[:, 2], y[:, 2])
 
         x_quad = self._get_quadrant(pred)
-        quad = y[:, 4:5].view(dtype=torch.int)
+        quad = y[:, 4].int().view(size=(y.shape[0], 1))
 
         self.log("test/loss", loss)
 
