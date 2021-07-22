@@ -114,6 +114,10 @@ def __load_data_class(run, data_class):
 
     run_s = run.split(".")
 
+    if __is_subset(["s"], run_s):
+        from data.s import SAudioDataset
+        return SAudioDataset
+
     if __is_subset(["stat", "acl"], run_s):
         from data.stat_multi import StatAudioLyricDataset
         return StatAudioLyricDataset
