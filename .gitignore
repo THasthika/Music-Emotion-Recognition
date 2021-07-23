@@ -15,3 +15,4 @@ pretrain_weights/
 execs/*.temp.yaml
 run_list
 checkpoints/
+.idea/

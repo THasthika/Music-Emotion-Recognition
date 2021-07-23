@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn
 from nnAudio import Spectrogram
 
-class C1DConvS_V1(BaseSModel):
 
+class C1DConvS_V1(BaseSModel):
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
     N_FFT = "n_fft"
     N_MELS = "n_mels"
@@ -13,23 +13,25 @@ class C1DConvS_V1(BaseSModel):
     SPEC_TRAINABLE = "spec_trainable"
 
     def __init__(self,
-                batch_size=32,
-                num_workers=4,
-                train_ds=None,
-                val_ds=None,
-                test_ds=None,
-                **model_config):
+                 batch_size=32,
+                 num_workers=4,
+                 train_ds=None,
+                 val_ds=None,
+                 test_ds=None,
+                 **model_config):
         super().__init__(batch_size, num_workers, train_ds, val_ds, test_ds, **model_config)
 
         self.__build_model()
 
-    
     def __build_model(self):
-
         f_bins = (self.config[self.N_FFT] // 2) + 1
 
-        self.stft = Spectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050, trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
-        self.mel_spec = Spectrogram.MelSpectrogram(sr=22050, n_fft=self.config[self.N_FFT], n_mels=self.config[self.N_MELS], trainable_mel=self.config[self.SPEC_TRAINABLE], trainable_STFT=self.config[self.SPEC_TRAINABLE])
+        self.stft = Spectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050,
+                                     trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
+        self.mel_spec = Spectrogram.MelSpectrogram(sr=22050, n_fft=self.config[self.N_FFT],
+                                                   n_mels=self.config[self.N_MELS],
+                                                   trainable_mel=self.config[self.SPEC_TRAINABLE],
+                                                   trainable_STFT=self.config[self.SPEC_TRAINABLE])
         self.mfcc = Spectrogram.MFCC(sr=22050, n_mfcc=self.config[self.N_MFCC])
 
         self.stft_feature_extractor = nn.Sequential(
@@ -109,14 +111,13 @@ class C1DConvS_V1(BaseSModel):
         self.fc_mean = nn.Sequential(
             nn.Linear(in_features=128, out_features=2)
         )
-        
+
         self.fc_std = nn.Sequential(
             nn.Linear(in_features=128, out_features=2),
             self._get_std_activation()
         )
 
     def forward(self, x):
-
         stft_x = self.stft(x)
         stft_x = self.stft_feature_extractor(stft_x)
 

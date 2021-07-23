@@ -1,11 +1,9 @@
-from models.base import BaseModel
-
-from models.base import BaseModel
 import torch
 import torch.cuda
-import torchmetrics as tm
 import torch.nn as nn
+import torchmetrics as tm
 
+from models.base import BaseModel
 from utils.activation import CustomELU
 from utils.loss import rmse_loss
 
@@ -14,22 +12,23 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 """
 Train on static regression, also calculate the quadrant accuracy
 """
-class BaseSModel(BaseModel):
 
+
+class BaseSModel(BaseModel):
     STD_ACTIVATION = "std_activation"
 
     def __init__(self,
-                batch_size=32,
-                num_workers=4,
-                train_ds=None,
-                val_ds=None,
-                test_ds=None,
-                **model_config):
+                 batch_size=32,
+                 num_workers=4,
+                 train_ds=None,
+                 val_ds=None,
+                 test_ds=None,
+                 **model_config):
         super().__init__(batch_size, num_workers, train_ds, val_ds, test_ds, **model_config)
 
-        ## loss
+        # loss
         self.loss = rmse_loss
-        
+
         self.test_arousal_mean_r2 = tm.R2Score(num_outputs=1)
         self.test_valence_mean_r2 = tm.R2Score(num_outputs=1)
         self.test_arousal_std_r2 = tm.R2Score(num_outputs=1)
@@ -37,12 +36,15 @@ class BaseSModel(BaseModel):
 
         self.test_mean_r2score = tm.R2Score(num_outputs=2)
 
-        ## metrics
+        # metrics
         self.train_acc = tm.Accuracy()
+        self.train_acc_class = tm.Accuracy(average='none')
 
         self.val_acc = tm.Accuracy()
+        self.val_acc_class = tm.Accuracy(average='none')
 
         self.test_acc = tm.Accuracy()
+        self.test_acc_class = tm.Accuracy(average='none')
 
     def _get_quadrant(self, result: torch.Tensor):
         valence_mean = result[:, 0]
@@ -75,7 +77,7 @@ class BaseSModel(BaseModel):
         if stdActivation is None:
             raise Exception("Activation Type Unknown!")
         return stdActivation
-    
+
     def predict(self, x):
         return self.forward(x)
 
@@ -91,6 +93,9 @@ class BaseSModel(BaseModel):
         quad = y[:, 4].int().view(size=(y.shape[0], 1))
 
         self.log("train/acc", self.train_acc(x_quad, quad), on_step=False, on_epoch=True)
+        accuracies = self.test_acc_class(x_quad, quad)
+        for (i, x) in enumerate(torch.flatten(accuracies)):
+            self.log("train/acc_{}".format(i), x, on_step=False, on_epoch=True)
 
         return loss
 
@@ -112,6 +117,9 @@ class BaseSModel(BaseModel):
         self.log("val/loss", loss, prog_bar=True)
 
         self.log("val/acc", self.val_acc(x_quad, quad), on_step=False, on_epoch=True)
+        accuracies = self.test_acc_class(x_quad, quad)
+        for (i, x) in enumerate(torch.flatten(accuracies)):
+            self.log("val/acc_{}".format(i), x, on_step=False, on_epoch=True)
 
         self.log('val/arousal_std_rmse', arousal_std_rmse, on_step=False, on_epoch=True)
         self.log('val/valence_std_rmse', valence_std_rmse, on_step=False, on_epoch=True)
@@ -145,6 +153,9 @@ class BaseSModel(BaseModel):
         self.log("test/loss", loss)
 
         self.log("test/acc", self.test_acc(x_quad, quad), on_step=False, on_epoch=True)
+        accuracies = self.test_acc_class(x_quad, quad)
+        for (i, x) in enumerate(torch.flatten(accuracies)):
+            self.log("test/acc_{}".format(i), x, on_step=False, on_epoch=True)
 
         self.log('test/mean_r2score', mean_r2score, on_step=False, on_epoch=True)
 
