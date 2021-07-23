@@ -7,8 +7,8 @@ model:
   version: 1
   params:
     lr: 0.001
-    optimizer: "adam"
-    weight_decay: 0.001
+    optimizer: "sgd"
+    weight_decay: 0.000001
     momentum: 0.9
     dropout: 0.15
     std_activation: "relu"
