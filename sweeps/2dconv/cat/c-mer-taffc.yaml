@@ -36,7 +36,7 @@ command:
   - ${interpreter}
   - ${program}
   - sweep
-  - 1dconv.cat.c
+  - 2dconv.cat.c
   - --dataset
   - mer-taffc
   - --temp_folder
