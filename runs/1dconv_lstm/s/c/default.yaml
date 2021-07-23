@@ -1,0 +1,25 @@
+data:
+  dataset: deam
+  split: 60-20-20
+  temp_folder: a_deam_s
+  sub_folder: audio
+model:
+  version: 1
+  params:
+    lr: 0.001
+    optimizer: "sgd"
+    weight_decay: 0.0000001
+    momentum: 0
+    dropout: 0.5
+    std_activation: "relu"
+    stft_hidden_size: 500
+    stft_num_layers: 1
+    mel_spec_hidden_size: 100
+    mel_spec_num_layers: 1
+    mfcc_hidden_size: 32
+    mfcc_num_layers: 1
+    n_fft: 1024
+    n_mels: 128
+    n_mfcc: 20
+    spec_trainable: false
+batch_size: 128
