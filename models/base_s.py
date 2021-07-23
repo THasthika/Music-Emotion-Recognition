@@ -123,7 +123,7 @@ class BaseSModel(BaseModel):
         x, y = batch
 
         pred = self(x)
-        loss = self.loss(pred, y)
+        loss = self.loss(pred, y[:, 0:4])
 
         arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
         valence_std_rmse = self.loss(pred[:, 2], y[:, 2])
