@@ -7,22 +7,22 @@ import torch.nn as nn
 from utils.activation import CustomELU
 from utils.loss import rmse_loss
 
-class BaseStatModel(BaseModel):
 
+class BaseStatModel(BaseModel):
     STD_ACTIVATION = "std_activation"
 
     def __init__(self,
-                batch_size=32,
-                num_workers=4,
-                train_ds=None,
-                val_ds=None,
-                test_ds=None,
-                **model_config):
+                 batch_size=32,
+                 num_workers=4,
+                 train_ds=None,
+                 val_ds=None,
+                 test_ds=None,
+                 **model_config):
         super().__init__(batch_size, num_workers, train_ds, val_ds, test_ds, **model_config)
 
-        ## loss
+        # loss
         self.loss = rmse_loss
-        
+
         self.test_arousal_mean_r2 = tm.R2Score(num_outputs=1)
         self.test_valence_mean_r2 = tm.R2Score(num_outputs=1)
         self.test_arousal_std_r2 = tm.R2Score(num_outputs=1)
@@ -44,7 +44,7 @@ class BaseStatModel(BaseModel):
         if std_activation is None:
             raise Exception("Activation Type Unknown!")
         return std_activation
-    
+
     def predict(self, x):
         return self.forward(x)
 

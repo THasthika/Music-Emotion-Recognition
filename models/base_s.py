@@ -38,13 +38,13 @@ class BaseSModel(BaseModel):
 
         # metrics
         self.train_acc = tm.Accuracy()
-        self.train_acc_class = tm.Accuracy(average='none')
+        self.train_acc_class = tm.Accuracy(average='none', num_classes=4)
 
         self.val_acc = tm.Accuracy()
-        self.val_acc_class = tm.Accuracy(average='none')
+        self.val_acc_class = tm.Accuracy(average='none', num_classes=4)
 
         self.test_acc = tm.Accuracy()
-        self.test_acc_class = tm.Accuracy(average='none')
+        self.test_acc_class = tm.Accuracy(average='none', num_classes=4)
 
     def _get_quadrant(self, result: torch.Tensor):
         valence_mean = result[:, 0]
