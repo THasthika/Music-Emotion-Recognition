@@ -64,19 +64,19 @@ class BaseSModel(BaseModel):
         return ret
 
     def _get_std_activation(self):
-        stdActivation = None
+        std_activation = None
         if self.config[self.STD_ACTIVATION] == "custom":
             print("Model: StdActivation uses CustomELU")
-            stdActivation = CustomELU(alpha=1.0)
+            std_activation = CustomELU(alpha=1.0)
         elif self.config[self.STD_ACTIVATION] == "relu":
             print("Model: StdActivation uses ReLU")
-            stdActivation = nn.ReLU()
+            std_activation = nn.ReLU()
         elif self.config[self.STD_ACTIVATION] == "softplus":
             print("Model: StdActivation uses Softplus")
-            stdActivation = nn.Softplus()
-        if stdActivation is None:
+            std_activation = nn.Softplus()
+        if std_activation is None:
             raise Exception("Activation Type Unknown!")
-        return stdActivation
+        return std_activation
 
     def predict(self, x):
         return self.forward(x)
