@@ -38,7 +38,7 @@ command:
   - ${interpreter}
   - ${program}
   - sweep
-  - 1dconv.stat.ac
+  - 2dconv.stat.ac
   - --dataset
   - deam
   - --temp_folder

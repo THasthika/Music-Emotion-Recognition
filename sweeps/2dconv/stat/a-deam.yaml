@@ -30,7 +30,7 @@ command:
   - ${interpreter}
   - ${program}
   - sweep
-  - 1dconv.stat.a
+  - 2dconv.stat.a
   - --dataset
   - deam
   - --temp_folder

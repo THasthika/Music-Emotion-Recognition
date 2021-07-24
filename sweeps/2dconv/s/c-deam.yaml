@@ -1,4 +1,4 @@
-name: C-2DConv-Stat-DEAM
+name: C-2DConv-S-DEAM
 project: mer
 program: exec.py
 method: random
@@ -38,7 +38,7 @@ command:
   - ${interpreter}
   - ${program}
   - sweep
-  - 2dconv.stat.c
+  - 2dconv.s.c
   - --dataset
   - deam
   - --temp_folder
