@@ -9,7 +9,7 @@ model:
     lr: 0.001
     optimizer: "sgd"
     weight_decay: 0.0000001
-    momentum: 0
+    momentum: 0.9
     dropout: 0.5
     std_activation: "relu"
     stft_hidden_size: 500
