@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from nnAudio import Spectrogram
-from torch.utils.data import DataLoader
 
 from models import BaseSModel
 
@@ -192,58 +190,3 @@ class C2DConvS_V1(BaseSModel):
         x_std = self.fc_std(x)
         x = torch.cat((x_mean, x_std), dim=1)
         return x
-
-    def predict(self, x):
-        x = self.forward(x)
-        return F.softmax(x, dim=1)
-
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.config[self.LR])
-        return optimizer
-
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-
-        pred = self(x)
-        loss = self.loss(pred, y)
-        distanceMeasure = self.train_distance(pred, y)
-
-        self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-        self.log('train/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
-
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, y = batch
-
-        pred = self(x)
-        loss = self.loss(pred, y)
-        distanceMeasure = self.val_distance(pred, y)
-
-        self.log("val/loss", loss, prog_bar=True)
-        self.log('val/distance', distanceMeasure, prog_bar=True, on_step=False, on_epoch=True)
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-
-        pred = self(x)
-        loss = self.loss(pred, y)
-        distanceMeasure = self.test_distance(pred, y)
-        r2score = self.test_r2score(pred, y)
-
-        self.log("test/loss", loss)
-        self.log('test/distance', distanceMeasure)
-
-        self.log('test/r2score', r2score, on_step=False, on_epoch=True)
-
-    def train_dataloader(self):
-        if self.test_ds is None: return None
-        return DataLoader(self.train_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
-
-    def val_dataloader(self):
-        if self.val_ds is None: return None
-        return DataLoader(self.val_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
-
-    def test_dataloader(self):
-        if self.test_ds is None: return None
-        return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
