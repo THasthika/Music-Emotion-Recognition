@@ -42,5 +42,5 @@ command:
   - --dataset
   - deam
   - --temp_folder
-  - a_deam
+  - a_deam_s
   - ${args}
