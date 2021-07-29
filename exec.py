@@ -121,7 +121,7 @@ def __load_data_class(run, data_class):
         from data.cat_multi import CatAudioLyricDataset
         DataClass = CatAudioLyricDataset
 
-    elif __is_subset(["stat"], run_s):
+    elif __is_subset(["stat"], run_s) or __is_subset(["statm"], run_s):
         from data.stat import StatAudioDataset
         DataClass = StatAudioDataset
     
