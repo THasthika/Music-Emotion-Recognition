@@ -1,0 +1,15 @@
+data:
+  dataset: deam
+  split: 60-20-20
+  temp_folder: a_deam
+  sub_folder: audio
+model:
+  version: 1
+  params:
+    lr: 0.001
+    optimizer: "adam"
+    weight_decay: 0.0000001
+    momentum: 0.95
+    dropout: 0.5
+    adaptive_layer_units: 1
+batch_size: 128
