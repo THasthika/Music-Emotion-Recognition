@@ -31,6 +31,8 @@ class BaseStatmModel(BaseModel):
     def training_step(self, batch, batch_idx):
         x, y = batch
 
+        y = y[:, [0, 1]]
+
         pred = self(x)
         loss = self.loss(pred, y)
 
