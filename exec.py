@@ -106,34 +106,29 @@ def __load_data_class(run, data_class):
     if not data_class is None:
         (pkg, clsName) = data_class.split(".")[:2]
         pkg_path = "data.{}".format(pkg)
-
         modelMod = __import__(pkg_path, fromlist=[clsName])
         DataClass = getattr(modelMod, clsName)
+    elif __is_subset(["d"], run_s):
+        from data.d import DAudioDataset
+        DataClass = DAudioDataset
     elif __is_subset(["s"], run_s):
         from data.s import SAudioDataset
         DataClass = SAudioDataset
-
     elif __is_subset(["stat", "acl"], run_s):
         from data.stat_multi import StatAudioLyricDataset
         DataClass = StatAudioLyricDataset
-    
     elif __is_subset(["cat", "acl"], run_s):
         from data.cat_multi import CatAudioLyricDataset
         DataClass = CatAudioLyricDataset
-
     elif __is_subset(["stat"], run_s) or __is_subset(["statm"], run_s):
         from data.stat import StatAudioDataset
         DataClass = StatAudioDataset
-    
     elif __is_subset(["cat"], run_s):
         from data.cat import CatAudioDataset
         DataClass = CatAudioDataset
-
     if DataClass is None:
         raise ModuleNotFoundError("Unknown DataClass")
-    
     print("Loading DataClass {}".format(DataClass))
-
     return DataClass
 
 
