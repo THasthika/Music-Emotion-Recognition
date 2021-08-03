@@ -9,8 +9,6 @@ from data.base import BaseChunkedDataset
 
 class DAudioDataset(BaseChunkedDataset):
 
-    ANNOTATION_RATE = 0.5
-
     def __init__(self, meta_file, data_dir, sr=22050, chunk_duration=5, overlap=2.5, temp_folder=None, force_compute=False, audio_extension="mp3"):
         super().__init__(meta_file, temp_folder=temp_folder, force_compute=force_compute)
 
@@ -37,18 +35,16 @@ class DAudioDataset(BaseChunkedDataset):
 
     def get_label(self, info, args):
         frame = args
-        start_i = int((self.overlap * frame) / self.ANNOTATION_RATE)
-        end_i = start_i + int ((self.chunk_duration) / self.ANNOTATION_RATE)
+        annotation_rate = 0.5
+        start_i = int((self.overlap * frame) / annotation_rate)
+        end_i = start_i + int((self.chunk_duration) / annotation_rate)
         x = []
         for l in [DYNAMIC_VALENCE_MEAN, DYNAMIC_AROUSAL_MEAN, DYNAMIC_VALENCE_STD, DYNAMIC_AROUSAL_STD]:
             y = np.array(info[l])
             x.append(y)
         x = np.array(x)
         x = x[:, start_i:end_i]
-        if x.shape[1] > 0:
-            x = np.mean(x, axis=1)
-        else:
-            x = np.array(info[STATIC_VALENCE_MEAN, STATIC_AROUSAL_MEAN, STATIC_VALENCE_STD, STATIC_AROUSAL_STD])
+        x = np.mean(x, axis=1)
         y = torch.tensor(x, dtype=torch.float)
         return y
 
