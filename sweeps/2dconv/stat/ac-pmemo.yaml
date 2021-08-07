@@ -1,4 +1,4 @@
-name: A-2DConv-Stat-PMEMO
+name: AC-2DConv-Stat-PMEMO
 project: mer
 program: exec.py
 method: random
@@ -30,7 +30,7 @@ command:
   - ${interpreter}
   - ${program}
   - sweep
-  - 2dconv.stat.c
+  - 2dconv.stat.ac
   - --dataset
   - pmemo
   - --temp_folder

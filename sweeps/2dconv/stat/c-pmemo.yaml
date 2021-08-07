@@ -1,4 +1,4 @@
-name: A-2DConv-Stat-PMEMO
+name: C-2DConv-Stat-PMEMO
 project: mer
 program: exec.py
 method: random
