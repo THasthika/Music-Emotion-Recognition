@@ -25,8 +25,7 @@ class BaseCatModel(BaseModel):
         self.test_f1_class = tm.F1(num_classes=4, average='none')
         self.test_f1_global = tm.F1(num_classes=4)
 
-        self.test_auc = tm.AUC()
-        self.test_roc = tm.ROC(num_classes=4)
+        self.test_auroc = tm.AUROC(num_classes=4)
 
         ## loss
         self.loss = F.cross_entropy
@@ -74,8 +73,7 @@ class BaseCatModel(BaseModel):
         self.log("test/acc", self.test_acc(pred, y))
         self.log("test/f1_global", self.test_f1_global(pred, y))
 
-        self.log("test/auc", self.test_auc(pred, y))
-        self.log("test/roc", self.test_roc(pred, y))
+        self.log("test/auroc", self.test_auroc(pred, y))
 
         f1_scores = self.test_f1_class(pred, y)
         for (i, x) in enumerate(torch.flatten(f1_scores)):
