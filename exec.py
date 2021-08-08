@@ -222,6 +222,7 @@ def parse_model_args(args):
                     ret[n] = True
             elif len(a) == 2:
                 v = a[1]
+                print(v)
                 try:
                     v = int(v)
                     print(v)
