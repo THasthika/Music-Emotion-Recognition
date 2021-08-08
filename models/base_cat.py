@@ -73,6 +73,8 @@ class BaseCatModel(BaseModel):
         self.log("test/acc", self.test_acc(pred, y))
         self.log("test/f1_global", self.test_f1_global(pred, y))
 
+        print(pred)
+        print(y)
         self.log("test/auroc", self.test_auroc(pred, y))
 
         f1_scores = self.test_f1_class(pred, y)
