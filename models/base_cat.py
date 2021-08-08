@@ -72,10 +72,11 @@ class BaseCatModel(BaseModel):
         self.log("test/acc", self.test_acc(pred, y))
         self.log("test/f1_global", self.test_f1_global(pred, y))
 
-        print(pred)
-        print(y)
-        self.log("test/auroc", self.test_auroc(pred, y))
+        self.test_auroc(pred, y)
 
         f1_scores = self.test_f1_class(pred, y)
         for (i, x) in enumerate(torch.flatten(f1_scores)):
             self.log("test/f1_class_{}".format(i), x)
+
+    def test_step_end(self, output_results):
+        self.log("test/auroc", self.test_auroc.compute(), on_step=False)
