@@ -6,7 +6,7 @@ data:
 model:
   version: 1
   params:
-    lr: 0.001
+    lr: 0.0005
     optimizer: "adam"
     weight_decay: 0.00001
     momentum: 0.8
