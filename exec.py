@@ -213,10 +213,8 @@ def parse_model_args(args):
                 # parse parameter
                 if len(args) > i+1 and not args[i+1].startswith("--"):
                     v = args[i+1]
-                    try:
+                    if v.isnumeric():
                         v = int(v)
-                    except:
-                        pass
                     ret[n] = v
                 else:
                     ret[n] = True
@@ -224,11 +222,8 @@ def parse_model_args(args):
                 v = a[1]
                 print(v)
                 print(type(v))
-                try:
+                if v.isnumeric():
                     v = int(v)
-                    print(v)
-                except:
-                    pass
                 ret[a[0]] = v
     print(ret)
     return ret
