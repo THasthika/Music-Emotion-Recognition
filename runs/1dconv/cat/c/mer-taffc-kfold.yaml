@@ -1,0 +1,19 @@
+data:
+  dataset: mer-taffc
+  split: kfold
+  temp_folder: a_mer-taffc
+  sub_folder: audio
+model:
+  version: 1
+  params:
+    lr: 0.001
+    optimizer: "sgd"
+    weight_decay: 0.000001
+    momentum: 0.9
+    dropout: 0.15
+    adaptive_layer_units: 1
+    n_fft: 1024
+    n_mels: 128
+    n_mfcc: 20
+    spec_trainable: false
+batch_size: 128
