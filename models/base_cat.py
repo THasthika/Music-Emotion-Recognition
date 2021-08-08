@@ -18,14 +18,14 @@ class BaseCatModel(BaseModel):
         self.train_acc = tm.Accuracy(top_k=3)
 
         self.val_acc = tm.Accuracy(top_k=3)
-        self.val_f1_class = tm.F1(num_classes=4, average='none')
-        self.val_f1_global = tm.F1(num_classes=4)
+        self.val_f1_class = tm.F1(num_classes=4, average='none', compute_on_step=False)
+        self.val_f1_global = tm.F1(num_classes=4, compute_on_step=False)
 
         self.test_acc = tm.Accuracy(top_k=3)
-        self.test_f1_class = tm.F1(num_classes=4, average='none')
-        self.test_f1_global = tm.F1(num_classes=4)
+        self.test_f1_class = tm.F1(num_classes=4, average='none', compute_on_step=False)
+        self.test_f1_global = tm.F1(num_classes=4, compute_on_step=False)
 
-        self.test_auroc = tm.AUROC(num_classes=4)
+        self.test_auroc = tm.AUROC(num_classes=4, compute_on_step=False)
 
         ## loss
         self.loss = F.cross_entropy
