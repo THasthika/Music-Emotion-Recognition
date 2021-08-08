@@ -203,6 +203,17 @@ def __make_datasets(DataClass, data_folder, train_meta, validation_meta=None, te
                                   overlap=overlap, force_compute=force_compute, sr=sr, audio_extension=ext)
     return (train_ds, test_ds, validation_ds)
 
+def __parse_variable(v):
+    try:
+        return int(v)
+    except:
+        pass
+    try:
+        return float(v)
+    except:
+        pass
+    return v
+
 def parse_model_args(args):
     ret = {}
     for (i, arg) in enumerate(args):
@@ -213,19 +224,12 @@ def parse_model_args(args):
                 # parse parameter
                 if len(args) > i+1 and not args[i+1].startswith("--"):
                     v = args[i+1]
-                    if v.isnumeric():
-                        v = int(v)
-                    ret[n] = v
+                    ret[n] = __parse_variable(v)
                 else:
                     ret[n] = True
             elif len(a) == 2:
                 v = a[1]
-                print(v)
-                print(type(v))
-                if v.isnumeric():
-                    v = int(v)
-                ret[a[0]] = v
-    print(ret)
+                ret[a[0]] = __parse_variable(v)
     return ret
 
 
