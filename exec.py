@@ -223,6 +223,7 @@ def parse_model_args(args):
             elif len(a) == 2:
                 v = a[1]
                 print(v)
+                print(type(v))
                 try:
                     v = int(v)
                     print(v)
