@@ -24,7 +24,6 @@ class BaseCatModel(BaseModel):
         self.test_acc = tm.Accuracy(top_k=3)
         self.test_f1_class = tm.F1(num_classes=4, average='none', compute_on_step=False)
         self.test_f1_global = tm.F1(num_classes=4, compute_on_step=False)
-
         self.test_auroc = tm.AUROC(num_classes=4, compute_on_step=False)
 
         ## loss
