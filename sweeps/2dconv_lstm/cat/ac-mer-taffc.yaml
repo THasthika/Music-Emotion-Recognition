@@ -53,7 +53,7 @@ command:
   - 2dconv_lstm.cat.ac
   - --dataset
   - mer-taffc
-  - --temp_folder
+  - --temp-folder
   - a_mer-taffc
   - --batch-size
   - 64

@@ -41,6 +41,6 @@ command:
   - 2dconv.s.c
   - --dataset
   - deam
-  - --temp_folder
+  - --temp-folder
   - a_deam_s
   - ${args}

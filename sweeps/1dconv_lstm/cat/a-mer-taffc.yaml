@@ -31,6 +31,6 @@ command:
   - 1dconv_lstm.cat.a
   - --dataset
   - mer-taffc
-  - --temp_folder
+  - --temp-folder
   - a_mer-taffc
   - ${args}

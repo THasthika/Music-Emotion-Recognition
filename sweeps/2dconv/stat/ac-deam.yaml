@@ -41,6 +41,6 @@ command:
   - 2dconv.stat.ac
   - --dataset
   - deam
-  - --temp_folder
+  - --temp-folder
   - a_deam
   - ${args}

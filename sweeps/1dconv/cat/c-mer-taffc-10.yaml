@@ -37,6 +37,6 @@ command:
   - 1dconv.cat.c.default_10
   - --dataset
   - mer-taffc
-  - --temp_folder
+  - --temp-folder
   - a_mer-taffc
   - ${args}

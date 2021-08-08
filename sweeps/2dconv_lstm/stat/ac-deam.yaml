@@ -53,7 +53,7 @@ command:
   - 2dconv_lstm.stat.ac
   - --dataset
   - deam
-  - --temp_folder
+  - --temp-folder
   - a_deam
   - --batch-size
   - 32

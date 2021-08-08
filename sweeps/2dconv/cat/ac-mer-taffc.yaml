@@ -39,6 +39,6 @@ command:
   - 2dconv.cat.ac
   - --dataset
   - mer-taffc
-  - --temp_folder
+  - --temp-folder
   - a_mer-taffc
   - ${args}

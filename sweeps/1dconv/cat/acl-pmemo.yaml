@@ -39,6 +39,6 @@ command:
   - 1dconv.cat.acl
   - --dataset
   - pmemo
-  - --temp_folder
+  - --temp-folder
   - al_pmemo
   - ${args}

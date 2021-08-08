@@ -33,7 +33,7 @@ command:
   - 2dconv_lstm.stat.a
   - --dataset
   - deam
-  - --temp_folder
+  - --temp-folder
   - a_deam
   - --batch-size
   - 16

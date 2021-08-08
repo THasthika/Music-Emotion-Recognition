@@ -33,6 +33,6 @@ command:
   - 2dconv.stat.ac
   - --dataset
   - pmemo
-  - --temp_folder
+  - --temp-folder
   - a_pmemo
   - ${args}

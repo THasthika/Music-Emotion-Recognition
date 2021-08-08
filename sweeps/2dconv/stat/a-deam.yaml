@@ -33,6 +33,6 @@ command:
   - 2dconv.stat.a
   - --dataset
   - deam
-  - --temp_folder
+  - --temp-folder
   - a_deam
   - ${args}

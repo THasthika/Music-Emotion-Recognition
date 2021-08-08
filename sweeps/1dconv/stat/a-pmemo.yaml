@@ -31,6 +31,6 @@ command:
   - 1dconv.stat.a
   - --dataset
   - pmemo
-  - --temp_folder
+  - --temp-folder
   - a_pmemo
   - ${args}

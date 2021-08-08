@@ -33,6 +33,6 @@ command:
   - 1dconv_lstm.stat.a
   - --dataset
   - deam
-  - --temp_folder
+  - --temp-folder
   - a_deam
   - ${args}

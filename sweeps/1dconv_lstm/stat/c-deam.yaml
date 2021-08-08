@@ -49,6 +49,6 @@ command:
   - 1dconv_lstm.stat.c
   - --dataset
   - deam
-  - --temp_folder
+  - --temp-folder
   - a_deam
   - ${args}

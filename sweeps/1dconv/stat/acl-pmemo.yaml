@@ -41,6 +41,6 @@ command:
   - 1dconv.stat.acl
   - --dataset
   - pmemo
-  - --temp_folder
+  - --temp-folder
   - al_pmemo
   - ${args}
