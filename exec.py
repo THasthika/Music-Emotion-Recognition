@@ -227,6 +227,7 @@ def parse_model_args(args):
                 except:
                     pass
                 ret[a[0]] = v
+    print(ret)
     return ret
 
 
