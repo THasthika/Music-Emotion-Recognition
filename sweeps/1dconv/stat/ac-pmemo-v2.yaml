@@ -18,7 +18,7 @@ parameters:
   optimizer:
     values: ["adam", "sgd"]
   std_activation:
-    values: ["custom", "relu", "softplus"]
+    values: ["relu", "softplus"]
   n_fft:
     value: 1024
   n_mels:

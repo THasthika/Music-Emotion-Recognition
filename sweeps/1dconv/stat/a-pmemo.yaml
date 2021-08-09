@@ -17,7 +17,7 @@ parameters:
   optimizer:
     values: ["adam", "sgd"]
   std_activation:
-    values: ["custom", "relu", "softplus"]
+    values: ["relu", "softplus"]
   adaptive_layer_units:
     values: [1, 2, 4, 8, 16]
 early_terminate:
