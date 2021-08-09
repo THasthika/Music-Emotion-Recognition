@@ -36,5 +36,5 @@ command:
   - --temp-folder
   - a_pmemo
   - --batch-size
-  - 128
+  - 32
   - ${args}
