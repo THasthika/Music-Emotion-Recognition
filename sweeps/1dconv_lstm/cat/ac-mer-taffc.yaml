@@ -1,4 +1,4 @@
-name: AC-1DConv-Cat-Mer-Taffc
+name: AC-1DConvLSTM-Cat-Mer-Taffc
 project: mer
 program: exec.py
 method: random
