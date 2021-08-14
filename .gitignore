@@ -16,3 +16,4 @@ execs/*.temp.yaml
 run_list
 checkpoints/
 .idea/
+temp_data/
