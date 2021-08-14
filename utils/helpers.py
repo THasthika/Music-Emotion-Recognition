@@ -45,8 +45,20 @@ def __load_model_class(run, model_version):
 def load_model(wandbRun: str, modelName: str, modelVersion: str = "1"):
     api = wandb.Api()
     run = api.run("{}/{}/{}".format(ENTITY, PROJECT, wandbRun))
-    (ModelClass, model_info) = __load_model_class(modelName, modelVersion)
+    (ModelClass, _) = __load_model_class(modelName, modelVersion)
 
-    print(run.config)
+    ckpt_file = None
+    for x in run.files():
+        if x.name.endswith(".ckpt"):
+            ckpt_file = x.download()
+    
+    if ckpt_file is None:
+        raise Exception("Could not find a checkpoint file")
 
-    # model = ModelClass(train_ds=train_ds, test_ds=test_ds, val_ds=validation_ds, batch_size=batch_size, **model_params)
+    print(ckpt_file)
+
+    model = ModelClass(**run.config)
+    # model.load_state_dict(torch.load(ckpt_file))
+    model.eval()
+
+    return model
