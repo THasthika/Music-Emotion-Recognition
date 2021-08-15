@@ -36,7 +36,7 @@ command:
   - ${interpreter}
   - ${program}
   - sweep
-  - 1dconv.stat.c
+  - 1dconv.d.c
   - --dataset
   - pmemo
   - --temp-folder
