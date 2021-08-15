@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 
-class AC1DConvD_V1(BaseStatModel):
+class A1DConvD_V1(BaseStatModel):
 
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
 
