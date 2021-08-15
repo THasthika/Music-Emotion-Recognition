@@ -1,0 +1,16 @@
+data:
+  dataset: pmemo
+  split: kfold
+  temp_folder: a_pmemo
+  sub_folder: audio
+model:
+  version: 1
+  params:
+    adaptive_layer_units: 16
+    dropout: 0.2
+    lr: 0.01
+    momentum: 0.9
+    optimizer: "adam"
+    std_activation: "relu"
+    weight_decay: 0.0000001
+batch_size: 128
