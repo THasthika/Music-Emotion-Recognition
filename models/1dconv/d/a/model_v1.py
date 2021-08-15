@@ -1,10 +1,10 @@
-from models import BaseSModel
+from models import BaseStatModel
 
 import torch
 import torch.nn as nn
 
 
-class AC1DConvD_V1(BaseSModel):
+class AC1DConvD_V1(BaseStatModel):
 
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
 

@@ -1,11 +1,11 @@
-from models import BaseSModel
+from models import BaseStatModel
 
 import torch
 import torch.nn as nn
 from nnAudio import Spectrogram
 
 
-class C1DConvD_V1(BaseSModel):
+class C1DConvD_V1(BaseStatModel):
     ADAPTIVE_LAYER_UNITS = "adaptive_layer_units"
     N_FFT = "n_fft"
     N_MELS = "n_mels"
