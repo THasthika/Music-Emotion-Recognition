@@ -2,23 +2,24 @@ data:
   dataset: mer-taffc
   split: kfold
   temp_folder: a_mer-taffc
+  sub_folder: audio
 model:
   version: 1
   params:
-    lr: 0.005
-    optimizer: "adam"
-    weight_decay: 0.000001
-    momentum: 0.9
     dropout: 0.3
-    std_activation: "relu"
-    stft_hidden_size: 32
-    stft_num_layers: 1
+    lr: 0.005
+    momentum: 0.9
+    n_fft: 1024
+    n_mels: 128
+    n_mfcc: 20
+    optimizer: "adam"
+    spec_trainable: false
+    weight_decay: 0.000001
     mel_spec_hidden_size: 32
     mel_spec_num_layers: 2
     mfcc_hidden_size: 16
     mfcc_num_layers: 1
-    n_fft: 1024
-    n_mels: 128
-    n_mfcc: 20
-    spec_trainable: false
+    stft_hidden_size: 32
+    stft_num_layers: 1
+    std_activation: "relu"
 batch_size: 64
