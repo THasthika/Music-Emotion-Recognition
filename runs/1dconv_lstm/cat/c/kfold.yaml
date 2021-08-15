@@ -1,6 +1,6 @@
 data:
   dataset: mer-taffc
-  split: 60-20-20
+  split: kfold
   temp_folder: a_mer-taffc
   sub_folder: audio
 model:
