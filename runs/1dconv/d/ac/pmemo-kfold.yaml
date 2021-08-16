@@ -7,14 +7,14 @@ model:
   version: 1
   params:
     adaptive_layer_units: 4
-    dropout: 0.15
-    lr: 0.0005
+    dropout: 0.2
+    lr: 0.01
     momentum: 0
     n_fft: 1024
     n_mels: 128
     n_mfcc: 20
     optimizer: "adam"
-    spec_trainable: false
+    spec_trainable: true
     std_activation: "relu"
-    weight_decay: 0.00001
+    weight_decay: 0.000001
 batch_size: 128
