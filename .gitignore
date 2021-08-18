@@ -17,3 +17,5 @@ run_list
 checkpoints/
 .idea/
 temp_data/
+pth_dir/
+artifacts/
