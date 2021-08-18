@@ -6,10 +6,10 @@ data:
 model:
   version: 1
   params:
-    adaptive_layer_units_0: 2
+    adaptive_layer_units_0: 8
     adaptive_layer_units_1: 4
     dropout: 0.15
-    lr: 0.0005
+    lr: 0.001
     momentum: 0.9
     n_fft: 1024
     n_mels: 128
@@ -17,5 +17,5 @@ model:
     optimizer: "sgd"
     spec_trainable: true
     std_activation: "softplus"
-    weight_decay: 0.0000001
+    weight_decay: 0.000001
 batch_size: 128

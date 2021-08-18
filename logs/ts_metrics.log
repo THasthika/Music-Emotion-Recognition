@@ -1,0 +1,7 @@
+2021-08-18 18:34:24,513 - CPUUtilization.Percent:0.0|#Level:Host|#hostname:tharindus-mbp,timestamp:1629291864
+2021-08-18 18:34:24,513 - DiskAvailable.Gigabytes:281.79447174072266|#Level:Host|#hostname:tharindus-mbp,timestamp:1629291864
+2021-08-18 18:34:24,513 - DiskUsage.Gigabytes:14.279365539550781|#Level:Host|#hostname:tharindus-mbp,timestamp:1629291864
+2021-08-18 18:34:24,514 - DiskUtilization.Percent:4.8|#Level:Host|#hostname:tharindus-mbp,timestamp:1629291864
+2021-08-18 18:34:24,514 - MemoryAvailable.Megabytes:5468.453125|#Level:Host|#hostname:tharindus-mbp,timestamp:1629291864
+2021-08-18 18:34:24,514 - MemoryUsed.Megabytes:8383.234375|#Level:Host|#hostname:tharindus-mbp,timestamp:1629291864
+2021-08-18 18:34:24,514 - MemoryUtilization.Percent:66.6|#Level:Host|#hostname:tharindus-mbp,timestamp:1629291864

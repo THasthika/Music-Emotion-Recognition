@@ -35,7 +35,10 @@ from pytorch_lightning.loggers import WandbLogger
 import torchinfo
 import wandb
 from utils import kfold
+import shutil
 
+ENTITY = "thasthika"
+PROJECT = "mer"
 WORKING_DIR = path.dirname(__file__)
 
 def __load_yaml_file(file_path):
@@ -558,7 +561,32 @@ def sweep(run, batch_size, dataset, split, temp_folder, model_version, auto_batc
 
     trainer.test(model)
 
+@click.command("download-checkpoint")
+@click.argument("run_id", required=True)
+@click.option("--model-name", type=str, required=True)
+@click.option("--dataset", type=str, required=True)
+def download_checkpoint(run_id, model_name, dataset):
+    api = wandb.Api()
+    run = api.run("{}/{}/{}".format(ENTITY, PROJECT, run_id))
 
+    base_dir = "pth_dir"
+
+    if not path.exists(path.join(WORKING_DIR, base_dir)):
+        os.mkdir(path.join(WORKING_DIR, base_dir))
+    
+    if not path.exists(path.join(WORKING_DIR, base_dir, model_name)):
+        os.mkdir(path.join(WORKING_DIR, base_dir, model_name))
+    
+    if not path.exists(path.join(WORKING_DIR, base_dir, model_name, dataset)):
+        os.mkdir(path.join(WORKING_DIR, base_dir, model_name, dataset))
+
+    for x in run.logged_artifacts():
+        if x.type == "model":
+            folder_dir = x.download()
+            src_pth = path.join(folder_dir, "model.ckpt")
+            dst_pth = path.join(WORKING_DIR, base_dir, model_name, dataset, "{}.ckpt".format(run_id))
+            shutil.copy(src_pth, dst_pth)
+            break
 
 clist.add_command(list_runs)
 clist.add_command(list_models)
@@ -567,6 +595,7 @@ cli.add_command(clist)
 cli.add_command(check)
 cli.add_command(train)
 cli.add_command(sweep)
+cli.add_command(download_checkpoint)
 
 if __name__ == "__main__":
     cli()
