@@ -19,3 +19,4 @@ checkpoints/
 temp_data/
 pth_dir/
 artifacts/
+logs/
