@@ -1,0 +1,20 @@
+data:
+  dataset: deam
+  split: kfold
+  temp_folder: a_deam
+  sub_folder: audio
+model:
+  version: 1
+  params:
+    adaptive_layer_units: 16
+    dropout: 0.2
+    lr: 0.001
+    momentum: 0.9
+    n_fft: 1024
+    n_mels: 128
+    n_mfcc: 20
+    optimizer: "sgd"
+    spec_trainable: true
+    std_activation: "relu"
+    weight_decay: 0.0000001
+batch_size: 128
