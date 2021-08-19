@@ -20,3 +20,6 @@ temp_data/
 pth_dir/
 artifacts/
 logs/
+mer/
+serving/**/*.pt
+model_store/**/*.mar

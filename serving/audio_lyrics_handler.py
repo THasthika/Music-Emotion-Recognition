@@ -22,7 +22,6 @@ class BaseHandler(abc.ABC):
 
     def __init__(self):
         self.model = None
-        self.mapping = None
         self.device = None
         self.initialized = False
         self.context = None
@@ -61,24 +60,14 @@ class BaseHandler(abc.ABC):
         # model def file
         model_file = self.manifest["model"].get("modelFile", "")
 
-        if model_file:
-            logger.debug("Loading eager model")
-            self.model = self._load_pickled_model(model_dir, model_file, model_pt_path)
-            self.model.to(self.device)
-        else:
-            logger.debug("Loading torchscript model")
-            if not os.path.isfile(model_pt_path):
-                raise RuntimeError("Missing the model.pt file")
-
-            self.model = self._load_torchscript_model(model_pt_path)
+        logger.debug("Loading torchscript model")
+        if not os.path.isfile(model_pt_path):
+            raise RuntimeError("Missing the model.pt file")
+        self.model = self._load_torchscript_model(model_pt_path)
 
         self.model.eval()
 
         logger.debug('Model file %s loaded successfully', model_pt_path)
-
-        # Load class mapping for classifiers
-        mapping_file_path = os.path.join(model_dir, "index_to_name.json")
-        self.mapping = load_label_mapping(mapping_file_path)
 
         self.initialized = True
 
@@ -93,43 +82,6 @@ class BaseHandler(abc.ABC):
         """
         return torch.jit.load(model_pt_path, map_location=self.device)
 
-    def _load_pickled_model(self, model_dir, model_file, model_pt_path):
-        """
-        Loads the pickle file from the given model path.
-
-        Args:
-            model_dir (str): Points to the location of the model artefacts.
-            model_file (.py): the file which contains the model class.
-            model_pt_path (str): points to the location of the model pickle file.
-
-        Raises:
-            RuntimeError: It raises this error when the model.py file is missing.
-            ValueError: Raises value error when there is more than one class in the label,
-                        since the mapping supports only one label per class.
-
-        Returns:
-            serialized model file: Returns the pickled pytorch model file
-        """
-        model_def_path = os.path.join(model_dir, model_file)
-        if not os.path.isfile(model_def_path):
-            raise RuntimeError("Missing the model.py file")
-
-        module = importlib.import_module(model_file.split(".")[0])
-        model_class_definitions = list_classes_from_module(module)
-        if len(model_class_definitions) != 1:
-            raise ValueError(
-                "Expected only one class as model definition. {}".format(
-                    model_class_definitions
-                )
-            )
-
-        model_class = model_class_definitions[0]
-        model = model_class()
-        if model_pt_path:
-            state_dict = torch.load(model_pt_path, map_location=self.device)
-            model.load_state_dict(state_dict)
-        return model
-
     def preprocess(self, data):
         """
         Preprocess function to convert the request input to a tensor(Torchserve supported format).
@@ -141,6 +93,11 @@ class BaseHandler(abc.ABC):
         Returns:
             tensor: Returns the tensor data of the input
         """
+        audio_data = data['audio'] if 'audio' in data else None
+        lyrics_data = data['lyrics'] if 'lyrics' in data else None
+
+        data = torch.rand((1, 4))
+
         return torch.as_tensor(data, device=self.device)
 
     def inference(self, data, *args, **kwargs):
