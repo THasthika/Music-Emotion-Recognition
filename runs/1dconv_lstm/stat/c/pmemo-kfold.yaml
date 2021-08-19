@@ -1,0 +1,25 @@
+data:
+  dataset: pmemo
+  split: kfold
+  temp_folder: a_pmemo
+  sub_folder: audio
+model:
+  version: 1
+  params:
+    lr: 0.0005
+    optimizer: "adam"
+    weight_decay: 0.00001
+    momentum: 0.8
+    dropout: 0.3
+    std_activation: "softplus"
+    stft_hidden_size: 250
+    stft_num_layers: 1
+    mel_spec_hidden_size: 150
+    mel_spec_num_layers: 2
+    mfcc_hidden_size: 16
+    mfcc_num_layers: 1
+    n_fft: 1024
+    n_mels: 128
+    n_mfcc: 20
+    spec_trainable: false
+batch_size: 128
