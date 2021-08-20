@@ -37,6 +37,8 @@ import wandb
 from utils import kfold
 import shutil
 
+from models import all
+
 ENTITY = "thasthika"
 PROJECT = "mer"
 WORKING_DIR = path.dirname(__file__)

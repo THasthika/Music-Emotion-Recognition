@@ -7,6 +7,8 @@ import re
 import sys
 import wandb
 
+from models.n1dconv.cat.a.model_v1 import A1DConvCat_V1
+
 ENTITY = "thasthika"
 PROJECT = "mer"
 WORKING_DIR = path.dirname(__file__)
@@ -75,8 +77,9 @@ def get_model(run_name, run_id, version):
 
     config = run.config
     
-    ModelClass, _ = __load_model_class("1dconv.cat.a", 1)
-    model = ModelClass(**config)
+    # ModelClass, _ = __load_model_class("1dconv.cat.a", 1)
+    # model = ModelClass(**config)
+    model = A1DConvCat_V1(**config)
     
     if not ckpt_file is None:
         checkpoint = torch.load(ckpt_file, map_location=device)
@@ -106,28 +109,29 @@ def main():
 
     model = get_model(run_name, run_id, version)
     s = torch.jit.script(model)
+    print(s)
     torch.jit.save(s, dst_file)
 
-class TestModel(torch.nn.Module):
+# class TestModel(torch.nn.Module):
 
-    def __init__(self):
-        super(TestModel, self).__init__()
-        self.l1 = torch.nn.Linear(4, 2)
-        self.l2 = torch.nn.Linear(2, 1)
+#     def __init__(self):
+#         super(TestModel, self).__init__()
+#         self.l1 = torch.nn.Linear(4, 2)
+#         self.l2 = torch.nn.Linear(2, 1)
     
-    def forward(self, x):
-        x = self.l1(x)
-        x = self.l2(x)
-        return x
+#     def forward(self, x):
+#         x = self.l1(x)
+#         x = self.l2(x)
+#         return x
 
-def test():
-    model = TestModel()
-    model.eval()
-    s = torch.jit.script(model)
-    torch.jit.save(s, "model.pt")
+# def test():
+#     model = TestModel()
+#     model.eval()
+#     s = torch.jit.script(model)
+#     torch.jit.save(s, "model.pt")
     
 
 if __name__ == "__main__":
-    # main()
-    test()
+    main()
+    # test()
 

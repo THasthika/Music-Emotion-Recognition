@@ -1,0 +1,1 @@
+from models.n1dconv_lstm.cat.c.model_v1 import C1DConvLSTMCat_V1
