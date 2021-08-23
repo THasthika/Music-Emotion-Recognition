@@ -141,6 +141,11 @@ audio_input_root = Frame(root, padx=2, pady=4, )
 
 audio_file_input_frame = LabelFrame(audio_input_root, text="Audio File Input")
 
+def open_audio_file():
+    audio_file_path = filedialog.askopenfilename(initialdir="/", title="Open Audio File", filetypes=(("mp3 files", "*.mp3"),))
+    
+
+audio_open_btn = Button(audio_file_input_frame, text="Open File", command=)
 
 
 audio_file_input_frame.pack(fill=tk.BOTH, side=tk.LEFT, expand=tk.FALSE)
