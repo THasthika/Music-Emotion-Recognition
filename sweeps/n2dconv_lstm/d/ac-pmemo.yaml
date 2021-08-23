@@ -1,0 +1,60 @@
+name: AC-2DConvLSTM-D-PMEMO
+project: mer
+program: exec.py
+method: random
+metric:
+  goal: minimize
+  name: val/loss
+parameters:
+  lr:
+    values: [0.0001, 0.0005, 0.001, 0.005, 0.01]
+  dropout:
+    values: [0.15, 0.2, 0.25, 0.3, 0.4, 0.5]
+  weight_decay:
+    values: [1e-5, 1e-6, 1e-7]
+  momentum:
+    values: [0.8, 0.9, 0.95]
+  optimizer:
+    values: ["adam", "sgd"]
+  std_activation:
+    values: ["relu", "softplus"]
+  n_fft:
+    value: 1024
+  n_mels:
+    value: 128
+  n_mfcc:
+    value: 20
+  spec_trainable:
+    values: [true, false]
+  audio_hidden_size:
+    values: [32, 64, 128]
+  audio_num_layers:
+    values: [1, 2, 4]
+  stft_hidden_size:
+    values: [32, 64, 128]
+  stft_num_layers:
+    values: [1, 2, 4]
+  mel_spec_hidden_size:
+    values: [32, 64, 128]
+  mel_spec_num_layers:
+    values: [1, 2, 4]
+  mfcc_hidden_size:
+    values: [16, 32]
+  mfcc_num_layers:
+    values: [1, 2, 4]
+early_terminate:
+  type: hyperband
+  min_iter: 3
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - sweep
+  - n2dconv_lstm.d.ac
+  - --dataset
+  - pmemo
+  - --temp-folder
+  - a_pmemo
+  - --batch-size
+  - 32
+  - ${args}
