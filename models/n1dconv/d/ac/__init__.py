@@ -1,1 +1,0 @@
-from models.n1dconv.d.ac.model_v1 import AC1DConvD_V1

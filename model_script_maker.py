@@ -7,8 +7,6 @@ import re
 import sys
 import wandb
 
-from models.n1dconv.cat.a.model_v1 import A1DConvCat_V1
-
 ENTITY = "thasthika"
 PROJECT = "mer"
 WORKING_DIR = path.dirname(__file__)
@@ -34,6 +32,7 @@ def __load_model_class(run, model_version):
     model_file = "model_v{}.py".format(model_version)
     run_path = path.join(WORKING_DIR, "models", path.join(*runp), model_file)
     model_info = __get_model_info(run_path)
+    print(model_info)
     ModelClsName = "{}_V{}".format(model_info['name'], model_info['version'])
 
     runp = ".".join(runp)
@@ -77,9 +76,8 @@ def get_model(run_name, run_id, version):
 
     config = run.config
     
-    # ModelClass, _ = __load_model_class("1dconv.cat.a", 1)
-    # model = ModelClass(**config)
-    model = A1DConvCat_V1(**config)
+    ModelClass, _ = __load_model_class(run_name, version)
+    model = ModelClass(**config)
     
     if not ckpt_file is None:
         checkpoint = torch.load(ckpt_file, map_location=device)
