@@ -468,7 +468,7 @@ class CategoricalResultController(tk.LabelFrame):
         for x in range(0, 4):
             self.acc_bars[x].set_value(0.0)
 
-class RegressionResultController(tk.LabelFrame):
+# class RegressionResultController(tk.LabelFrame):
     # f = Figure(figsize=(5,5), dpi=100)
     # a = f.add_subplot(111)
     # a.plot([1,2,3,4,5,6,7,8],[5,6,1,3,8,9,3,5])
@@ -549,23 +549,23 @@ class MainApplication(tk.Frame):
         self.cat_result.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE, padx=8, pady=4)
 
 def main():
-    # global model
+    global model
 
-    # n_args = len(sys.argv)
-    # if n_args < 4:
-    #     print("exec [run_name] [version] [run_id]")
-    #     print("Example: python main.py 1dconv.cat.a 1 kk7mn5lm")
-    #     return
+    n_args = len(sys.argv)
+    if n_args < 4:
+        print("exec [run_name] [version] [run_id]")
+        print("Example: python main.py 1dconv.cat.a 1 kk7mn5lm")
+        return
 
-    # print("Model: Loading...")
+    print("Model: Loading...")
 
-    # run_name = sys.argv[1]
-    # version = sys.argv[2]
-    # run_id = sys.argv[3]
+    run_name = sys.argv[1]
+    version = sys.argv[2]
+    run_id = sys.argv[3]
 
-    # model = get_model(run_name, run_id, version)
+    model = get_model(run_name, run_id, version)
 
-    # print("Model: Loaded")
+    print("Model: Loaded")
 
     root = tk.Tk()
     MainApplication(root).pack(side=tk.TOP, fill=tk.BOTH, expand=tk.FALSE)
