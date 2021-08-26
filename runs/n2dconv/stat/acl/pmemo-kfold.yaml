@@ -1,7 +1,7 @@
 data:
   dataset: pmemo
   split: kfold
-  temp_folder: a_pmemo
+  temp_folder: al_pmemo
   sub_folder: .
 model:
   version: 1
