@@ -2,7 +2,7 @@ data:
   dataset: pmemo
   split: kfold
   temp_folder: a_pmemo
-  sub_folder: audio
+  sub_folder: .
 model:
   version: 1
   params:
