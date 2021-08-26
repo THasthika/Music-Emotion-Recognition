@@ -7,11 +7,15 @@ import threading
 import torch
 import collections
 import struct
-import numpy as np
 import time
-from torch._C import dtype
 import re
 import wandb
+import matplotlib
+matplotlib.use("TkAgg")
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+
 
 # from PIL import Image, ImageTk
 
@@ -464,6 +468,70 @@ class CategoricalResultController(tk.LabelFrame):
         for x in range(0, 4):
             self.acc_bars[x].set_value(0.0)
 
+class RegressionResultController(tk.LabelFrame):
+    # f = Figure(figsize=(5,5), dpi=100)
+    # a = f.add_subplot(111)
+    # a.plot([1,2,3,4,5,6,7,8],[5,6,1,3,8,9,3,5])
+
+    # canvas = FigureCanvasTkAgg(f, self)
+    # canvas.show()
+    # canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+    # def __init__(self, parent, *args, **kwargs):
+    #     tk.LabelFrame.__init__(self, parent, text="Categorical Result", *args, **kwargs)
+    #     self.parent = parent
+
+    #     self.frame_0 = tk.Frame(self)
+
+    #     self.bars = [
+    #         ResultBar(self.frame_0, "Happy"),
+    #         ResultBar(self.frame_0, "Angry"),
+    #         ResultBar(self.frame_0, "Sad"),
+    #         ResultBar(self.frame_0, "Calm")
+    #     ]
+
+    #     self.frame_1 = tk.Frame(self)
+    #     self.lbl_final = tk.Label(self.frame_1, text="Final Result")
+    #     self.acc_bars = [
+    #         ResultBar(self.frame_1, "Happy", orientation=tk.HORIZONTAL),
+    #         ResultBar(self.frame_1, "Angry", orientation=tk.HORIZONTAL),
+    #         ResultBar(self.frame_1, "Sad", orientation=tk.HORIZONTAL),
+    #         ResultBar(self.frame_1, "Calm", orientation=tk.HORIZONTAL)
+    #     ]
+
+    #     self.frame_0.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
+    #     for x in self.bars:
+    #         x.pack(side=tk.LEFT, fill=tk.X, expand=tk.TRUE)
+
+    #     self.frame_1.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
+    #     self.lbl_final.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
+    #     for x in self.acc_bars:
+    #         x.pack(side=tk.LEFT, fill=tk.X, expand=tk.TRUE)
+
+    # def set_value(self, result: torch.Tensor):
+    #     global result_buffer
+    #     result_buffer.append(result[0])
+    #     for x in range(0, 4):
+    #         self.bars[x].set_value(round(result[0][x].item(), 2))
+
+    # def compute_agg(self):
+    #     global result_buffer
+    #     if len(result_buffer) == 0:
+    #         return
+    #     agg = result_buffer[0]
+    #     for i in range(1, len(result_buffer)):
+    #         agg += result_buffer[i]
+    #     agg = agg / len(result_buffer)
+    #     for x in range(0, 4):
+    #         self.acc_bars[x].set_value(round(agg[x].item(), 2))
+
+    # def clear(self):
+    #     for x in range(0, 4):
+    #         self.bars[x].set_value(0.0)
+    #     for x in range(0, 4):
+    #         self.acc_bars[x].set_value(0.0)
+
+
 class MainApplication(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
@@ -481,23 +549,23 @@ class MainApplication(tk.Frame):
         self.cat_result.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE, padx=8, pady=4)
 
 def main():
-    global model
+    # global model
 
-    n_args = len(sys.argv)
-    if n_args < 4:
-        print("exec [run_name] [version] [run_id]")
-        print("Example: python main.py 1dconv.cat.a 1 kk7mn5lm")
-        return
+    # n_args = len(sys.argv)
+    # if n_args < 4:
+    #     print("exec [run_name] [version] [run_id]")
+    #     print("Example: python main.py 1dconv.cat.a 1 kk7mn5lm")
+    #     return
 
-    print("Model: Loading...")
+    # print("Model: Loading...")
 
-    run_name = sys.argv[1]
-    version = sys.argv[2]
-    run_id = sys.argv[3]
+    # run_name = sys.argv[1]
+    # version = sys.argv[2]
+    # run_id = sys.argv[3]
 
-    model = get_model(run_name, run_id, version)
+    # model = get_model(run_name, run_id, version)
 
-    print("Model: Loaded")
+    # print("Model: Loaded")
 
     root = tk.Tk()
     MainApplication(root).pack(side=tk.TOP, fill=tk.BOTH, expand=tk.FALSE)
