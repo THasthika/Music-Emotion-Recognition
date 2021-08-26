@@ -249,14 +249,17 @@ class ACL2DConvStat_V1(BaseStatModel):
         stft_x = self.stft(audio_x)
         stft_x = torch.unsqueeze(stft_x, dim=1)
         stft_x = self.stft_feature_extractor(stft_x)
+        stft_x = torch.flatten(stft_x, start_dim=1)
 
         mel_x = self.mel_spec(audio_x)
         mel_x = torch.unsqueeze(mel_x, dim=1)
         mel_x = self.mel_spec_feature_extractor(mel_x)
+        mel_x = torch.flatten(mel_x, start_dim=1)
 
         mfcc_x = self.mfcc(audio_x)
         mfcc_x = torch.unsqueeze(mfcc_x, dim=1)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
+        mfcc_x = torch.flatten(mfcc_x, start_dim=1)
 
         lyrics_x = self.bert_tokenizer(lyrics_x, padding=True, truncation=False, return_tensors="pt", return_token_type_ids=False, return_attention_mask=False)['input_ids']
         lyrics_x = lyrics_x.to(device)
