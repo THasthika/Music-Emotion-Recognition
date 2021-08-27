@@ -207,16 +207,50 @@ class ACL2DConvStat_V1(BaseStatModel):
         input_size += (
                     self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
 
-        self.lyrics_extractor = nn.LSTM(input_size=768, hidden_size=250, num_layers=1)
-        self.lyrics_fc = nn.Sequential(
-            nn.Linear(in_features=250, out_features=128),
+        self.lyrics_lstm_extractor = nn.LSTM(input_size=768, hidden_size=512, num_layers=1)
+
+        self.lyrics_feature_1d_extractor = nn.Sequential(
+            nn.Conv1d(in_channels=1, out_channels=256, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=256),
             nn.ReLU(),
-            nn.Dropout(p=self.config[self.DROPOUT]),
-            nn.Linear(in_features=128, out_features=64),
-            nn.ReLU()
         )
 
-        input_size += 64
+        self.lyrics_feature_2d_extractor = nn.Sequential(
+
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=16),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=32),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=64),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=128),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=128),
+            nn.ReLU(),
+
+            nn.AdaptiveAvgPool2d(output_size=(
+                self.config[self.ADAPTIVE_LAYER_UNITS_0],
+                self.config[self.ADAPTIVE_LAYER_UNITS_1]
+            ))
+        )
+
+        out_channels = 128
+        input_size += (self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
 
         self.fc0 = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
@@ -266,10 +300,13 @@ class ACL2DConvStat_V1(BaseStatModel):
         with torch.no_grad():
             lyrics_x = self.bert_model(lyrics_x)
         lyrics_x = lyrics_x[0]
-        (lyrics_x, _) = self.lyrics_extractor(lyrics_x)
+        (lyrics_x, _) = self.lyrics_lstm_extractor(lyrics_x)
         lyrics_x = lyrics_x[:, -1, :]
+        lyrics_x = torch.unsqueeze(lyrics_x, dim=1)
+        lyrics_x = self.lyrics_feature_1d_extractor(lyrics_x)
+        lyrics_x = torch.unsqueeze(lyrics_x, dim=1)
+        lyrics_x = self.lyrics_feature_2d_extractor(lyrics_x)
         lyrics_x = torch.flatten(lyrics_x, start_dim=1)
-        lyrics_x = self.lyrics_fc(lyrics_x)
 
         x = torch.cat((raw_x, stft_x, mel_x, mfcc_x, lyrics_x), dim=1)
 
