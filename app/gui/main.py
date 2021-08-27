@@ -1,6 +1,7 @@
 from os import path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+import numpy as np
 import pygame
 import pyaudio
 import threading
@@ -102,9 +103,6 @@ CHANNELS = 1
 RATE = 22050
 BUFFER = RATE * 5
 
-MODEL_TYPE_CATEGORICAL = "Categorical"
-MODEL_TYPE_REGRESSION = "Regression"
-
 WORK_DIR = path.dirname(__file__)
 RES_DIR = path.join(WORK_DIR, "resources")
 
@@ -121,7 +119,8 @@ microphone_running = False
 microphone_buffer = collections.deque(maxlen=BUFFER)
 result_buffer = []
 model = None
-cat_result_holder = None
+model_type = "categorical"
+result_holder = None
 
 
 def handle_audio_chunk(in_data, frame_count, time_info, status):
@@ -183,10 +182,10 @@ def inference_run():
 
         ret = torch.softmax(model(inp), dim=1)
 
-        if cat_result_holder is None:
+        if result_holder is None:
             continue
 
-        cat_result_holder.set_value(ret)
+        result_holder.set_value(ret)
         # print("Power: {}".format(torch.sum(torch.sqrt(torch.pow(torch.abs(inp), 2))) / BUFFER))
 
         # if not model:
@@ -207,9 +206,9 @@ def listen_microphone():
     result_buffer = []
     microphone_buffer = collections.deque(maxlen=BUFFER)
 
-    global cat_result_holder
+    global result_holder
 
-    cat_result_holder.clear()
+    result_holder.clear()
 
 
     p = pyaudio.PyAudio()
@@ -372,8 +371,8 @@ class MicrophoneController(tk.LabelFrame):
         microphone_running = False
         microphone_stop_lock.release()
 
-        global cat_result_holder
-        cat_result_holder.compute_agg()
+        global result_holder
+        result_holder.compute_agg()
     
     def __init__(self, parent, *args, **kwargs):
 
@@ -468,68 +467,84 @@ class CategoricalResultController(tk.LabelFrame):
         for x in range(0, 4):
             self.acc_bars[x].set_value(0.0)
 
-# class RegressionResultController(tk.LabelFrame):
-    # f = Figure(figsize=(5,5), dpi=100)
-    # a = f.add_subplot(111)
-    # a.plot([1,2,3,4,5,6,7,8],[5,6,1,3,8,9,3,5])
+class RegressionResultController(tk.LabelFrame):
 
-    # canvas = FigureCanvasTkAgg(f, self)
-    # canvas.show()
-    # canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+    def __init__(self, parent, *args, **kwargs):
+        tk.LabelFrame.__init__(self, parent, text="Regression Result", *args, **kwargs)
+        self.parent = parent
 
-    # def __init__(self, parent, *args, **kwargs):
-    #     tk.LabelFrame.__init__(self, parent, text="Categorical Result", *args, **kwargs)
-    #     self.parent = parent
+        f = Figure(figsize=(5,5), dpi=100)
 
-    #     self.frame_0 = tk.Frame(self)
+        self.history = collections.deque(maxlen=5)
+        
+        a = f.add_subplot(111)
 
-    #     self.bars = [
-    #         ResultBar(self.frame_0, "Happy"),
-    #         ResultBar(self.frame_0, "Angry"),
-    #         ResultBar(self.frame_0, "Sad"),
-    #         ResultBar(self.frame_0, "Calm")
-    #     ]
+        self.figure = f
+        self.plt = a
 
-    #     self.frame_1 = tk.Frame(self)
-    #     self.lbl_final = tk.Label(self.frame_1, text="Final Result")
-    #     self.acc_bars = [
-    #         ResultBar(self.frame_1, "Happy", orientation=tk.HORIZONTAL),
-    #         ResultBar(self.frame_1, "Angry", orientation=tk.HORIZONTAL),
-    #         ResultBar(self.frame_1, "Sad", orientation=tk.HORIZONTAL),
-    #         ResultBar(self.frame_1, "Calm", orientation=tk.HORIZONTAL)
-    #     ]
+        self.canvas = FigureCanvasTkAgg(f, self)
+        self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.canvas.draw()
 
-    #     self.frame_0.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
-    #     for x in self.bars:
-    #         x.pack(side=tk.LEFT, fill=tk.X, expand=tk.TRUE)
+        self.history.append([-.5, .5])
+        self.history.append([-.5, .5])
+        self.history.append([-.5, .5])
+        self.history.append([-.5, .5])
+        self.history.append([-.5, .5])
 
-    #     self.frame_1.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
-    #     self.lbl_final.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
-    #     for x in self.acc_bars:
-    #         x.pack(side=tk.LEFT, fill=tk.X, expand=tk.TRUE)
+        self.draw_plot()
 
-    # def set_value(self, result: torch.Tensor):
-    #     global result_buffer
-    #     result_buffer.append(result[0])
-    #     for x in range(0, 4):
-    #         self.bars[x].set_value(round(result[0][x].item(), 2))
+        
 
-    # def compute_agg(self):
-    #     global result_buffer
-    #     if len(result_buffer) == 0:
-    #         return
-    #     agg = result_buffer[0]
-    #     for i in range(1, len(result_buffer)):
-    #         agg += result_buffer[i]
-    #     agg = agg / len(result_buffer)
-    #     for x in range(0, 4):
-    #         self.acc_bars[x].set_value(round(agg[x].item(), 2))
+    def draw_plot(self):
 
-    # def clear(self):
-    #     for x in range(0, 4):
-    #         self.bars[x].set_value(0.0)
-    #     for x in range(0, 4):
-    #         self.acc_bars[x].set_value(0.0)
+        self.plt.cla()
+
+        self.plt.axhline(0, color='black')
+        self.plt.axvline(0, color='black')
+
+        self.plt.set_xlim([-1, 1])
+        self.plt.set_ylim([-1, 1])
+
+        self.plt.set_xlabel("Valence")
+        self.plt.set_ylabel("Arousal")
+
+        for (i, x) in enumerate(self.history):
+            alpha = np.power(((i+1) / len(self.history)), 2)
+            self.plt.scatter([x[0]], [x[1]], c="blue", alpha=alpha)
+            self.canvas.draw()
+
+    def set_value(self, result: torch.Tensor):
+        
+        valence_mean = result[0][0].item()
+        arousal_mean = result[0][1].item()
+
+        self.history.append((valence_mean, arousal_mean))
+        self.draw_plot()
+        # pass
+        # global result_buffer
+        # result_buffer.append(result[0])
+        # for x in range(0, 4):
+        #     self.bars[x].set_value(round(result[0][x].item(), 2))
+
+    def compute_agg(self):
+        pass
+        # global result_buffer
+        # if len(result_buffer) == 0:
+        #     return
+        # agg = result_buffer[0]
+        # for i in range(1, len(result_buffer)):
+        #     agg += result_buffer[i]
+        # agg = agg / len(result_buffer)
+        # for x in range(0, 4):
+        #     self.acc_bars[x].set_value(round(agg[x].item(), 2))
+
+    def clear(self):
+        pass
+        # for x in range(0, 4):
+        #     self.bars[x].set_value(0.0)
+        # for x in range(0, 4):
+        #     self.acc_bars[x].set_value(0.0)
 
 
 class MainApplication(tk.Frame):
@@ -537,24 +552,31 @@ class MainApplication(tk.Frame):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
 
+        global model_type
+
         # self.model_selector = ModelSelector(self)
         self.mic_controller = MicrophoneController(self)
-        self.cat_result = CategoricalResultController(self)
 
-        global cat_result_holder
-        cat_result_holder = self.cat_result
+        if model_type == "categorical":
+            self.result_holder = CategoricalResultController(self)
+        else:
+            self.result_holder = RegressionResultController(self)
+
+        global result_holder
+        result_holder = self.result_holder
 
         # self.model_selector.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE, padx=8, pady=4)
         self.mic_controller.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE, padx=8, pady=4)
-        self.cat_result.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE, padx=8, pady=4)
+        self.result_holder.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE, padx=8, pady=4)
 
 def main():
     global model
+    global model_type
 
     n_args = len(sys.argv)
     if n_args < 4:
-        print("exec [run_name] [version] [run_id]")
-        print("Example: python main.py 1dconv.cat.a 1 kk7mn5lm")
+        print("exec [run_name] [version] [run_id] [type=categorical]")
+        print("Example: python main.py 1dconv.cat.a 1 kk7mn5lm [categorical]")
         return
 
     print("Model: Loading...")
@@ -562,6 +584,7 @@ def main():
     run_name = sys.argv[1]
     version = sys.argv[2]
     run_id = sys.argv[3]
+    model_type = sys.argv[4] if n_args > 4 else "categorical"
 
     model = get_model(run_name, run_id, version)
 

@@ -155,7 +155,8 @@ class C2DConvStat_V1(BaseStatModel):
         )
 
         self.fc_mean = nn.Sequential(
-            nn.Linear(in_features=128, out_features=2)
+            nn.Linear(in_features=128, out_features=2),
+            nn.Tanh()
         )
 
         self.fc_std = nn.Sequential(
