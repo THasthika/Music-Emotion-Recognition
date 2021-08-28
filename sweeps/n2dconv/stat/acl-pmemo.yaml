@@ -34,5 +34,5 @@ command:
   - --dataset
   - pmemo
   - --temp-folder
-  - a_pmemo
+  - al_pmemo
   - ${args}
