@@ -147,6 +147,7 @@ def handle_audio_chunk(in_data, frame_count, time_info, status):
 
 def inference_run():
     global model
+    global model_type
     global microphone_buffer
     global inference_should_run
     global inference_lock
@@ -156,7 +157,7 @@ def inference_run():
     inference_lock.release()
 
     while True:
-        time.sleep(.5)
+        time.sleep(.2)
         if not inference_should_run:
             break
 
@@ -179,8 +180,9 @@ def inference_run():
         inp = (((inp - old_min_val) * new_range) / old_range) + new_min_val
 
         inp = torch.reshape(inp, (1, 1, BUFFER))
-
-        ret = torch.softmax(model(inp), dim=1)
+        ret = model(inp)
+        if model_type == "categorical":
+            ret = torch.softmax(model(inp), dim=1)
 
         if result_holder is None:
             continue

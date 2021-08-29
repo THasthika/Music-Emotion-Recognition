@@ -117,6 +117,12 @@ def __load_data_class(run, data_class):
     elif __is_subset(["s"], run_s):
         from data.s import SAudioDataset
         DataClass = SAudioDataset
+    elif __is_subset(["d", "acl"], run_s):
+        from data.d_multi import DAudioLyricsDataset
+        DataClass = DAudioLyricsDataset
+    elif __is_subset(["d", "cl"], run_s):
+        from data.d_multi import DAudioLyricsDataset
+        DataClass = DAudioLyricsDataset
     elif __is_subset(["stat", "acl"], run_s):
         from data.stat_multi import StatAudioLyricDataset
         DataClass = StatAudioLyricDataset

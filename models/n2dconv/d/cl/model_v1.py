@@ -4,8 +4,12 @@ from nnAudio import Spectrogram
 
 from models import BaseStatModel
 
+from transformers import BertTokenizer, BertModel
 
-class C2DConvStat_V1(BaseStatModel):
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+class CL2DConvD_V1(BaseStatModel):
+
     ADAPTIVE_LAYER_UNITS_0 = "adaptive_layer_units_0"
     ADAPTIVE_LAYER_UNITS_1 = "adaptive_layer_units_1"
     N_FFT = "n_fft"
@@ -25,7 +29,12 @@ class C2DConvStat_V1(BaseStatModel):
         self.__build_model()
 
     def __build_model(self):
-        f_bins = (self.config[self.N_FFT] // 2) + 1
+
+        self.bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.bert_model = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=False)
+        self.bert_model = self.bert_model.to(device)
+        for param in self.bert_model.parameters():
+            param.requires_grad = False
 
         self.stft = Spectrogram.STFT(n_fft=self.config[self.N_FFT], fmax=9000, sr=22050,
                                      trainable=self.config[self.SPEC_TRAINABLE], output_format="Magnitude")
@@ -146,11 +155,75 @@ class C2DConvStat_V1(BaseStatModel):
         input_size += (
                     self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
 
-        self.fc0 = nn.Sequential(
+        self.fc_audio = nn.Sequential(
             nn.Linear(in_features=input_size, out_features=512),
             nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.BatchNorm1d(num_features=512),
             nn.ReLU(),
+
             nn.Linear(in_features=512, out_features=128),
+            nn.BatchNorm1d(128),
+            nn.ReLU()
+        )
+
+        self.lyrics_feature_1d_extractor = nn.Sequential(
+            nn.Conv1d(in_channels=1, out_channels=256, kernel_size=3, stride=1),
+            nn.MaxPool1d(kernel_size=2),
+            nn.BatchNorm1d(num_features=256),
+            nn.ReLU(),
+        )
+
+        self.lyrics_feature_2d_extractor = nn.Sequential(
+
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=16),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=32),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=64),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=64),
+            nn.ReLU(),
+
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.BatchNorm2d(num_features=128),
+            nn.ReLU(),
+
+            nn.AdaptiveAvgPool2d(output_size=(
+                self.config[self.ADAPTIVE_LAYER_UNITS_0],
+                self.config[self.ADAPTIVE_LAYER_UNITS_1]
+            ))
+        )
+
+        out_channels = 128
+        input_size_lyrics = (self.config[self.ADAPTIVE_LAYER_UNITS_0] * self.config[self.ADAPTIVE_LAYER_UNITS_1] * out_channels)
+
+        self.fc_lyrics = nn.Sequential(
+            nn.Linear(in_features=input_size_lyrics, out_features=128),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.BatchNorm1d(num_features=128),
+            nn.ReLU(),
+
+            nn.Linear(in_features=128, out_features=128),
+            nn.BatchNorm1d(128),
+            nn.ReLU()
+        )
+
+        self.fc0 = nn.Sequential(
+            nn.Linear(in_features=256, out_features=128),
+            nn.Dropout(p=self.config[self.DROPOUT]),
+            nn.BatchNorm1d(num_features=128),
             nn.ReLU()
         )
 
@@ -164,15 +237,18 @@ class C2DConvStat_V1(BaseStatModel):
         )
 
     def forward(self, x):
-        stft_x = self.stft(x)
+
+        (audio_x, lyrics_x) = x
+
+        stft_x = self.stft(audio_x)
         stft_x = torch.unsqueeze(stft_x, dim=1)
         stft_x = self.stft_feature_extractor(stft_x)
 
-        mel_x = self.mel_spec(x)
+        mel_x = self.mel_spec(audio_x)
         mel_x = torch.unsqueeze(mel_x, dim=1)
         mel_x = self.mel_spec_feature_extractor(mel_x)
 
-        mfcc_x = self.mfcc(x)
+        mfcc_x = self.mfcc(audio_x)
         mfcc_x = torch.unsqueeze(mfcc_x, dim=1)
         mfcc_x = self.mfcc_feature_extractor(mfcc_x)
 
@@ -180,8 +256,24 @@ class C2DConvStat_V1(BaseStatModel):
         mel_x = torch.flatten(mel_x, start_dim=1)
         mfcc_x = torch.flatten(mfcc_x, start_dim=1)
 
-        x = torch.cat((stft_x, mel_x, mfcc_x), dim=1)
+        audio_x = torch.cat((stft_x, mel_x, mfcc_x), dim=1)
+        audio_x = self.fc_audio(audio_x)
 
+        lyrics_x = self.bert_tokenizer(lyrics_x, padding=True, truncation=False, return_tensors="pt", return_token_type_ids=False, return_attention_mask=False)['input_ids']
+        lyrics_x = lyrics_x.to(device)
+        with torch.no_grad():
+            lyrics_x = self.bert_model(lyrics_x)
+        # get pooled output
+        lyrics_x = lyrics_x[1]
+        lyrics_x = torch.unsqueeze(lyrics_x, dim=1)
+        lyrics_x = self.lyrics_feature_1d_extractor(lyrics_x)
+        lyrics_x = torch.unsqueeze(lyrics_x, dim=1)
+        lyrics_x = self.lyrics_feature_2d_extractor(lyrics_x)
+        lyrics_x = torch.flatten(lyrics_x, start_dim=1)
+
+        lyrics_x = self.fc_lyrics(lyrics_x)  
+
+        x = torch.cat((audio_x, lyrics_x), dim=1)
         x = self.fc0(x)
 
         x_mean = self.fc_mean(x)
