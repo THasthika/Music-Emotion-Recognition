@@ -111,12 +111,6 @@ def __load_data_class(run, data_class):
         pkg_path = "data.{}".format(pkg)
         modelMod = __import__(pkg_path, fromlist=[clsName])
         DataClass = getattr(modelMod, clsName)
-    elif __is_subset(["d"], run_s):
-        from data.d import DAudioDataset
-        DataClass = DAudioDataset
-    elif __is_subset(["s"], run_s):
-        from data.s import SAudioDataset
-        DataClass = SAudioDataset
     elif __is_subset(["d", "acl"], run_s):
         from data.d_multi import DAudioLyricsDataset
         DataClass = DAudioLyricsDataset
@@ -132,6 +126,12 @@ def __load_data_class(run, data_class):
     elif __is_subset(["cat", "acl"], run_s):
         from data.cat_multi import CatAudioLyricDataset
         DataClass = CatAudioLyricDataset
+    elif __is_subset(["d"], run_s):
+        from data.d import DAudioDataset
+        DataClass = DAudioDataset
+    elif __is_subset(["s"], run_s):
+        from data.s import SAudioDataset
+        DataClass = SAudioDataset
     elif __is_subset(["stat"], run_s) or __is_subset(["statm"], run_s):
         from data.stat import StatAudioDataset
         DataClass = StatAudioDataset
