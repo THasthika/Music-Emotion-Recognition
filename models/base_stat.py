@@ -25,8 +25,8 @@ class BaseStatModel(BaseModel):
 
         self.test_arousal_mean_r2 = tm.R2Score(num_outputs=1)
         self.test_valence_mean_r2 = tm.R2Score(num_outputs=1)
-        self.test_arousal_std_r2 = tm.R2Score(num_outputs=1)
-        self.test_valence_std_r2 = tm.R2Score(num_outputs=1)
+        # self.test_arousal_std_r2 = tm.R2Score(num_outputs=1)
+        # self.test_valence_std_r2 = tm.R2Score(num_outputs=1)
 
         self.test_mean_r2score = tm.R2Score(num_outputs=2)
 
@@ -52,6 +52,8 @@ class BaseStatModel(BaseModel):
         x, y = batch
 
         pred = self(x)
+        y = y[:, [0, 1]]
+
         loss = self.loss(pred, y)
 
         self.log('train/loss', loss, prog_bar=True, on_step=False, on_epoch=True)
@@ -62,6 +64,8 @@ class BaseStatModel(BaseModel):
         x, y = batch
 
         pred = self(x)
+        y = y[:, [0, 1]]
+
         loss = self.loss(pred, y)
 
         # arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
@@ -82,6 +86,8 @@ class BaseStatModel(BaseModel):
         x, y = batch
 
         pred = self(x)
+        y = y[:, [0, 1]]
+
         loss = self.loss(pred, y)
 
         # arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
