@@ -64,16 +64,16 @@ class BaseStatModel(BaseModel):
         pred = self(x)
         loss = self.loss(pred, y)
 
-        arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
-        valence_std_rmse = self.loss(pred[:, 2], y[:, 2])
+        # arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
+        # valence_std_rmse = self.loss(pred[:, 2], y[:, 2])
 
         arousal_mean_rmse = self.loss(pred[:, 1], y[:, 1])
         valence_mean_rmse = self.loss(pred[:, 0], y[:, 0])
 
         self.log("val/loss", loss, prog_bar=True)
 
-        self.log('val/arousal_std_rmse', arousal_std_rmse, on_step=False, on_epoch=True)
-        self.log('val/valence_std_rmse', valence_std_rmse, on_step=False, on_epoch=True)
+        # self.log('val/arousal_std_rmse', arousal_std_rmse, on_step=False, on_epoch=True)
+        # self.log('val/valence_std_rmse', valence_std_rmse, on_step=False, on_epoch=True)
 
         self.log("val/arousal_mean_rmse", arousal_mean_rmse, on_step=False, on_epoch=True)
         self.log("val/valence_mean_rmse", valence_mean_rmse, on_step=False, on_epoch=True)
@@ -84,8 +84,8 @@ class BaseStatModel(BaseModel):
         pred = self(x)
         loss = self.loss(pred, y)
 
-        arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
-        valence_std_rmse = self.loss(pred[:, 2], y[:, 2])
+        # arousal_std_rmse = self.loss(pred[:, 3], y[:, 3])
+        # valence_std_rmse = self.loss(pred[:, 2], y[:, 2])
 
         arousal_mean_rmse = self.loss(pred[:, 1], y[:, 1])
         valence_mean_rmse = self.loss(pred[:, 0], y[:, 0])
@@ -95,8 +95,8 @@ class BaseStatModel(BaseModel):
         arousal_mean_r2score = self.test_arousal_mean_r2(pred[:, 1], y[:, 1])
         valence_mean_r2score = self.test_valence_mean_r2(pred[:, 0], y[:, 0])
 
-        arousal_std_r2score = self.test_arousal_std_r2(pred[:, 3], y[:, 3])
-        valence_std_r2score = self.test_valence_std_r2(pred[:, 2], y[:, 2])
+        # arousal_std_r2score = self.test_arousal_std_r2(pred[:, 3], y[:, 3])
+        # valence_std_r2score = self.test_valence_std_r2(pred[:, 2], y[:, 2])
 
         self.log("test/loss", loss)
 
@@ -105,11 +105,11 @@ class BaseStatModel(BaseModel):
         self.log('test/arousal_mean_r2score', arousal_mean_r2score, on_step=False, on_epoch=True)
         self.log('test/valence_mean_r2score', valence_mean_r2score, on_step=False, on_epoch=True)
 
-        self.log('test/arousal_std_r2score', arousal_std_r2score, on_step=False, on_epoch=True)
-        self.log('test/valence_std_r2score', valence_std_r2score, on_step=False, on_epoch=True)
+        # self.log('test/arousal_std_r2score', arousal_std_r2score, on_step=False, on_epoch=True)
+        # self.log('test/valence_std_r2score', valence_std_r2score, on_step=False, on_epoch=True)
 
         self.log("test/arousal_mean_rmse", arousal_mean_rmse, on_step=False, on_epoch=True)
         self.log("test/valence_mean_rmse", valence_mean_rmse, on_step=False, on_epoch=True)
 
-        self.log('val/arousal_std_rmse', arousal_std_rmse, on_step=False, on_epoch=True)
-        self.log('val/valence_std_rmse', valence_std_rmse, on_step=False, on_epoch=True)
+        # self.log('val/arousal_std_rmse', arousal_std_rmse, on_step=False, on_epoch=True)
+        # self.log('val/valence_std_rmse', valence_std_rmse, on_step=False, on_epoch=True)

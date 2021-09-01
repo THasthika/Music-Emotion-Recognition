@@ -231,10 +231,10 @@ class CL2DConvD_V1(BaseStatModel):
             nn.Linear(in_features=128, out_features=2)
         )
 
-        self.fc_std = nn.Sequential(
-            nn.Linear(in_features=128, out_features=2),
-            self._get_std_activation()
-        )
+        # self.fc_std = nn.Sequential(
+        #     nn.Linear(in_features=128, out_features=2),
+        #     self._get_std_activation()
+        # )
 
     def forward(self, x):
 
@@ -277,6 +277,9 @@ class CL2DConvD_V1(BaseStatModel):
         x = self.fc0(x)
 
         x_mean = self.fc_mean(x)
-        x_std = self.fc_std(x)
-        x = torch.cat((x_mean, x_std), dim=1)
+        x = x_mean
+
+        # x_std = self.fc_std(x)
+        # x = torch.cat((x_mean, x_std), dim=1)
+        
         return x
