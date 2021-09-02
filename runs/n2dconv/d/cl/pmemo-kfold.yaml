@@ -6,11 +6,10 @@ data:
 model:
   version: 1
   params:
-    adaptive_layer_units_0: 1
+    adaptive_layer_units_0: 8
     adaptive_layer_units_1: 16
-    dropout: 0.15
-    lr: 0.0005
-    momentum: 0.8
+    dropout: 0.2
+    lr: 0.0001
     n_fft: 1024
     n_mels: 128
     n_mfcc: 20
@@ -18,4 +17,4 @@ model:
     spec_trainable: true
     std_activation: "softplus"
     weight_decay: 0.000001
-batch_size: 128
+batch_size: 64
