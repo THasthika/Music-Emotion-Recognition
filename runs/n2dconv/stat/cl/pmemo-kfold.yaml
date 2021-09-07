@@ -6,15 +6,15 @@ data:
 model:
   version: 1
   params:
-    adaptive_layer_units_0: 16
-    adaptive_layer_units_1: 1
-    dropout: 0.15
-    lr: 0.0005
+    adaptive_layer_units_0: 2
+    adaptive_layer_units_1: 4
+    dropout: 0.25
+    lr: 0.01
     n_fft: 1024
     n_mels: 128
     n_mfcc: 20
     optimizer: "adam"
     spec_trainable: true
     std_activation: "softplus"
-    weight_decay: 0.000001
+    weight_decay: 0.00001
 batch_size: 128
