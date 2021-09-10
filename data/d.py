@@ -44,8 +44,13 @@ class DAudioDataset(BaseChunkedDataset):
             x.append(y)
         x = np.array(x)
         x = x[:, start_i:end_i]
-        x = np.mean(x, axis=1)
-        y = torch.tensor(x, dtype=torch.float)
+        if x.shape[1] <= 0:
+            y = info[[STATIC_VALENCE_MEAN, STATIC_AROUSAL_MEAN,
+                  STATIC_VALENCE_STD, STATIC_AROUSAL_STD]].to_numpy()
+            y = torch.tensor(list(y), dtype=torch.float)
+        else:
+            x = np.mean(x, axis=1)
+            y = torch.tensor(x, dtype=torch.float)
         return y
 
     def get_features(self, info, args):
