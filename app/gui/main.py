@@ -73,8 +73,15 @@ def __get_checkpoint_from_file(run):
     return ckpt_file
 
 def __get_checkpoint_from_artifact(run):
-
-    pass
+    ckpt_file = None
+    for x in run.logged_artifacts():
+        artifact_dir = x.download()
+        files = os.listdir(artifact_dir)
+        for f in files:
+            if f.endswith(".ckpt"):
+                ckpt_file = path.join(artifact_dir, f)
+                return ckpt_file
+    return ckpt_file
 
 def get_model(run_name, run_id, version):
     run = api.run("{}/{}/{}".format(ENTITY, PROJECT, run_id))
@@ -593,9 +600,9 @@ def main():
 
     print("Model: Loaded")
 
-    # root = tk.Tk()
-    # MainApplication(root).pack(side=tk.TOP, fill=tk.BOTH, expand=tk.FALSE)
-    # root.mainloop()
+    root = tk.Tk()
+    MainApplication(root).pack(side=tk.TOP, fill=tk.BOTH, expand=tk.FALSE)
+    root.mainloop()
 
 if __name__ == "__main__":
     main()
