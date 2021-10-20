@@ -9,7 +9,7 @@ model:
     adaptive_layer_units_0: 2
     adaptive_layer_units_1: 4
     dropout: 0.15
-    lr: 0.01
+    lr: 0.001
     momentum: 0.9
     optimizer: "adam"
     std_activation: "relu"
